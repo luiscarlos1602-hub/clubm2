@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ROLE_HOME } from "./demo-role";
-import { EXAMPLE_PROJECT_SLUG, NAV_ITEMS, ROUTES, ROUTE_IDS, activeRouteId, type RouteId } from "./route-map";
+import { EXAMPLE_PROJECT_SLUG, NAV_ITEMS, projectHref, ROUTES, ROUTE_IDS, activeRouteId, type RouteId } from "./route-map";
 
 const follow = (start: RouteId, n: number) => {
   const out: RouteId[] = [start];
@@ -52,6 +52,11 @@ describe("route-map", () => {
     expect(NAV_ITEMS.admin.every((id) => ROUTES[id].zone === "admin")).toBe(true);
     const hrefs = ROUTE_IDS.map((id) => ROUTES[id].href);
     for (const h of Object.values(ROLE_HOME)) expect(hrefs).toContain(h);
+  });
+  it("projectHref arma la URL de la ficha y coincide con el patrón de p4", () => {
+    expect(projectHref("m2-006-chacao")).toBe("/proyectos/m2-006-chacao");
+    const fromPattern = "/" + ROUTES.p4.pattern.replace(/\([^)]*\)\//g, "").replace("[slug]", "m2-006-chacao");
+    expect(fromPattern).toBe(projectHref("m2-006-chacao"));
   });
   it("activeRouteId", () => {
     expect(activeRouteId("/proyectos/m2-001/participar", "investor")).toBe("p3");

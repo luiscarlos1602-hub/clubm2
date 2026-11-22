@@ -162,3 +162,13 @@
 | # | Pregunta | Propuesta por defecto |
 |---|---|---|
 | O1 | Si el proyecto se liquida sin excedente (o con pérdida), ¿qué parte del capital aportado se devuelve y cómo se informa? (H2 del maestro: pendiente) | Mostrar "por definir" en toda pantalla hasta decidirlo; nunca sugerir devolución del capital |
+
+## Bloque P · Marketplace (P3, 22-nov) 🟠
+
+| # | Pregunta | Propuesta por defecto (aplicada como [SUPUESTO]) |
+|---|---|---|
+| P3-Q1 | ¿Las participaciones no colocadas siguen disponibles cuando termina la colocación? | No: quedan retenidas por la empresa; la tarjeta muestra "0 de 100 · colocación cerrada" |
+| P3-Q2 | ¿Un proyecto comprado pero sin colocación abierta (`acquired`) aparece en el marketplace? | No |
+| P3-Q3 | ¿Cómo se muestra un proyecto vendido y aún no liquidado? | "Vendido", dentro de "Finalizados" |
+| P3-Q4 | ¿El plazo objetivo es único (3 meses) y se sigue mostrando en un proyecto que ya lo superó? | Sí, como proyección no garantizada (L5, sin "días sin vender") |
+| P3-Q5 | ¿Una colocación completa en `funding` entra en "Abiertos a participar"? | No, solo en "Todas" |

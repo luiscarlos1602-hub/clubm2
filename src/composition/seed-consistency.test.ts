@@ -5,7 +5,7 @@ import { compareIsoDate, isoDate, type IsoDate } from "@/shared/domain/calendar-
 import { fixedClock } from "@/shared/domain/clock";
 import { usd, usdUnits } from "@/shared/domain/money";
 import { calculateDistribution, calculateHolderPayout, createSettlement } from "@/modules/finance";
-import { checkHoldings, checkParticipationClass } from "@/modules/participations";
+import { checkHoldings, checkParticipationClass } from "@/modules/participations/domain/participation-consistency";
 import { DEMO_HOLDER_ID } from "@/modules/participations/infrastructure/seed";
 import { checkProjectConsistency, parseProjectCode } from "@/modules/projects";
 import { classifyProjectWheel } from "@/modules/projects/backoffice";

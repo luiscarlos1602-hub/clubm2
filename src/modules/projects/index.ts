@@ -19,3 +19,7 @@ export {
   changeProjectStatus,
 } from "./domain/project-status";
 export { checkProjectConsistency } from "./domain/project-consistency";
+export type { PublicStage } from "./domain/public-stage";
+export { PUBLIC_STAGES, toPublicStage, isPublishedStatus } from "./domain/public-stage";
+export { TARGET_TERM_MONTHS } from "./domain/target-term";
+export type { ProjectRepository, PropertyRepository } from "./application/ports";

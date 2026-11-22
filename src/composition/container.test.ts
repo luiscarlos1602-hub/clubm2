@@ -18,6 +18,11 @@ describe("Container", () => {
     expect(c.demo.storageKey).toBe("club-demo:v1");
   });
 
+  it("listMarketplace está conectado y devuelve 6 proyectos publicados", async () => {
+    const c = createContainer({ clock, storage: memoryStorage() });
+    expect(await c.participations.listMarketplace()).toHaveLength(6);
+  });
+
   it("reset descarta cambios escritos", async () => {
     const storage = memoryStorage();
     const c = createContainer({ clock, storage });

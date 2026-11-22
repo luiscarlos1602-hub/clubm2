@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { ROUTES, ROUTE_IDS, routeHref, type RouteId } from "../../src/shared/ui/app-shell/route-map";
 
 /** Rutas que ya reemplazaron su RoutePlaceholder (no tienen empty-state). */
-const BUILT: ReadonlySet<RouteId> = new Set<RouteId>(["p1"]);
+const BUILT: ReadonlySet<RouteId> = new Set<RouteId>(["p1", "p3"]);
 
 test.describe("las 14 rutas", () => {
   for (const id of ROUTE_IDS) {

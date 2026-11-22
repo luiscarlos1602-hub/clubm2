@@ -3,7 +3,8 @@ import { cn } from "@/shared/lib/utils";
 import { BRAND_COPY } from "./brand-copy";
 import type { TestIdProp } from "./types";
 
-export type ProjectCode = `M2-${string}`;
+/** Código público ya validado por parseProjectCode (modules/projects). El prefijo sale de brand.shortName. */
+export type ProjectCode = string;
 export type ProjectSealProps = TestIdProp & {
   code: ProjectCode;
   /** ISO "YYYY-MM-DD". */

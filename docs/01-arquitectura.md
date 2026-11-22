@@ -180,6 +180,7 @@ Reglas adicionales:
 
 1. **`domain/` es puro**: sin React, sin Next, sin `fetch`, sin `localStorage`, sin `Date.now()` ni `Math.random()` (el reloj y los ids se inyectan).
 2. **Prohibido importar rutas internas de otro módulo** (`modules/finance/domain/x`): solo `modules/finance`.
+2b. **Vistas que combinan módulos** (p. ej. el marketplace une proyectos y participaciones) viven en el módulo más a la derecha del orden que ya puede importar a todos los que necesita (plan 005, D1).
 3. **Sin ciclos entre módulos.** Orden permitido (de base a cima):
    `shared → projects → participations → finance → acquisitions · renovations · sales → investors → club · crm`
    Un módulo solo importa de los que están a su izquierda. Si se necesita lo contrario, es señal de que la regla pertenece a otro módulo: se discute en un ADR.

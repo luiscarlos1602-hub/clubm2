@@ -45,6 +45,8 @@ export function createContainer(options: ContainerOptions = {}): Container {
     parse: parseDemoSnapshot,
   });
 
+  const projects = registerProjects(store);
+
   return {
     clock,
     ids: options.ids ?? randomIdGenerator(),
@@ -56,8 +58,8 @@ export function createContainer(options: ContainerOptions = {}): Container {
         store.reset();
       },
     },
-    projects: registerProjects(store),
-    participations: registerParticipations(store),
+    projects,
+    participations: registerParticipations(store, projects),
     finance: registerFinance(store),
   };
 }

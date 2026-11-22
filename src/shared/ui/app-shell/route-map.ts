@@ -56,6 +56,11 @@ export function routeHref(id: RouteId): AppPath {
   return ROUTES[id].href;
 }
 
+/** URL de la ficha P4 de un proyecto: `/proyectos/${slug}`. Debe coincidir con ROUTES.p4.pattern. */
+export function projectHref(slug: string): AppPath {
+  return `/proyectos/${slug}`;
+}
+
 /** Ruta activa: coincidencia exacta o el prefijo más largo de NAV_ITEMS de la zona. */
 export function activeRouteId(pathname: string, zone: Zone): RouteId | null {
   const items = NAV_ITEMS[zone];

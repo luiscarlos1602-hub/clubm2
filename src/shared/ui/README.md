@@ -61,7 +61,7 @@ Dentro de un tono, `bg-primary` / `text-foreground` / `text-muted-foreground` / 
 ### ProjectSeal
 - Archivo: `ProjectSeal.tsx`
 - Cuándo usarlo: identificar un proyecto (`M2-001`) con su fecha de compra.
-- Props clave: `code`, `date` (ISO `YYYY-MM-DD`), `dateLabel?`, `size?`.
+- Props clave: `code` (string ya validado por `projects`), `date` (ISO `YYYY-MM-DD`), `dateLabel?`, `size?`.
 - No usar para: texto corrido; el Arena solo va en el borde.
 
 ### SectionHeading

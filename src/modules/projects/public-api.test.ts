@@ -12,17 +12,21 @@ describe("API pública de projects", () => {
     for (const name of WHEEL_EXPORTS) expect(backofficeKeys).toContain(name);
   });
 
-  it("index.ts expone el contrato del plan 002 §3.11", async () => {
+  it("index.ts expone el contrato del plan 002 §3.11 y del plan 005 §3.1", async () => {
     const publicKeys = Object.keys(await import("./index")).sort();
     expect(publicKeys).toEqual(
       [
         "PROJECT_STATUSES",
         "PROJECT_TRANSITIONS",
+        "PUBLIC_STAGES",
+        "TARGET_TERM_MONTHS",
         "canTransition",
         "changeProjectStatus",
         "checkProjectConsistency",
+        "isPublishedStatus",
         "isTerminalStatus",
         "parseProjectCode",
+        "toPublicStage",
         "transitionStatus",
       ].sort(),
     );
