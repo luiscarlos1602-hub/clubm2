@@ -136,11 +136,11 @@ describe("simulateProjection · propiedades (fast-check)", () => {
           const neutral = { saleAdjustmentBps: 0, worksOverrunBps: 0, delayMonths: 0, held: 1 };
           const rLo = simulateProjection(base, { ...neutral, placed: lo });
           const rHi = simulateProjection(base, { ...neutral, placed: hi });
-          if (rLo.outcome.kind === "invalid" || rLo.outcome.kind === "no_distribution") return;
-          if (rHi.outcome.kind === "invalid" || rHi.outcome.kind === "no_distribution") return;
-          expect(rHi.outcome.distribution.toExternal.cents).toBeGreaterThanOrEqual(
-            rLo.outcome.distribution.toExternal.cents,
-          );
+          if (rLo.outcome.kind === "invalid" || rHi.outcome.kind === "invalid") return;
+          const [dLo, dHi] = [rLo.outcome.distribution, rHi.outcome.distribution];
+          // En pérdida con borde W5-1 lo devuelto a externos depende del redondeo por colocada: solo reparto.
+          if (dLo.kind !== "distributed" || dHi.kind !== "distributed") return;
+          expect(dHi.toExternal.cents).toBeGreaterThanOrEqual(dLo.toExternal.cents);
         },
       ),
     );

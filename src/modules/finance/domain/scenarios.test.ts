@@ -40,9 +40,9 @@ describe("escenarios fijos [SUPUESTO Q3]", () => {
     expect(gainOf(optimistic!.outcome)).toEqual(usd(4_380));
   });
 
-  it("sin excedente en un escenario → no_distribution en esa fila", () => {
+  it("excedente negativo en un escenario → loss en esa fila (ADR-019)", () => {
     const tight = { ...M2_006, salePrice: usdUnits(64_000) };
     const kinds = buildScenarios(tight).map((r) => r.outcome.kind);
-    expect(kinds).toEqual(["no_distribution", "payout", "payout"]);
+    expect(kinds).toEqual(["loss", "payout", "payout"]);
   });
 });

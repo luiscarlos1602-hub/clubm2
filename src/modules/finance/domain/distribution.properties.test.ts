@@ -44,9 +44,9 @@ const anyRaw: fc.Arbitrary<Raw> = fc
   .record({ P: amount, C: amount, F: amount, O: amount, t: terms })
   .map(({ t, ...m }) => ({ ...m, ...t }));
 
-/** Entrada con excedente > 0: P = C + F + O + s, s ≥ 1. */
+/** Entrada con excedente ≥ 0: P = C + F + O + s, s ≥ 0 (excedente 0 = reparto en 0, C10). */
 const positiveRaw: fc.Arbitrary<Raw> = fc
-  .record({ C: amount, F: amount, O: amount, s: fc.integer({ min: 1, max: 1e9 }), t: terms })
+  .record({ C: amount, F: amount, O: amount, s: fc.integer({ min: 0, max: 1e9 }), t: terms })
   .map(({ C, F, O, s, t }) => ({ P: C + F + O + s, C, F, O, ...t }));
 
 function run(input: DistributionInput): DistributionOutcome {
@@ -136,11 +136,11 @@ describe("finance · invariantes del motor (fast-check)", () => {
     );
   });
 
-  it("I6 · sin excedente no hay reparto", () => {
+  it("I6 · excedente < 0 → pérdida; excedente ≥ 0 → reparto (ADR-019)", () => {
     fc.assert(
       fc.property(fc.oneof(anyRaw, positiveRaw), basis, (raw, b) => {
         const o = run(build(raw, b));
-        expect(o.kind === "no_distribution").toBe(raw.P - raw.C - raw.F - raw.O <= 0);
+        expect(o.kind === "loss").toBe(raw.P - raw.C - raw.F - raw.O < 0);
         expect(c(o.surplus)).toBe(raw.P - raw.C - raw.F - raw.O);
       }),
       RUNS,
