@@ -6,7 +6,7 @@ import { moduleOrder } from "./architecture.modules.mjs";
 
 // ── Capas (docs/01-arquitectura.md §4) ─────────────────────────────────────
 const elements = [
-  { type: "module-api", pattern: "src/modules/*/{index,backoffice}.ts", partialMatch: false },
+  { type: "module-api", pattern: "src/modules/*/{index,backoffice}.ts", mode: "file" },
   { type: "domain", pattern: "src/modules/*/domain/**" },
   { type: "application", pattern: "src/modules/*/application/**" },
   { type: "infrastructure", pattern: "src/modules/*/infrastructure/**" },
@@ -23,6 +23,7 @@ const MSG = "Import prohibido entre capas ({{ from.element.types.[0] }} → {{ t
 const allow = (from, ...to) => ({ from: { element: { type: from } }, allow: { to: { element: { types: to } } } });
 
 const layerPolicies = [
+  allow("module-api", "domain", "application", "ui", "shared-domain", "shared-lib", "module-api"),
   allow("domain", "domain", "shared-domain", "module-api"),
   allow("application", "domain", "application", "shared-domain", "shared-lib", "module-api"),
   allow("infrastructure", "domain", "application", "infrastructure", "shared-domain", "shared-infra", "shared-lib", "module-api"),
@@ -88,9 +89,10 @@ export default defineConfig([
       ],
     },
   },
-  // Ruedas internas (ADR-004, docs/01 §8.3)
+  // Ruedas internas (ADR-004, docs/01 §8.3): backoffice.ts solo para app/admin, ui/components/admin y composition
   {
-    files: ["src/app/(publico)/**", "src/app/(inversionista)/**", "src/modules/*/ui/components/investor/**", "src/modules/*/ui/components/shared/**"],
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/app/admin/**", "src/modules/*/ui/components/admin/**", "src/composition/**", "src/modules/*/backoffice.ts", "**/*.test.ts"],
     rules: {
       "no-restricted-imports": ["error", { patterns: [{ group: ["@/modules/*/backoffice"], message: "Las ruedas son internas — docs/01-arquitectura.md §8.3 (ADR-004)" }] }],
     },

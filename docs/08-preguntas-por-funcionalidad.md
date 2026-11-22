@@ -121,3 +121,17 @@
 | K3 | Inmueble vendido después de 6 meses: ¿qué rueda es? (el maestro solo define "mala" en cartera) | "Mala (vendida)" |
 | K4 | La rueda se mide desde la compra: ¿hasta la firma de venta o hasta el cobro? | Hasta la firma de venta; el cobro se muestra aparte |
 | K5 | Identidad: la demo usa placeholder "Club Inmobiliario" negro + dorado; `marketing/` propone paleta "cal y arcilla". ¿Cuál entra en la demo? | ✅ Nombre resuelto: **Club M² · "Juntos sumamos metros."** (ADR-003) → `brand.ts` en F1. Paleta: "cal y arcilla" en tokens — **aceptada** el 22-nov (ADR-005) |
+
+## Bloque L · Motor y estados (F1-3, 22-nov) 🟠
+
+| # | Pregunta | Propuesta por defecto |
+|---|---|---|
+| L1 | Si el 25 % del excedente no da centavos exactos (p. ej. excedente de 0,01), ¿cómo se redondea el fondo? | Hacia abajo al centavo; el sobrante va al 75 % de la empresa (igual que K1) |
+| L2 | Rueda (K2) con compra a fin de mes (31-ago + 6 meses), ¿qué fecha es el límite? | El último día del mes destino (28 o 29-feb) |
+| L3 | Un proyecto "estancado" (`stalled`), ¿a qué estados puede pasar? | Volver a "en venta" o pasar a "vendido" |
+| L4 | ¿Se puede descartar una oportunidad sin pasar por due diligence? | No; se mantiene el diagrama de `02 §2` |
+| L5 | El estado "estancado" deriva de la rueda mala (ADR-004). ¿Qué ve el inversionista cuando su proyecto está estancado? | Etapa "en venta" con las actualizaciones fechadas y el plazo objetivo como proyección; la palabra "estancado" solo en el backoffice |
+| L7 | ¿Instalamos `@vitest/coverage-v8` para exigir cobertura 100 % del motor (`01 §1`)? | Sí, solo como dependencia de desarrollo |
+| L9 | ¿El "hoy" de la demo es la fecha de Caracas? | Sí, America/Caracas |
+```
+
