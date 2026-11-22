@@ -45,10 +45,13 @@ const moduleRules = moduleOrder.flatMap((name, i) => {
           ? [{ group: moduleOrder.slice(i).map((m) => `@/modules/${m}`), message: `Sin ciclos entre módulos: '${name}' solo importa de ${moduleOrder.slice(0, i).join(" · ") || "shared"} — ver docs/01-arquitectura.md §4 regla 3` }]
           : []),
   ];
+  const backofficePattern = { group: ["@/modules/*/backoffice"], message: "Las ruedas son internas — docs/01-arquitectura.md §8.3 (ADR-004)" };
   const cfg = (files, pats) => ({ files, rules: { "no-restricted-imports": ["error", { patterns: pats }] } });
   return [
-    cfg([`src/modules/${name}/**/*.{ts,tsx}`], patterns),
-    cfg([`src/modules/${name}/domain/**/*.ts`], [...patterns, purityPattern]),
+    cfg([`src/modules/${name}/**/*.{ts,tsx}`], [...patterns, backofficePattern]),
+    cfg([`src/modules/${name}/domain/**/*.ts`], [...patterns, backofficePattern, purityPattern]),
+    // backoffice.ts solo para ui/components/admin (docs/01 §8.3)
+    cfg([`src/modules/${name}/ui/components/admin/**/*.{ts,tsx}`], patterns),
   ];
 });
 
@@ -91,8 +94,8 @@ export default defineConfig([
   },
   // Ruedas internas (ADR-004, docs/01 §8.3): backoffice.ts solo para app/admin, ui/components/admin y composition
   {
-    files: ["src/**/*.{ts,tsx}"],
-    ignores: ["src/app/admin/**", "src/modules/*/ui/components/admin/**", "src/composition/**", "src/modules/*/backoffice.ts", "**/*.test.ts"],
+    files: ["src/app/**/*.{ts,tsx}", "src/shared/**/*.{ts,tsx}"],
+    ignores: ["src/app/admin/**", "**/*.test.ts"],
     rules: {
       "no-restricted-imports": ["error", { patterns: [{ group: ["@/modules/*/backoffice"], message: "Las ruedas son internas — docs/01-arquitectura.md §8.3 (ADR-004)" }] }],
     },

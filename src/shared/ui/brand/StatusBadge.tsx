@@ -10,8 +10,8 @@ export type StatusBadgeProps = TestIdProp & {
 
 const TONE: Record<StatusTone, string> = {
   positive: "border-secondary bg-secondary text-secondary-foreground",
-  "in-progress": "border-laton bg-transparent text-foreground",
-  attention: "border-primary bg-transparent text-primary",
+  "in-progress": "border-line bg-transparent text-foreground",
+  attention: "border-destructive bg-transparent text-destructive",
   neutral: "border-muted-foreground/40 bg-transparent text-muted-foreground",
 };
 
@@ -26,7 +26,7 @@ export function StatusBadge({ tone, label, className, "data-testid": testId = "s
         className,
       )}
     >
-      {tone === "in-progress" ? <span aria-hidden className="size-1.5 rounded-full bg-laton" /> : null}
+      {tone === "in-progress" ? <span aria-hidden className="size-1.5 rounded-full bg-line" /> : null}
       {label}
     </span>
   );

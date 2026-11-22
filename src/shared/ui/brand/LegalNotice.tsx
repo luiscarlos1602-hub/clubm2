@@ -14,7 +14,7 @@ export function LegalNotice({ notice, variant = "block", className, "data-testid
     <p
       data-testid={testId ?? `aviso-${kebab(notice)}`}
       className={cn(
-        variant === "block" ? "max-w-[72ch] border-l-2 border-laton pl-4 text-sm text-muted-foreground" : "text-xs text-muted-foreground",
+        variant === "block" ? "max-w-[72ch] border-l-2 border-line pl-4 text-sm text-muted-foreground" : "text-xs text-muted-foreground",
         className,
       )}
     >

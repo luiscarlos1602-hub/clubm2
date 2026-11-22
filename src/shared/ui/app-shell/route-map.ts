@@ -49,7 +49,7 @@ export const NAV_ITEMS: Readonly<Record<Zone, readonly RouteId[]>> = {
   admin: ["b1", "b2", "b3", "b4", "b5", "b6"],
 };
 
-/** CTA destacado de la navegación pública (botón Arcilla). */
+/** CTA destacado de la navegación pública (botón Verde Profundo). */
 export const PUBLIC_NAV_CTA: RouteId = "p2";
 
 export function routeHref(id: RouteId): AppPath {

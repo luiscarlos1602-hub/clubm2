@@ -10,26 +10,41 @@ export const SHOWCASE_COPY = {
   },
   paleta: {
     eyebrow: "01 · Color",
-    title: "Siete colores, ningún rojo de bolsa",
+    title: "Cuatro colores de marca y dos de apoyo, ningún rojo de bolsa",
     description:
-      "Cal es el papel, Grafito la tinta, Verde Ávila la calma y Arcilla la acción. El Latón solo dibuja líneas, bordes y sellos: nunca texto pequeño.",
+      "Crema es el papel y Verde Profundo la tinta y la acción. Arena y Salvia acompañan: líneas, sellos y fondos de destacado, y texto solo sobre Verde Profundo. Musgo para texto secundario; Óxido para pedir atención.",
     roles: {
-      cal: "Fondo",
-      grafito: "Texto",
-      "verde-avila": "Secundario",
-      arcilla: "Acción principal",
-      "arcilla-clara": "Apoyo",
-      laton: "Líneas y sellos",
-      piedra: "Texto secundario",
+      "verde-profundo": "Texto y acción principal",
+      crema: "Fondo",
+      arena: "Líneas, sellos y secundario",
+      salvia: "Apoyo y fondos de destacado",
+      musgo: "Texto secundario",
+      oxido: "Atención",
     } satisfies Record<BrandColorToken, string>,
+  },
+  tonos: {
+    eyebrow: "00 · Lenguaje visual",
+    title: "Bandas a todo el ancho, en cuatro tonos",
+    description:
+      "Toda pantalla se compone como la portada: una cabecera oscura y bandas que alternan tono. Cada banda declara su tono y lo de dentro se adapta solo: texto, botones, filetes y foco. Lo importante (riesgos, reparto, cierre) va en oscuro.",
+    samples: [
+      { tone: "light", name: "light · Crema", use: "Contenido general" },
+      { tone: "paper", name: "paper · Crema aclarado", use: "Preguntas y formularios largos" },
+      { tone: "sand", name: "sand · Crema y Arena", use: "Datos y reparto" },
+      { tone: "dark", name: "dark · Verde Profundo", use: "Cabeceras, riesgos y cierres" },
+    ],
+    sampleTitle: "Cuatro pasos, cada uno a la vista",
+    sampleBullets: ["Filete Arena para separar", "Un botón principal por banda"],
+    primary: "Acción principal",
+    secondary: "Alternativa",
   },
   tipografia: {
     eyebrow: "02 · Tipografía",
-    title: "Tres voces con un propósito cada una",
-    description: "Fraunces para titular, Inter para leer y para las cifras, IBM Plex Mono para códigos y fechas.",
+    title: "Una voz principal y una para los datos",
+    description: "Parkinsans para titular, leer y las cifras; IBM Plex Mono para códigos y fechas.",
     families: [
-      { id: "heading", name: "Fraunces", role: "Títulos", sample: "Juntos sumamos metros", className: "font-heading text-4xl font-medium md:text-5xl" },
-      { id: "sans", name: "Inter", role: "Texto y cifras", sample: "Cada proyecto se explica con calma, paso a paso.", className: "font-sans text-xl" },
+      { id: "heading", name: "Parkinsans", role: "Títulos", sample: "Juntos sumamos metros", className: "font-heading text-4xl font-medium md:text-5xl" },
+      { id: "sans", name: "Parkinsans", role: "Texto y cifras", sample: "Cada proyecto se explica con calma, paso a paso.", className: "font-sans text-xl" },
       { id: "mono", name: "IBM Plex Mono", role: "Códigos y fechas", sample: "M2-001 · 03.11.2026", className: "font-mono text-xl" },
     ],
     figuresLabel: "Cifras tabulares",
@@ -38,7 +53,7 @@ export const SHOWCASE_COPY = {
   botones: {
     eyebrow: "03 · Acciones",
     title: "Un botón principal por pantalla",
-    description: "Arcilla para la acción que importa, Verde Ávila para la alternativa. El objetivo táctil mide al menos 40 px, y 48 px en el tamaño grande.",
+    description: "Verde Profundo para la acción que importa, Arena para la alternativa. El objetivo táctil mide al menos 40 px, y 48 px en el tamaño grande.",
     variants: [
       { id: "default", label: "Principal" },
       { id: "secondary", label: "Secundario" },
@@ -98,7 +113,7 @@ export const SHOWCASE_COPY = {
   estados: {
     eyebrow: "08 · Estados de la vista",
     title: "Vacío, cargando y error, siempre resueltos",
-    description: "Toda vista con datos prevé los tres. El error usa Arcilla, nunca rojo.",
+    description: "Toda vista con datos prevé los tres. El error usa Óxido, nunca rojo.",
     emptyLabel: "Vacío",
     loadingLabel: "Cargando",
     errorLabel: "Error",

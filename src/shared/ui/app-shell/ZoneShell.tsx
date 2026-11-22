@@ -2,7 +2,8 @@ import { Suspense, type ReactNode } from "react";
 import Link from "next/link";
 import { brand } from "@/shared/config/brand";
 import { cn } from "@/shared/lib/utils";
-import { DemoBanner, LegalNotice, Wordmark } from "@/shared/ui/brand";
+import { LegalNotice, Wordmark } from "@/shared/ui/brand";
+import { PAGE_CONTAINER as CONTAINER } from "@/shared/ui/layout";
 import type { TestIdProp } from "@/shared/ui/brand/types";
 import { ActiveNavLinks } from "./ActiveNavLinks";
 import { DemoToolbar } from "./DemoToolbar";
@@ -15,11 +16,10 @@ import { SHELL_COPY } from "./shell-copy";
 export type ZoneShellProps = TestIdProp & {
   zone: Zone;
   children: ReactNode;
-  /** Hueco para herramientas de simulación en la barra bajo el banner. */
+  /** Hueco para herramientas de simulación en la barra superior de simulación. */
   demoTools?: ReactNode;
 };
 
-const CONTAINER = "mx-auto w-full max-w-7xl px-5 md:px-10";
 
 function ZoneNav({ zone, orientation }: { zone: Zone; orientation: "horizontal" | "vertical" }) {
   return (
@@ -39,9 +39,8 @@ export function ZoneShell({ zone, children, demoTools, className, "data-testid":
       className={cn("flex min-h-full flex-1 flex-col", className)}
     >
       <SkipLink />
-      <DemoBanner variant="bar" className="sticky top-0 z-50" />
       <DemoToolbar zone={zone} demoTools={demoTools} />
-      <header className="border-b border-laton/40 bg-background">
+      <header className="border-b border-line/40 bg-background">
         <div className={cn(CONTAINER, "flex h-16 items-center justify-between gap-4")}>
           <Link
             href={home}
@@ -65,7 +64,7 @@ export function ZoneShell({ zone, children, demoTools, className, "data-testid":
       </header>
       <div className={cn("flex flex-1", admin && "lg:flex-row")}>
         {admin ? (
-          <aside className="hidden w-64 shrink-0 border-r border-laton/40 bg-card lg:block">
+          <aside className="hidden w-64 shrink-0 border-r border-line/40 bg-card lg:block">
             <nav
               aria-label={SHELL_COPY.navLabel[zone]}
               data-testid="nav-principal"
@@ -79,11 +78,11 @@ export function ZoneShell({ zone, children, demoTools, className, "data-testid":
           <main
             id="contenido"
             tabIndex={-1}
-            className={cn(CONTAINER, "flex-1 py-16 outline-none md:py-24")}
+            className="flex-1 outline-none"
           >
             {children}
           </main>
-          <footer data-testid="pie-zona" className="border-t border-laton/40 bg-card">
+          <footer data-testid="pie-zona" className="border-t border-line/40 bg-card">
             <div className={cn(CONTAINER, "flex flex-col gap-3 py-8")}>
               <p className="font-heading text-lg text-foreground">{brand.tagline}</p>
               <LegalNotice notice="riskNotice" variant="block" />

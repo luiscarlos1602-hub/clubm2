@@ -14,7 +14,7 @@
 
 1. ✅ **[DEFINIDO] Nombre: Club M² · eslogan "Juntos sumamos metros."** (22-nov-2026, ver `docs/decisiones/ADR-003-nombre-club-m2.md`). Pendiente: comprar `clubm2.com`, revisar `@clubm2` en redes, `.com.ve` y registro mixto en SAPI (clases 36 y 41).
 2. ✅ **[DEFINIDO] Tuteo** (ADR-005). Tú (cercano, digital), con "usted" en contratos y asesoría de tickets altos.
-3. ✅ **[DEFINIDO] Paleta "cal y arcilla"** (ADR-005). Cálida, venezolana, en vez del "negro + dorado" genérico.
+3. ✅ **[DEFINIDO] Paleta Verde Profundo, Crema, Arena, Salvia, Musgo y Óxido** (ADR-009, que sustituye a la de ADR-005).
 4. **[DECIDIR] Rostro de la marca.** ¿Habrá un fundador visible en contenido? El plan de captación depende mucho de esto.
 5. **[DECIDIR] Ciudad del primer piloto** (afecta mensajes locales y eventos). Supuesto: Caracas.
 

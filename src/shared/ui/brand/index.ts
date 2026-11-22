@@ -17,4 +17,5 @@ export {
   type CardSkeletonProps,
 } from "./Skeletons";
 export { Wordmark, type WordmarkProps } from "./Wordmark";
+export { BrandSymbol, type BrandSymbolProps } from "./BrandSymbol";
 export { LegalNotice, type LegalNoticeProps } from "./LegalNotice";

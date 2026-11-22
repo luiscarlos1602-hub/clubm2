@@ -12,7 +12,7 @@ export function SystemFigures() {
           <MoneyDisplay value={SAMPLE_REALIZED} kind="realized" size="lg" decimals="auto" data-testid="cifra-realizado" />
           <MoneyDisplay value={SAMPLE_PROJECTION} kind="projection" size="lg" data-testid="cifra-proyeccion" />
         </div>
-        <div className="flex flex-col gap-3 border-t border-laton/70 pt-8">
+        <div className="flex flex-col gap-3 border-t border-line/70 pt-8">
           <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">{C.cifras.bigLabel}</p>
           <MoneyDisplay value={SAMPLE_CAPITAL} kind="capital" size="xl" data-testid="cifra-protagonista" />
         </div>

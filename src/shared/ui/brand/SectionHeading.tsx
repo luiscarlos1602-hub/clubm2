@@ -28,8 +28,8 @@ export function SectionHeading({
       data-testid={testId}
       className={cn("flex max-w-[72ch] flex-col gap-3", align === "center" && "mx-auto items-center text-center", className)}
     >
-      {eyebrow ? <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">{eyebrow}</p> : null}
-      <Heading id={id} className={cn("font-heading font-medium text-balance text-foreground", TITLE_SIZE[level])}>
+      {eyebrow ? <p className="text-xs font-medium tracking-[0.28em] text-muted-foreground uppercase">{eyebrow}</p> : null}
+      <Heading id={id} className={cn("font-heading font-semibold tracking-tight text-balance text-foreground", TITLE_SIZE[level])}>
         {title}
       </Heading>
       {description ? <p className="text-base text-muted-foreground">{description}</p> : null}

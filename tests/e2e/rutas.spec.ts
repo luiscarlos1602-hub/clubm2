@@ -1,6 +1,8 @@
 import { test, expect } from "@playwright/test";
-import { LEGAL_COPY } from "../../src/shared/ui/brand/legal-copy";
-import { ROUTES, ROUTE_IDS, routeHref } from "../../src/shared/ui/app-shell/route-map";
+import { ROUTES, ROUTE_IDS, routeHref, type RouteId } from "../../src/shared/ui/app-shell/route-map";
+
+/** Rutas que ya reemplazaron su RoutePlaceholder (no tienen empty-state). */
+const BUILT: ReadonlySet<RouteId> = new Set<RouteId>(["p1"]);
 
 test.describe("las 14 rutas", () => {
   for (const id of ROUTE_IDS) {
@@ -12,9 +14,8 @@ test.describe("las 14 rutas", () => {
       await expect(pagina).toBeVisible();
       await expect(page.locator("h1")).toHaveCount(1);
       await expect(page.locator("h1")).toBeVisible();
-      await expect(page.getByTestId("demo-banner")).toBeVisible();
-      await expect(page.getByTestId("demo-banner")).toHaveText(LEGAL_COPY.demoBanner);
-      await expect(pagina.getByTestId("empty-state")).toBeVisible();
+      await expect(page.getByTestId("demo-banner")).toHaveCount(0); // sin cintillo fijo (ADR-011)
+      if (!BUILT.has(id)) await expect(pagina.getByTestId("empty-state")).toBeVisible();
       const next = pagina.getByTestId("siguiente-paso");
       await expect(next).toBeVisible();
       await expect(next).toHaveAttribute("href", routeHref(ROUTES[id].next));

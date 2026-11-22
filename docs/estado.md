@@ -26,7 +26,7 @@
 ## F2 · Flujo del inversionista
 | ID | Descripción | Depende de | Tam. | Paralelo con | Estado | Plan | Revisión |
 |---|---|---|---|---|---|---|---|
-| P1 | Landing del club | F1 | M | P2, P3 | pendiente | | |
+| P1 | Landing del club (+ rebrand a la imagen de marca, ADR-009; su lenguaje visual pasa a ser la base de la app, ADR-010) | F1 | M | P2, P3 | hecho (integrado a `main`; copy ajustado con el usuario: titular "Participa…", notas del reparto sin garantía) | ADR-009 · ADR-010 · ADR-011 | verify ✅ · cumplimiento: 2 🔴 + 1 🟠 corregidos · código: 3 🟠 corregidos |
 | P2 | Registro y onboarding de riesgos | F1 | M | P1, P3 | pendiente | | |
 | P3 | Marketplace | F1 | M | P1, P2 | pendiente | | |
 | P4 | Ficha de proyecto + simulador 25/75 (prioridad 1) | P3 | L | — | pendiente | | |

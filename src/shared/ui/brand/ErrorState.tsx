@@ -20,7 +20,7 @@ export function ErrorState({
     <div
       role="alert"
       data-testid={testId}
-      className={cn("flex flex-col items-start gap-2 rounded-md border border-primary px-5 py-4 text-primary", className)}
+      className={cn("flex flex-col items-start gap-2 rounded-md border border-destructive px-5 py-4 text-destructive", className)}
     >
       <p className="font-heading text-lg font-medium">{title}</p>
       {description ? <p className="text-sm text-foreground">{description}</p> : null}

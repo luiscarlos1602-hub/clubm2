@@ -23,7 +23,7 @@ Premium, cercano y honesto. Frases cortas. Tuteo (decidido; "usted" solo en cont
 2. Cifras futuras siempre con `<ProjectionLabel>` ("Proyección · no garantizada").
 3. En portafolio, tres columnas siempre separadas: **Capital aportado · Ganancia realizada · Proyección**.
 4. Debajo de todo simulador: "Simulación ilustrativa. Los resultados dependen de la venta real, los costos y los contratos aplicables. Puedes perder parte o la totalidad de tu aporte."
-5. Banner fijo: "Datos simulados · no es una oferta de inversión".
+5. ~~Banner fijo "Datos simulados · no es una oferta de inversión"~~ — retirado por decisión del usuario (ADR-011). El componente `DemoBanner` sigue en el catálogo; el pie lleva el aviso de ejemplo y de riesgo.
 
 ## Textos legales de la demo
 Placeholder genérico revisable; nunca se presentan como contrato real.
@@ -34,3 +34,4 @@ Placeholder genérico revisable; nunca se presentan como contrato real.
 - No usar «Pronto» ni otros marcadores de tiempo en estados vacíos: «Esta sección mostrará…».
 - Los selectores de rol o escenario de la demo se rotulan como simulación y aclaran que no son una sesión real.
 - Una cifra de proyección nunca va en tamaño mayor que el capital en la misma vista; `destructive` solo para acciones irreversibles; toda tarjeta con cupos lleva el aviso de riesgo cercano.
+- Prohibido «real/reales» para describir proyectos, inmuebles o casos de la demo (permitido en «gasto real» del backoffice y «venta real» del descargo). Mientras sea demo, titular y CTA no usan verbos de transacción («Invierte», «Compra»): «Participa», «Conoce», «Explora». Todo texto sobre qué recibe el participante al liquidar dice que no está garantizado. Lo que describe el funcionamiento del club va en condicional/futuro o con «Así funcionará».

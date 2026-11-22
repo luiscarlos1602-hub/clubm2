@@ -14,7 +14,7 @@ export function EmptyState({ title, description, icon: Icon, action, className, 
   return (
     <div
       data-testid={testId}
-      className={cn("flex flex-col items-center gap-3 rounded-md border border-dashed border-laton px-6 py-12 text-center", className)}
+      className={cn("flex flex-col items-center gap-3 rounded-md border border-dashed border-line px-6 py-12 text-center", className)}
     >
       {Icon ? <Icon aria-hidden className="size-8 text-muted-foreground" /> : null}
       <p className="font-heading text-xl font-medium text-foreground">{title}</p>

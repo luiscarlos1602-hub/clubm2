@@ -12,7 +12,12 @@ describe("tokens de marca en globals.css", () => {
     expect(match![1].toLowerCase()).toBe(hex.toLowerCase());
   });
 
-  it("--destructive apunta a Arcilla (sin rojo)", () => {
-    expect(css).toMatch(/--destructive:\s*var\(--color-arcilla\)\s*;/);
+  it("no quedan tokens ni fuentes de la paleta anterior", () => {
+    expect(css).not.toMatch(/--color-(cal|grafito|laton|arcilla|piedra|verde-avila)/);
+    expect(css).not.toMatch(/font-fraunces|font-inter/);
+  });
+
+  it("--destructive apunta a Óxido (sin rojo)", () => {
+    expect(css).toMatch(/--destructive:\s*var\(--color-oxido\)\s*;/);
   });
 });

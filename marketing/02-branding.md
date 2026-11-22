@@ -1,6 +1,6 @@
 # 02 · Dirección de branding
 
-> Nombre y eslogan **[DEFINIDO por el usuario, 22-nov-2026 · ADR-003]**: **Club M² · Juntos sumamos metros.** Paleta, tipografía y tono **aceptados** el 22-nov-2026 (`docs/decisiones/ADR-005-identidad-visual-club-m2.md`).
+> Nombre y eslogan **[DEFINIDO por el usuario, 22-nov-2026 · ADR-003]**: **Club M² · Juntos sumamos metros.** Tono aceptado el 22-nov-2026 (ADR-005). Paleta, tipografía y logo según la imagen de marca (ADR-009).
 
 ## Posicionamiento
 **Para** venezolanos (en el país y en la diáspora) que quieren poner a trabajar ahorros pequeños o medianos en inmuebles reales, **Club M² es** el club de inversión inmobiliaria **que te deja ver cada operación por dentro**: la compra, la obra, los números y la venta. **A diferencia de** promesas de rentabilidad o grupos de WhatsApp sin respaldo, cada proyecto se documenta con evidencia, fechas y responsables, y se explica en comunidad.
@@ -33,41 +33,39 @@ Ejemplos:
 - ✅ "La obra va 12 días atrasada por la impermeabilización. Te contamos qué pasó."
 - ❌ "Gana 50% en 3 meses con Club M²."
 
-## Paleta "cal y arcilla" [DECIDIR]
-Inspirada en las casas venezolanas: paredes de cal, tejas de arcilla, herrajes de latón, el verde del Ávila al anochecer. Cálida y premium sin caer en el negro + dorado de las promesas de riqueza.
+## Paleta [DEFINIDO por la imagen de marca · ADR-009]
+Cuatro colores de la lámina de marca: sobria, natural, premium por el cuidado y no por el lujo.
 
 | Rol | Nombre | HEX | Uso |
 |---|---|---|---|
-| Fondo claro | Cal | `#F4EFE6` | Fondo principal de web y documentos |
-| Texto / fondo oscuro | Grafito noche | `#16181A` | Texto, modo oscuro, piezas premium |
-| Primario | Verde Ávila | `#1F3A33` | Bloques de marca, headers, botón secundario |
-| Acento | Arcilla | `#9A4529` | Botón principal (CTA), enlaces |
-| Acento suave | Arcilla clara | `#B5573A` | Ilustraciones, iconos grandes, fondos de destacado |
-| Detalle | Latón | `#B8935A` | Líneas finas, sellos, numeración de proyecto. Nunca como texto pequeño sobre claro |
-| Neutro | Piedra | `#6B655C` | Texto secundario sobre Cal |
+| Primario | Verde Profundo | `#0D1A16` | Texto, bloques de marca, botón principal, modo oscuro |
+| Fondo claro | Crema | `#F2EDE6` | Fondo principal de web y documentos; texto sobre Verde Profundo |
+| Detalle | Arena | `#C7B8A6` | Líneas finas, sellos, botón secundario. Como texto, solo sobre Verde Profundo |
+| Apoyo | Salvia | `#9AA38F` | Fondos de destacado, gráficos. Como texto, solo sobre Verde Profundo |
 
-Contraste (WCAG) verificado: Grafito sobre Cal 15,5:1 · Cal sobre Verde Ávila 10,7:1 · Arcilla `#9A4529` sobre Cal 5,6:1 · Latón sobre Grafito 6,2:1 · Piedra `#6B655C` sobre Cal 5,0:1. Latón sobre Verde Ávila (4,3:1) solo para textos grandes.
+Funcionales del producto (no van en piezas de marketing): Musgo `#55615A` (texto secundario) y Óxido `#8A4A2C` (atención).
 
-**Colores de estado** (reutilizan la paleta): positivo = Verde Ávila, en curso = Latón, atención = Arcilla. Nunca rojo/verde de bolsa. Las ruedas son internas (ADR-004) y no aparecen en piezas de marketing. <!-- copy-ok: nota interna de planificación, no es pieza pública -->
+Contraste (WCAG): Verde Profundo / Crema 15,3:1 · Arena sobre Verde Profundo 9,2:1 · Salvia sobre Verde Profundo 6,8:1 · Musgo sobre Crema 5,6:1 · Óxido sobre Crema 5,8:1. Arena y Salvia sobre Crema no llegan a 4,5:1: nunca como texto ahí.
 
-## Tipografía [SUPUESTO]
-Todas gratuitas (Google Fonts), listas para la web de la demo.
-- **Títulos:** *Fraunces* (serif con carácter, cálida, con un toque artesanal). Pesos 500–600, tamaños grandes.
-- **Texto e interfaz:** *Inter* (muy legible en móvil, tiene cifras tabulares para tablas de presupuesto).
+**Colores de estado:** positivo = Verde Profundo, en curso = Arena, atención = Óxido. Nunca rojo/verde de bolsa. Las ruedas son internas (ADR-004) y no aparecen en piezas de marketing. <!-- copy-ok: nota interna de planificación, no es pieza pública -->
+
+## Tipografía [DEFINIDO · ADR-009]
+- **Principal:** *Parkinsans* (Google Fonts): títulos (300–600, el titular combina ligera y seminegrita), texto e interfaz.
 - **Datos y códigos de proyecto:** *IBM Plex Mono* (p. ej. `M2-001`, fechas de actualización).
-- Alternativa si se quiere más sobria: *Cormorant Garamond* + *Manrope*.
+- **Rótulos:** versalitas con espaciado amplio ("CLUB DE INVERSIÓN INMOBILIARIA").
 
-## Logo (dirección, no diseño final)
-- **Wordmark** "Club M²" con Fraunces ajustada; el **"²" en latón** es el elemento gráfico de la marca.
-- **Símbolo:** el "²" solo (o una "M" con el "²"), dentro de un cuadrado de proporción 1:1, que evoca un metro cuadrado / un lote visto desde arriba. Funciona como favicon y como sello de "proyecto verificado".
-- **Sello de proyecto:** cuadrado de latón con el código `M2-001` y la fecha de compra, usado en fichas y contenido.
-- **Eslogan:** *"Juntos sumamos metros."* debajo del wordmark o a su derecha, en Inter.
+## Logo [DEFINIDO · ADR-009]
+- **Símbolo:** una casa con su cara lateral y dos vanos que suben (metros que se suman). Funciona solo como ícono de app, favicon y sello.
+- **Wordmark:** símbolo + filete vertical + "Club M²" en Parkinsans; el "²" como superíndice del mismo color.
+- **Descriptor:** "Club de inversión inmobiliaria", en versalitas espaciadas, a la derecha o debajo.
+- **Versiones:** Verde Profundo sobre Crema y Crema sobre Verde Profundo.
+- **Eslogan:** *"Juntos sumamos metros."*
 - **Escritura digital:** donde no se pueda usar "²" (dominios, usuarios, hashtags) se escribe **M2** (`clubm2.com`, `@clubm2`). En voz alta: "Club **eme dos**".
 
 ## Moodboard descriptivo
 1. **Fotografía documental**, luz natural de mañana, sin filtros saturados: manos midiendo una pared, planos sobre una mesa, una llave en una cerradura antigua.
 2. **Antes y después** en el mismo encuadre, con fecha y código del proyecto superpuestos en Plex Mono.
-3. **Texturas:** cal rugosa, baldosa hidráulica, madera de puerta vieja, latón gastado.
+3. **Texturas:** concreto y piedra clara, madera, vegetación; luz cálida de tarde sobre fachadas.
 4. **Arquitectura venezolana:** quintas de los 50, zaguanes coloniales, rejas de hierro, celosías, patios con matas. Moderno-tropical, no colonial de postal.
 5. **Personas reales** del equipo y la comunidad, en obra y en charlas. Nada de stock de ejecutivos sonriendo ni fajos de billetes.
 6. **Gráficos limpios:** barras de presupuesto vs. gasto real, línea de tiempo de la obra. Mucho aire, una sola idea por pieza.

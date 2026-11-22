@@ -1,6 +1,36 @@
 # Catálogo de `shared/ui`
 
-Importa los componentes de marca desde `@/shared/ui/brand`. Las primitivas de shadcn viven en `@/shared/ui/primitives/*` y solo usan variables semánticas (`bg-primary`, `text-muted-foreground`…) o tokens de marca (`bg-cal`, `border-laton`…). Todos los componentes de marca son Server Components, aceptan `className` y `data-testid`, y ninguno calcula dinero.
+Importa los componentes de marca desde `@/shared/ui/brand`. Las primitivas de shadcn viven en `@/shared/ui/primitives/*` y solo usan variables semánticas (`bg-primary`, `text-muted-foreground`…) o tokens de marca (`bg-crema`, `border-arena`…). Todos los componentes de marca son Server Components, aceptan `className` y `data-testid`, y ninguno calcula dinero.
+
+## Lenguaje visual (ADR-010) · `src/shared/ui/layout/`
+
+La portada (`modules/club/ui/components/landing/`) es la referencia. Toda pantalla se compone igual: `PageHeader` oscuro y luego `Section`s que alternan tono. **No pongas colores de marca a mano** (`bg-verde-profundo`, `text-crema`, `bg-salvia`, `text-arena/20`): elige un tono y usa los tokens semánticos (`bg-line`, `text-line/20`, `bg-highlight text-highlight-foreground`, `text-destructive`).
+
+| Tono (`data-tone`) | Fondo | Para |
+|---|---|---|
+| `light` | Crema | Contenido general (por defecto) |
+| `paper` | Crema aclarado | Preguntas, formularios largos |
+| `sand` | Crema + Arena | Datos, reparto, comparativas |
+| `dark` | Verde Profundo | Cabeceras, riesgos, cierres, lo que pide atención |
+
+Dentro de un tono, `bg-primary` / `text-foreground` / `text-muted-foreground` / `border-border` / `border-line` / `ring` ya tienen el valor correcto. El botón `default` es Verde Profundo sobre claro y Crema sobre oscuro; `outline` es la alternativa.
+
+### Section
+- Banda a todo el ancho con `PAGE_CONTAINER` dentro. Props: `tone?`, `spacing?` (`sm` · `md` · `lg`), `labelledBy?` o `label?`, `id?`, `ruled?` (filete arriba), `innerClassName?` (grid/gap del contenido).
+- Regla: una banda = una idea. Dos bandas seguidas del mismo tono llevan `ruled`.
+
+### PageHeader
+- Cabecera de pantalla (la portada en pequeño): `id`, `title`, `eyebrow?`, `description?`, `actions?`, `aside?`, `tone?` (`dark` por defecto), `size?`. Pone el único `h1`.
+
+### Surface
+- Tarjeta de radio 2xl: `variant` (`card` · `dark`), `padding` (`sm` · `md` · `lg`), `as`, `labelledBy?`. `dark` anida un bloque oscuro dentro de una banda clara (riesgos, reparto).
+
+### Eyebrow · IconTile · IndexLabel · BulletList · FaqList
+- `Eyebrow`: rótulo en versalitas espaciadas (Musgo sobre claro, Arena sobre oscuro).
+- `IconTile`: ícono en cuadro de marca, se invierte solo según el tono.
+- `IndexLabel n={1}` → `01` en Plex Mono (pasos, pilares).
+- `BulletList items marker` (`check` lo que tienes · `dash` riesgos y matices · `dot` notas).
+- `FaqList items`: acordeón nativo `<details>`, accesible con teclado.
 
 ## Componentes de marca (`src/shared/ui/brand/`)
 
@@ -32,7 +62,7 @@ Importa los componentes de marca desde `@/shared/ui/brand`. Las primitivas de sh
 - Archivo: `ProjectSeal.tsx`
 - Cuándo usarlo: identificar un proyecto (`M2-001`) con su fecha de compra.
 - Props clave: `code`, `date` (ISO `YYYY-MM-DD`), `dateLabel?`, `size?`.
-- No usar para: texto corrido; el Latón solo va en el borde.
+- No usar para: texto corrido; el Arena solo va en el borde.
 
 ### SectionHeading
 - Archivo: `SectionHeading.tsx`
@@ -48,7 +78,7 @@ Importa los componentes de marca desde `@/shared/ui/brand`. Las primitivas de sh
 
 ### ErrorState
 - Archivo: `ErrorState.tsx`
-- Cuándo usarlo: falló la carga de una vista. `role="alert"`, tono Arcilla (nunca rojo).
+- Cuándo usarlo: falló la carga de una vista. `role="alert"`, tono Óxido (nunca rojo).
 - Props clave: `title?`, `description?`, `action?` (reintentar).
 - No usar para: validación de formularios.
 
@@ -60,8 +90,14 @@ Importa los componentes de marca desde `@/shared/ui/brand`. Las primitivas de sh
 ### Wordmark
 - Archivo: `Wordmark.tsx`
 - Cuándo usarlo: logotipo en cabeceras y portada. Toma el nombre de `brand.ts`.
-- Props clave: `size?`, `withTagline?`.
+- Props clave: `size?`, `withTagline?`, `withSymbol?` (por defecto `true`). Hereda el color del contenedor.
 - No usar para: escribir el nombre comercial en texto; usa `brand.name`.
+
+### BrandSymbol
+- Archivo: `BrandSymbol.tsx`
+- Cuándo usarlo: el símbolo de la casa solo (favicon, ícono de app, sellos grandes, fondos de sección).
+- Props clave: `title?` (sin él es decorativo), `className` para tamaño y color (`currentColor`).
+- No usar para: reemplazar el wordmark en la cabecera.
 
 ### LegalNotice
 - Archivo: `LegalNotice.tsx`
@@ -76,7 +112,7 @@ Importa desde `@/shared/ui/app-shell`. La navegación sale de `route-map.ts`; no
 ### ZoneShell
 - Archivo: `ZoneShell.tsx` (Server Component)
 - Cuándo usarlo: único contenido de cada layout de zona (`public` · `investor` · `admin`). Incluye enlace de salto, `DemoBanner`, barra de simulación con `RoleSwitcher`, cabecera, navegación, `main#contenido` y pie.
-- Props clave: `zone`, `children`, `demoTools?` (hueco en la barra de simulación).
+- Props clave: `zone`, `children`, `demoTools?` (hueco en la barra de simulación), (siempre a todo el ancho: cada pantalla se compone con `PageHeader` y `Section`).
 - No usar para: páginas sueltas ni layouts anidados.
 
 ### RoleSwitcher
@@ -107,8 +143,8 @@ Importa desde `@/shared/ui/app-shell`. La navegación sale de `route-map.ts`; no
 ## Reglas de uso
 1. **Capital · ganancia realizada · proyección** siempre separados y rotulados. Para el portafolio, tres `MoneyDisplay` con su `kind`.
 2. Toda cifra futura lleva `ProjectionLabel`. Con `MoneyDisplay kind="projection"` ya va incluido.
-3. **Latón** solo en líneas, bordes, sellos y el "²" del wordmark; nunca como texto pequeño sobre Cal.
-4. Sin rojo ni verde de bolsa: lo negativo o de atención usa Arcilla.
+3. **Arena** y **Salvia** solo en líneas, bordes, sellos y fondos de destacado; como texto, solo sobre Verde Profundo (sobre Crema no llegan a 4,5:1).
+4. Sin rojo ni verde de bolsa: lo negativo o de atención usa Óxido.
 5. Sin ruedas en componentes compartidos (ADR-004).
 6. Los textos visibles de cada módulo van en su `copy.ts`; los avisos fijos se importan de `legal-copy.ts`.
 

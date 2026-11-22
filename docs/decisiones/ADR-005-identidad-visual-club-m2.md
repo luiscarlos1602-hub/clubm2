@@ -1,6 +1,6 @@
 # ADR-005 · Identidad visual y tono de Club M²
 
-Estado: **aceptado** (decisión del usuario, 22-nov-2026: "toma toda la referencia de marketing")
+Estado: **reemplazado por ADR-009** en paleta, tipografía y logo (22-nov-2026). Tono y estados siguen vigentes.
 Fecha: 2026-11-22
 Relacionado: ADR-003 (nombre y eslogan, del hilo de marketing)
 

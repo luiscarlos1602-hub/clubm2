@@ -31,13 +31,14 @@ Nombre comercial: **Club M²** · eslogan *"Juntos sumamos metros."* (ADR-003) �
 4. **Un solo motor de cálculo** (`modules/finance`, `modules/projects`). Ninguna pantalla calcula dinero.
 5. **Dinero en centavos** (`Money`), porcentajes en puntos básicos.
 6. **Capas**: `domain` puro ← `application` (puertos) ← `infrastructure` (adaptadores) / `ui` (hooks) ← `app/` (solo composición). Entre módulos solo por `index.ts`. Ver tabla en `01-arquitectura.md §4`.
-7. **Todo es simulado** y la UI lo dice.
+7. **Todo es simulado.** El cintillo fijo "Datos simulados" se retiró a pedido del usuario (ADR-011); la UI lo dice en el pie, el registro y las fichas. No presentes los proyectos de ejemplo como reales.
 8. **Las ruedas (buena/media/mala) son internas**: solo existen en el backoffice. Nunca aparecen en la cara pública, del inversionista ni en marketing (ADR-004).
 
 ## Cómo trabajar
 - Ciclo (skill `ciclo-funcionalidad`): Definir → Planificar (`arquitecto`) → Construir por paquetes (dominio → datos → UI, en paralelo si el plan fija contratos) → `verificar` (lo reejecuta el orquestador) → Revisar (`revisor-codigo` ∥ `revisor-cumplimiento`) → Corregir (máx. 2 rondas) → Integrar → Registrar en `docs/estado.md`.
 - El agente principal es el **único orquestador** y el único que hace commits/merge. Los subagentes entregan con `docs/plantillas/entrega.md` o `informe-revision.md` y terminan en `ESTADO:` / `VEREDICTO:`.
 - Tareas S (1–2 archivos, sin dinero ni copy de riesgo): hazlas directo, sin subagentes.
+- **Diseño:** toda pantalla usa el lenguaje de la portada (ADR-010): `PageHeader` + `Section`s con tono de `@/shared/ui/layout`. Referencia: `modules/club/ui/components/landing/`; catálogo: `src/shared/ui/README.md`.
 - Textos visibles en `src/modules/<m>/ui/copy.ts`; antes de entregar copy: `node scripts/check-copy.mjs <rutas>`.
 - Al trabajar dentro de un módulo, su `src/modules/<m>/CLAUDE.md` manda sobre lo general en detalles locales.
 - Lo que se repite 2+ veces en revisiones se convierte en lint, test o `check-copy`, no en más prosa.
@@ -62,4 +63,4 @@ node scripts/check-copy.mjs [rutas]   # disponible ya en F0
 ```
 
 ## Estado actual
-**F0 cerrada → F1 · Fundación visual** (orden de fases: ADR-007, `docs/planes/000-hoja-de-ruta.md`; prompt de arranque: `docs/prompts/F1-fundacion-visual.md`). Decisiones 🔴 respondidas el 22-nov (`docs/08` §Decisiones). Capa agéntica activa en `.claude/` (ADR-002, aceptado). El usuario trabaja **solo**: él aprueba merges y decisiones de producto. Siguiente fila: `docs/estado.md`.
+**F0 cerrada → F1 · Fundación visual (F1-1…F1-5 y rediseño/landing P1 hechos; falta F1-6 Vercel y `cerrar-fase`)** (orden de fases: ADR-007, `docs/planes/000-hoja-de-ruta.md`; prompt de arranque: `docs/prompts/F1-fundacion-visual.md`). Decisiones 🔴 respondidas el 22-nov (`docs/08` §Decisiones). Capa agéntica activa en `.claude/` (ADR-002, aceptado). El usuario trabaja **solo**: él aprueba merges y decisiones de producto. Siguiente fila: `docs/estado.md`.

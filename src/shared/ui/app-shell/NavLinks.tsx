@@ -46,7 +46,7 @@ export function NavLinks({ zone, orientation, activeId, onNavigate, className, "
                   "inline-flex min-h-11 items-center rounded-md px-3 text-[15px] text-foreground outline-none transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50",
                   vertical && "w-full border-l-2 border-transparent rounded-l-none",
                   !vertical && "border-b-2 border-transparent rounded-b-none",
-                  active && "font-medium aria-[current=page]:border-laton",
+                  active && "font-medium aria-[current=page]:border-foreground",
                 )}
               >
                 {label}

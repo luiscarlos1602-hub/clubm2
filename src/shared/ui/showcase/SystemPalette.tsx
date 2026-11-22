@@ -4,22 +4,20 @@ import { SystemSection } from "./SystemSection";
 
 /** Color de texto legible sobre cada muestra (sin literales: tokens de marca). */
 const INK: Record<BrandColorToken, string> = {
-  cal: "text-grafito",
-  grafito: "text-cal",
-  "verde-avila": "text-cal",
-  arcilla: "text-cal",
-  "arcilla-clara": "text-cal",
-  laton: "text-grafito",
-  piedra: "text-cal",
+  "verde-profundo": "text-crema",
+  crema: "text-verde-profundo",
+  arena: "text-verde-profundo",
+  salvia: "text-verde-profundo",
+  musgo: "text-crema",
+  oxido: "text-crema",
 };
 const BG: Record<BrandColorToken, string> = {
-  cal: "bg-cal",
-  grafito: "bg-grafito",
-  "verde-avila": "bg-verde-avila",
-  arcilla: "bg-arcilla",
-  "arcilla-clara": "bg-arcilla-clara",
-  laton: "bg-laton",
-  piedra: "bg-piedra",
+  "verde-profundo": "bg-verde-profundo",
+  crema: "bg-crema",
+  arena: "bg-arena",
+  salvia: "bg-salvia",
+  musgo: "bg-musgo",
+  oxido: "bg-oxido",
 };
 
 export function SystemPalette() {

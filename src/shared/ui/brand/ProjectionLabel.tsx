@@ -18,7 +18,7 @@ export function ProjectionLabel({
   const tag = (
     <span
       data-testid={testId}
-      className="inline-flex items-center gap-1.5 border-l-2 border-laton pl-2 font-mono text-xs tracking-wide text-muted-foreground"
+      className="inline-flex items-center gap-1.5 border-l-2 border-line pl-2 font-mono text-xs tracking-wide text-muted-foreground"
     >
       {LEGAL_COPY.projectionTag}
     </span>

@@ -1,7 +1,6 @@
-import { RoutePlaceholder, routeMetadata } from "@/shared/ui/app-shell";
+import { ClubLanding } from "@/modules/club";
 
-export const metadata = routeMetadata("p1");
-
+// Sin `metadata` propia: la portada usa el título por defecto del layout raíz (marca + descriptor).
 export default function HomePage() {
-  return <RoutePlaceholder routeId="p1" />;
+  return <ClubLanding />;
 }

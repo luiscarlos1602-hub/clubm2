@@ -23,9 +23,9 @@ export function ProjectSeal({
   return (
     <div
       data-testid={testId}
-      className={cn("aspect-square shrink-0 border-2 border-laton p-1 font-mono text-foreground", size === "md" ? "w-28" : "w-20", className)}
+      className={cn("aspect-square shrink-0 border-2 border-line p-1 font-mono text-foreground", size === "md" ? "w-28" : "w-20", className)}
     >
-      <div className="flex size-full flex-col items-center justify-center gap-0.5 border border-laton text-center">
+      <div className="flex size-full flex-col items-center justify-center gap-0.5 border border-line text-center">
         <span className={cn("font-medium tracking-wider", size === "md" ? "text-base" : "text-xs")}>{code}</span>
         <span className={cn("text-foreground", size === "md" ? "text-[11px]" : "text-[10px]")}>
           {dateLabel} · {formatIsoDate(date, "numeric")}

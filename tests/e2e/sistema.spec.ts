@@ -18,13 +18,14 @@ test.describe("/sistema", () => {
     expect(errors).toEqual([]);
   });
 
-  test("banner fijo de demo al inicio", async ({ page }) => {
-    await expect(page.getByTestId("demo-banner-fijo")).toHaveText(LEGAL_COPY.demoBanner);
+  test("sin cintillo fijo de datos simulados (ADR-011)", async ({ page }) => {
+    await expect(page.getByTestId("demo-banner-fijo")).toHaveCount(0);
   });
 
-  test("muestra la página y sus ocho secciones", async ({ page }) => {
+  test("muestra la página y sus nueve secciones", async ({ page }) => {
     await expect(page.getByTestId("sistema-page")).toBeVisible();
     for (const id of [
+      "sistema-tonos",
       "sistema-paleta",
       "sistema-tipografia",
       "sistema-botones",
@@ -38,7 +39,7 @@ test.describe("/sistema", () => {
     }
   });
 
-  test("paleta con los siete colores y su HEX", async ({ page }) => {
+  test("paleta con los seis colores y su HEX", async ({ page }) => {
     for (const c of brand.palette) {
       const swatch = page.getByTestId(`swatch-${c.token}`);
       await expect(swatch).toBeVisible();

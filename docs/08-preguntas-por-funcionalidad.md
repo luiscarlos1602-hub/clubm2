@@ -156,3 +156,9 @@
 | N6 | ¿"Reiniciar datos simulados" también reinicia el rol elegido? | No, solo los datos |
 | N7 | La oportunidad en due diligence (M2-007), ¿aparece en el marketplace? | No; solo en el backoffice (B2). Se confirma en P3 |
 ```
+
+## Bloque O · Landing y capital sin excedente (22-nov) 🔴
+
+| # | Pregunta | Propuesta por defecto |
+|---|---|---|
+| O1 | Si el proyecto se liquida sin excedente (o con pérdida), ¿qué parte del capital aportado se devuelve y cómo se informa? (H2 del maestro: pendiente) | Mostrar "por definir" en toda pantalla hasta decidirlo; nunca sugerir devolución del capital |

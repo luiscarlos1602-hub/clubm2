@@ -10,13 +10,13 @@ type Props = {
   children: ReactNode;
 };
 
-/** Marco común de cada bloque: filete de Latón, mucho aire, titular a la izquierda y muestra a la derecha (≥ md). */
+/** Marco común de cada bloque: filete de Arena, mucho aire, titular a la izquierda y muestra a la derecha (≥ md). */
 export function SystemSection({ id, testId, eyebrow, title, description, children }: Props) {
   return (
     <section
       data-testid={testId}
       aria-labelledby={id}
-      className="border-t border-laton/70 py-16 md:py-24"
+      className="border-t border-line/70 py-16 md:py-24"
     >
       <div className="mx-auto grid max-w-7xl gap-10 px-5 md:grid-cols-12 md:gap-x-10 md:px-10">
         <SectionHeading

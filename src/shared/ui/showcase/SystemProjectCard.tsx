@@ -17,7 +17,7 @@ export function SystemProjectCard() {
           <h3 className="font-heading text-2xl font-medium text-balance md:text-3xl">{t.projectTitle}</h3>
           <p className="text-muted-foreground">{t.zone}</p>
         </div>
-        <div className="flex flex-col gap-1 border-t border-laton/70 pt-6">
+        <div className="flex flex-col gap-1 border-t border-line/70 pt-6">
           <p className="font-medium">{t.available}</p>
           <div className="flex flex-wrap items-baseline gap-x-2 text-muted-foreground">
             <span>{t.priceLead}</span>
