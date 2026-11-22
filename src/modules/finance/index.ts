@@ -13,3 +13,11 @@ export { DEFAULT_DISTRIBUTION_SHARES, calculateDistribution } from "./domain/dis
 export { validateDistributionInput } from "./domain/validate-distribution-input";
 export type { HolderPayout } from "./domain/holder-payout";
 export { calculateHolderPayout } from "./domain/holder-payout";
+export type { ProjectEconomics } from "./domain/project-economics";
+export type {
+  SettlementId,
+  RealizedDistributionInput,
+  Settlement,
+  SettlementErrorCode,
+} from "./domain/settlement";
+export { createSettlement } from "./domain/settlement";

@@ -23,12 +23,18 @@ export function parseProjectCode(
   return ok(raw as ProjectCode);
 }
 
-/** Mínimo para F1. F1-4 puede añadir campos descriptivos (fotos, m², tipo) avisando al agente principal. */
+export type PropertyKind = "apartment" | "house";
+
+/** Inmueble. La empresa es siempre la titular legal. Las fotos llegan en P3. */
 export type Property = {
   readonly id: PropertyId;
+  /** "Caracas" | "Valencia" en la demo. */
   readonly city: string;
   /** Zona sin dirección exacta (D6). */
   readonly zone: string;
+  readonly kind: PropertyKind;
+  /** Entero > 0. */
+  readonly areaM2: number;
 };
 
 export type ProjectTimeline = {

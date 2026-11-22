@@ -6,3 +6,4 @@ Motor único de reparto 25/75 (docs/02, skill `motor-reparto`). Ninguna pantalla
 - Redondeo solo vía `shared/domain/money.ts`; sin `Date`, `Math.random` ni React en `domain/`.
 - Trampa: las funciones de `Money` lanzan `RangeError` ante precondiciones violadas; valida antes (`validateDistributionInput`).
 - En pérdida (C5) no hay reparto: `LOSS_POLICY_UNDEFINED` hasta que se defina H2.
+- Puertos en `application/ports.ts`; `infrastructure/` (semillas y repos mock) no importa otros módulos: `composition/demo-snapshot.ts` le pasa el contexto.

@@ -4,6 +4,7 @@ export type {
   PropertyId,
   ProjectCode,
   Property,
+  PropertyKind,
   ProjectTimeline,
   Project,
 } from "./domain/project";

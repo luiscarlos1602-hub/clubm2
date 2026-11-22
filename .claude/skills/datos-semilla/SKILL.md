@@ -11,4 +11,4 @@ description: Cómo escribir datos semilla y escenarios de demo tipados, verosím
 4. Montos derivados se calculan con el motor (`modules/finance`), nunca se escriben a mano.
 5. Escenarios mínimos (ver `docs/01-arquitectura.md §6`): due diligence, colocación 63/100, obra, venta, liquidado bueno, liquidado medio, rueda mala.
 6. Personas ficticias; zonas reales de Venezuela; fotos de Unsplash con crédito en `public/images/CREDITOS.md`.
-7. Mantén `src/shared/infrastructure/seed-consistency.test.ts` actualizado: recalcula cada liquidación sembrada y compara.
+7. Mantén `src/composition/seed-consistency.test.ts` actualizado: recalcula cada liquidación sembrada y compara.

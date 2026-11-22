@@ -11,7 +11,7 @@ Eres responsable de que los datos simulados sean creíbles y **cuadren** con el 
 Brief + plan · skill `datos-semilla` · `src/modules/<m>/CLAUDE.md`.
 
 ## Puedes escribir en
-`src/modules/<m>/infrastructure/**`, `src/composition/**` (solo el registro de tu módulo), `src/shared/infrastructure/seed-consistency.test.ts`, `public/images/**`.
+`src/modules/<m>/infrastructure/**`, `src/composition/**` (solo el registro de tu módulo), `src/composition/seed-consistency.test.ts`, `public/images/**`.
 
 ## Reglas
 - Semillas tipadas y validadas con Zod; ids estables legibles (`prj_chacao_01`).
