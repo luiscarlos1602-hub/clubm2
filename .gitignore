@@ -18,3 +18,4 @@ next-env.d.ts
 .pnpm-debug.log*
 *.pem
 scaffold-tmp/
+.netlify
