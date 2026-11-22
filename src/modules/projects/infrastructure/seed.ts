@@ -13,6 +13,7 @@ import {
   type Property,
   type PropertyId,
 } from "../domain/project";
+import { PROJECT_IMAGE_KINDS, type ProjectImage } from "../domain/project-image";
 import { PROJECT_STATUSES, type ProjectStatus } from "../domain/project-status";
 import { PROCESS_STEP_STATUSES, checkProjectProcess, type ProjectProcess } from "../domain/process";
 import { PROJECT_RISK_KINDS, type ProjectRisks } from "../domain/project-risk";
@@ -28,6 +29,8 @@ export type ProjectsSlice = {
   readonly processes: readonly ProjectProcess[];
   readonly updates: readonly ProjectUpdate[];
   readonly risks: readonly ProjectRisks[];
+  /** W-2. Vacío = sin imágenes guardadas (se resuelven por código). */
+  readonly images: readonly ProjectImage[];
 };
 
 const codeSchema = z.unknown().transform((raw, ctx): ProjectCode => {
@@ -63,19 +66,19 @@ export const projectSchema = z.object({
   }),
 });
 
-const profileSchema = z.object({
+export const profileSchema = z.object({
   propertyId: idSchema<"Property">(),
   description: z.string().min(1),
   highlights: z.array(z.string().min(1)).min(1).max(5),
 });
 
-const stepSchema = z.object({
+export const stepSchema = z.object({
   status: z.enum(PROCESS_STEP_STATUSES),
   offsetDays: z.number().int().min(0),
   started: z.boolean(),
 });
 
-const processSchema = z.object({
+export const processSchema = z.object({
   projectId: idSchema<"Project">(),
   steps: z.object({
     works_start: stepSchema,
@@ -95,9 +98,17 @@ const updateSchema = z.object({
   body: z.string().min(1),
 });
 
-const risksSchema = z.object({
+export const risksSchema = z.object({
   projectId: idSchema<"Project">(),
   kinds: z.array(z.enum(PROJECT_RISK_KINDS)),
+});
+
+export const imageSchema = z.object({
+  projectId: idSchema<"Project">(),
+  kind: z.enum(PROJECT_IMAGE_KINDS),
+  url: z.string().min(1),
+  alt: z.string().min(1),
+  isReference: z.boolean(),
 });
 
 export const projectsSliceSchema: z.ZodType<ProjectsSlice> = z.object({
@@ -107,6 +118,8 @@ export const projectsSliceSchema: z.ZodType<ProjectsSlice> = z.object({
   processes: z.array(processSchema),
   updates: z.array(updateSchema),
   risks: z.array(risksSchema),
+  // Snapshots guardados antes de W-2 no traen `images`: se leen sin reiniciar.
+  images: z.array(imageSchema).default([]),
 });
 
 type Scenario = {
@@ -266,5 +279,5 @@ export function buildProjectsSeed(clock: Clock): ProjectsSlice {
         `semilla de proyectos: proceso de ${process.projectId}: ${checked.error.code}`,
       );
   }
-  return projectsSliceSchema.parse({ properties, projects, ...content });
+  return projectsSliceSchema.parse({ properties, projects, ...content, images: [] });
 }

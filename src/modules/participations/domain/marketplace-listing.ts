@@ -1,9 +1,11 @@
 import {
   TARGET_TERM_MONTHS,
+  resolveProjectImages,
   toPublicStage,
   type Project,
   type ProjectCode,
   type ProjectId,
+  type ProjectImage,
   type Property,
   type PublicStage,
 } from "@/modules/projects";
@@ -48,12 +50,16 @@ export type ProjectListing = {
   readonly targetTermMonths: number | null;
   /** Solo en finished. */
   readonly settledOn: IsoDate | null;
+  /** Guardadas o, si no hay, las SVG de referencia por código (W-2). */
+  readonly images: readonly ProjectImage[];
 };
 
 export type MarketplaceSource = {
   readonly projects: readonly Project[];
   readonly properties: readonly Property[];
   readonly classes: readonly ParticipationClass[];
+  /** Imágenes guardadas de todos los proyectos; sin ellas se usa el respaldo por código. */
+  readonly images?: readonly ProjectImage[];
 };
 
 const PHASE_RANK: Readonly<Record<ListingPhase, number>> = Object.freeze({
@@ -84,6 +90,7 @@ function toListing(
   participationClass: ParticipationClass,
   stage: PublicStage,
   acquiredOn: IsoDate,
+  stored: readonly ProjectImage[],
 ): ProjectListing {
   const phase = phaseOf(stage, participationClass);
   const { total, placed } = participationClass;
@@ -101,6 +108,7 @@ function toListing(
     unitPrice: participationClass.unitPrice,
     targetTermMonths: HISTORIC_PHASES.has(phase) ? null : TARGET_TERM_MONTHS,
     settledOn: phase === "finished" ? project.timeline.settledOn : null,
+    images: resolveProjectImages(project, stored),
   };
 }
 
@@ -123,6 +131,13 @@ export function buildMarketplaceListing(source: MarketplaceSource): readonly Pro
   for (const c of source.classes)
     if (!classByProject.has(c.projectId)) classByProject.set(c.projectId, c);
 
+  const imagesByProject = new Map<ProjectId, ProjectImage[]>();
+  for (const image of source.images ?? []) {
+    const list = imagesByProject.get(image.projectId) ?? [];
+    list.push(image);
+    imagesByProject.set(image.projectId, list);
+  }
+
   const listings: ProjectListing[] = [];
   for (const project of source.projects) {
     const stage = toPublicStage(project.status);
@@ -136,7 +151,7 @@ export function buildMarketplaceListing(source: MarketplaceSource): readonly Pro
       acquiredOn === null
     )
       continue;
-    listings.push(toListing(project, property, participationClass, stage, acquiredOn));
+    listings.push(toListing(project, property, participationClass, stage, acquiredOn, imagesByProject.get(project.id) ?? []));
   }
   return listings.sort(compareListings);
 }

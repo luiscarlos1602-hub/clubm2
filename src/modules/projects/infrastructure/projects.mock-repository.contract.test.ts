@@ -6,7 +6,7 @@ import { createProjectMockRepository, createPropertyMockRepository } from "./pro
 import { createProjectMockWriter, createPropertyMockWriter } from "./projects.mock-writer";
 import { buildProjectsSeed, type ProjectsSlice } from "./seed";
 
-const EMPTY: ProjectsSlice = { properties: [], projects: [], profiles: [], processes: [], updates: [], risks: [] };
+const EMPTY: ProjectsSlice = { properties: [], projects: [], profiles: [], processes: [], updates: [], risks: [], images: [] };
 
 function subject(slice: SliceStore<ProjectsSlice>) {
   return {

@@ -29,7 +29,7 @@ export type ParticipationsModule = {
 
 export function registerParticipations(
   store: DemoStore<DemoSnapshot>,
-  projects: Pick<ProjectsModule, "projectRepository" | "propertyRepository">,
+  projects: Pick<ProjectsModule, "projectRepository" | "propertyRepository" | "mediaRepository">,
 ): ParticipationsModule {
   const source = sliceOf(store, "participations");
   const classRepository = createParticipationClassMockRepository(source);
@@ -40,6 +40,7 @@ export function registerParticipations(
       projects: projects.projectRepository,
       properties: projects.propertyRepository,
       classes: classRepository,
+      media: projects.mediaRepository,
     }),
     saveParticipationClass: createSaveParticipationClass({
       projects: projects.projectRepository,

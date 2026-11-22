@@ -56,7 +56,13 @@ export type { ProjectUpdateId, ProjectUpdate } from "./domain/project-update";
 export { sortUpdatesNewestFirst } from "./domain/project-update";
 export type { ProjectRiskKind, ProjectRisks } from "./domain/project-risk";
 export { PROJECT_RISK_KINDS, normalizeRiskKinds } from "./domain/project-risk";
-export type { ProjectContentRepository } from "./application/ports";
+export type {
+  ProjectContentRepository,
+  ProjectContentWriter,
+  ProjectMediaRepository,
+  ProjectMediaWriter,
+  ReferenceImageOption,
+} from "./application/ports";
 export type { GetProjectProcess } from "./application/get-project-process";
 // W-2 · alta de inmueble (plan 011 §3): código, slug e imágenes.
 export { nextProjectCode, buildProjectSlug } from "./domain/project-code";
