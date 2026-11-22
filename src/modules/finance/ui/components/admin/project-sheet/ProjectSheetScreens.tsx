@@ -65,7 +65,7 @@ export function ProjectSheetEditScreen({ slug }: { slug: string }) {
           ) : locked ? (
             <EmptyState icon={Building2} data-testid="admin-ficha-bloqueada" title={C.lockedTitle} description={C.lockedDescription} action={<BackLink />} />
           ) : (
-            <ProjectSheetWizard key={data.project.id} initial={sheetToForm(data)} existing={data} library={library.data ?? []} />
+            <ProjectSheetWizard key={`${data.project.id}-${sheet.dataUpdatedAt}`} initial={sheetToForm(data)} existing={data} library={library.data ?? []} />
           )}
         </AdminQueryState>
       </Section>

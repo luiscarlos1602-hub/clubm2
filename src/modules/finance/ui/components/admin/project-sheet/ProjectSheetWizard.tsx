@@ -77,6 +77,11 @@ export function ProjectSheetWizard({ initial, existing, library }: ProjectSheetW
     }
     const result = await save(form.getValues());
     if (result.ok) {
+      // Next conserva la página anterior en memoria: se deja el asistente limpio para la próxima vez.
+      if (creating) form.reset(initial);
+      setStep(0);
+      setIssues([]);
+      setReviewIssues([]);
       router.push(routeHref("b7"));
       return;
     }

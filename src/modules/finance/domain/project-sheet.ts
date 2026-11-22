@@ -91,6 +91,7 @@ export type ProjectSheetErrorCode =
   | "STATUS_CHANGE_NOT_ALLOWED" // al editar, la etapa solo cambia con W-3
   | "SHEET_LOCKED" // W2-3: sold / settled
   | "CLASS_LOCKED_BY_PLACEMENTS" // W2-2: placed > 0
+  | "PART_REMOVAL_NOT_ALLOWED" // al editar no se vacía perfil, proceso, riesgos ni clase ya guardados
   | ProcessErrorCode
   | "INVALID_ECONOMICS"
   | BudgetErrorCode

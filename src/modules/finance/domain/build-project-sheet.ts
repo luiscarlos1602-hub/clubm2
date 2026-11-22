@@ -16,6 +16,7 @@ import { ok, type DomainError, type Result } from "@/shared/domain/result";
 import { checkProjectBudget } from "./budget";
 import { checkProjectEconomics } from "./project-economics";
 import type * as Sheet from "./project-sheet";
+import { checkPartRemovals } from "./project-sheet-edit-rules";
 import * as rules from "./project-sheet-requirements";
 
 type Collect = (
@@ -180,6 +181,7 @@ export function buildProjectSheet(
   const checkedBudget = checkProjectBudget(budget, economics);
   if (!checkedBudget.ok) collect("budgetLines", checkedBudget.error);
   collect("images", rules.checkImageChoices(input.images));
+  issues.push(...checkPartRemovals(input, existing));
   issues.push(...rules.checkPublishRequirements(input, project.status));
 
   if (issues.length > 0) return { ok: false, error: issues };

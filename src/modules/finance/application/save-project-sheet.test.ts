@@ -6,7 +6,12 @@ import { usdUnits } from "@/shared/domain/money";
 import { ok } from "@/shared/domain/result";
 import { buildProjectSheet } from "../domain/build-project-sheet";
 import type { ProjectSheet } from "../domain/project-sheet";
-import { CREATE_CTX, PUBLISHABLE_INPUT, SEED_CODES, TODAY } from "../domain/project-sheet.test-fixtures";
+import {
+  CREATE_CTX,
+  PUBLISHABLE_INPUT,
+  SEED_CODES,
+  TODAY,
+} from "../domain/project-sheet.test-fixtures";
 import { createSaveProjectSheet, type SaveProjectSheetDeps } from "./save-project-sheet";
 
 let counter = 0;
@@ -43,29 +48,40 @@ describe("saveProjectSheet", () => {
   it("errores de negocio: devuelve todos con su campo y no escribe", async () => {
     const { run, save } = setup();
     const r = await run(
-      { ...PUBLISHABLE_INPUT, economics: { ...PUBLISHABLE_INPUT.economics, recoveryBudget: usdUnits(9_000) } },
+      {
+        ...PUBLISHABLE_INPUT,
+        economics: { ...PUBLISHABLE_INPUT.economics, recoveryBudget: usdUnits(9_000) },
+      },
       null,
     );
-    expect(!r.ok && r.error.some((e) => "field" in e && e.field === "economics.recoveryBudget")).toBe(true);
+    expect(
+      !r.ok && r.error.some((e) => "field" in e && e.field === "economics.recoveryBudget"),
+    ).toBe(true);
     expect(save).not.toHaveBeenCalled();
   });
 
   it("edición: conserva código y slug; compra futura se rechaza con el reloj inyectado", async () => {
     const { run } = setup({ clock: fixedClock(isoDate("2026-11-01")) });
     const r = await run(
-      { ...PUBLISHABLE_INPUT, projectId: EXISTING.project.id, project: { ...PUBLISHABLE_INPUT.project, name: "Otro" } },
+      {
+        ...PUBLISHABLE_INPUT,
+        projectId: EXISTING.project.id,
+        project: { ...PUBLISHABLE_INPUT.project, name: "Otro" },
+      },
       EXISTING.project.slug,
     );
     expect(!r.ok && r.error.some((e) => e.code === "ACQUIRED_IN_FUTURE")).toBe(true);
     const ok2 = await setup().run(
-      { ...PUBLISHABLE_INPUT, projectId: EXISTING.project.id, project: { ...PUBLISHABLE_INPUT.project, name: "Otro" } },
+      {
+        ...PUBLISHABLE_INPUT,
+        projectId: EXISTING.project.id,
+        project: { ...PUBLISHABLE_INPUT.project, name: "Otro" },
+      },
       EXISTING.project.slug,
     );
-    expect(ok2.ok && [ok2.value.project.code, ok2.value.project.slug, ok2.value.project.name]).toEqual([
-      "M2-008",
-      EXISTING.project.slug,
-      "Otro",
-    ]);
+    expect(
+      ok2.ok && [ok2.value.project.code, ok2.value.project.slug, ok2.value.project.name],
+    ).toEqual(["M2-008", EXISTING.project.slug, "Otro"]);
   });
 
   it("slug inexistente: REFERENCE_NOT_FOUND sin escribir", async () => {
@@ -81,5 +97,16 @@ describe("saveProjectSheet", () => {
     });
     const r = await run(PUBLISHABLE_INPUT, null);
     expect(!r.ok && r.error).toEqual([{ code: "DUPLICATE" }]);
+  });
+
+  it("edición que quita riesgos o perfil → PART_REMOVAL_NOT_ALLOWED y no escribe", async () => {
+    const { run, save } = setup();
+    const r = await run(
+      { ...PUBLISHABLE_INPUT, projectId: EXISTING.project.id, riskKinds: [], profile: null },
+      EXISTING.project.slug,
+    );
+    const removals = !r.ok ? r.error.filter((e) => e.code === "PART_REMOVAL_NOT_ALLOWED") : [];
+    expect(removals.map((e) => ("field" in e ? e.field : null))).toEqual(["profile", "riskKinds"]);
+    expect(save).not.toHaveBeenCalled();
   });
 });

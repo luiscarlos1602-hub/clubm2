@@ -326,6 +326,20 @@ describe("buildProjectSheet · edición", () => {
     });
   });
 
+  it("quitar riesgos o perfil ya guardados en una etapa no publicable → PART_REMOVAL_NOT_ALLOWED", () => {
+    const ctx = editCtx((s) => ({ ...s, project: { ...s.project, status: "acquired" } }));
+    const input: ProjectSheetInput = {
+      ...EDIT_INPUT,
+      project: { ...EDIT_INPUT.project, status: "acquired" },
+      riskKinds: [],
+      profile: null,
+    };
+    expect(issuesOf(input, ctx)).toEqual([
+      { code: "PART_REMOVAL_NOT_ALLOWED", field: "profile" },
+      { code: "PART_REMOVAL_NOT_ALLOWED", field: "riskKinds" },
+    ]);
+  });
+
   it("W2-3 · sold o settled → solo SHEET_LOCKED", () => {
     for (const status of ["sold", "settled"] as const) {
       const ctx = editCtx((s) => ({ ...s, project: { ...s.project, status } }));

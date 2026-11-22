@@ -16,6 +16,8 @@ export function useProjectSheet(slug: string): UseQueryResult<ProjectSheet | nul
   return useQuery<ProjectSheet | null, Error>({
     queryKey: projectSheetQueryKey(slug),
     retry: false,
+    // El asistente se reinicia al cambiar `dataUpdatedAt`: solo se relee al invalidar (guardar), no al enfocar la ventana.
+    refetchOnWindowFocus: false,
     queryFn: () => container.finance.getProjectSheet(slug),
   });
 }

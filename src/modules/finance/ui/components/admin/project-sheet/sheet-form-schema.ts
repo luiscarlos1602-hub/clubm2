@@ -115,7 +115,7 @@ export const STEP_FORM_FIELDS = [
 /** Campos de dominio (`ProjectSheetField`) que se pintan en cada paso. F aparece en economía y en participaciones. */
 export const STEP_ISSUE_FIELDS: readonly (readonly ProjectSheetField[])[] = [
   ["property.city", "property.zone", "property.kind", "property.areaM2", "project.code", "project.name", "project.status", "project.acquiredOn", "project.timeline", "profile"],
-  ["economics", "economics.recoveryBudget"],
+  ["economics"],
   ["budgetLines"],
   ["participationClass", "economics.recoveryBudget"],
   ["riskKinds", "processSteps"],
