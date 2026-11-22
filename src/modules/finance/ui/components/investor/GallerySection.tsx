@@ -15,13 +15,17 @@ const DEFAULT_VARIANT: Record<ListingPhase, ProjectImageVariant> = {
   finished: "despues",
 };
 
+const KIND_VARIANT = { before: "antes", after: "despues", projection: "proyeccion" } as const;
+
 /** Galería antes · después · proyección (imágenes de referencia). */
 export function GallerySection({ data }: { data: ProjectDetail }) {
   const { listing } = data;
+  const images: Partial<Record<ProjectImageVariant, string>> = {};
+  for (const image of listing.images) images[KIND_VARIANT[image.kind]] = image.url;
   return (
     <Section tone="paper" spacing="md" label={C.title} innerClassName="flex flex-col gap-5" data-testid="seccion-galeria">
       <p className="max-w-[60ch] text-sm text-muted-foreground">{C.description}</p>
-      <ProjectGallery code={listing.code} name={listing.name} defaultVariant={DEFAULT_VARIANT[listing.phase]} data-testid="ficha-galeria" />
+      <ProjectGallery code={listing.code} name={listing.name} defaultVariant={DEFAULT_VARIANT[listing.phase]} images={images} data-testid="ficha-galeria" />
     </Section>
   );
 }

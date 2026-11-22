@@ -9,14 +9,14 @@ const follow = (start: RouteId, n: number) => {
 };
 
 describe("route-map", () => {
-  it("tiene las 17 rutas (14 del producto + ingresar, panel y términos, ADR-012/013)", () => {
-    const expected = ["p1", "p2", "login", "terminos", "panel", "p3", "p4", "p5", "p6", "p7", "p8", "b1", "b2", "b3", "b4", "b5", "b6"];
+  it("tiene las 20 rutas (17 + listado, alta y edición de proyectos, W-2)", () => {
+    const expected = ["p1", "p2", "login", "terminos", "panel", "p3", "p4", "p5", "p6", "p7", "p8", "b1", "b2", "b3", "b4", "b5", "b6", "b7", "b8", "b9"];
     expect([...ROUTE_IDS]).toEqual(expected);
     expect(Object.keys(ROUTES).sort()).toEqual([...expected].sort());
   });
   it("hrefs únicos, con zona admin coherente", () => {
     const hrefs = ROUTE_IDS.map((id) => ROUTES[id].href);
-    expect(new Set(hrefs).size).toBe(17);
+    expect(new Set(hrefs).size).toBe(20);
     for (const id of ROUTE_IDS) {
       const r = ROUTES[id];
       expect(r.href.startsWith("/")).toBe(true);
@@ -62,6 +62,12 @@ describe("route-map", () => {
     expect(projectHref("m2-006-chacao")).toBe("/proyectos/m2-006-chacao");
     const fromPattern = "/" + ROUTES.p4.pattern.replace(/\([^)]*\)\//g, "").replace("[slug]", "m2-006-chacao");
     expect(fromPattern).toBe(projectHref("m2-006-chacao"));
+  });
+  it("el menú del admin lleva al listado de proyectos", () => {
+    expect(NAV_ITEMS.admin).toContain("b7");
+    expect(ROUTES.b7.href).toBe("/admin/proyectos");
+    expect(activeRouteId("/admin/proyectos", "admin")).toBe("b7");
+    expect(activeRouteId("/admin/proyectos/nuevo", "admin")).toBe("b7");
   });
   it("activeRouteId", () => {
     expect(activeRouteId("/proyectos/m2-001/participar", "investor")).toBe("p3");

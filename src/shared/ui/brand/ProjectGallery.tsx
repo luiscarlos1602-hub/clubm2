@@ -8,12 +8,14 @@ import { PROJECT_MEDIA_COPY } from "./project-media-copy";
 import type { TestIdProp } from "./types";
 
 const G = PROJECT_MEDIA_COPY.gallery;
-const VARIANTS: readonly ProjectImageVariant[] = ["antes", "despues", "proyeccion"];
+const ALL_VARIANTS: readonly ProjectImageVariant[] = ["antes", "despues", "proyeccion"];
 
 export type ProjectGalleryProps = TestIdProp & {
   code: string;
   name: string;
   defaultVariant?: ProjectImageVariant;
+  /** URL por variante (imágenes elegidas). Sin esta prop, las tres SVG por código; con ella, solo las variantes con URL. */
+  images?: Partial<Record<ProjectImageVariant, string>>;
 };
 
 /** Pestañas Antes · Después · Proyección (render). Teclado: flechas, Inicio y Fin. */
@@ -21,15 +23,19 @@ export function ProjectGallery({
   code,
   name,
   defaultVariant = "despues",
+  images,
   className,
   "data-testid": testId = "project-gallery",
 }: ProjectGalleryProps) {
-  const [active, setActive] = useState<ProjectImageVariant>(defaultVariant);
+  const variants = images ? ALL_VARIANTS.filter((v) => Boolean(images[v])) : ALL_VARIANTS;
+  const initial = variants.includes(defaultVariant) ? defaultVariant : variants[0];
+  const [chosen, setActive] = useState<ProjectImageVariant | undefined>(initial);
+  const active = chosen && variants.includes(chosen) ? chosen : initial;
   const uid = useId();
   const refs = useRef<Partial<Record<ProjectImageVariant, HTMLButtonElement | null>>>({});
 
   function onKeyDown(e: KeyboardEvent, index: number) {
-    const last = VARIANTS.length - 1;
+    const last = variants.length - 1;
     const next =
       e.key === "ArrowRight" ? (index === last ? 0 : index + 1)
       : e.key === "ArrowLeft" ? (index === 0 ? last : index - 1)
@@ -38,15 +44,17 @@ export function ProjectGallery({
       : null;
     if (next === null) return;
     e.preventDefault();
-    const v = VARIANTS[next]!;
+    const v = variants[next]!;
     setActive(v);
     refs.current[v]?.focus();
   }
 
+  if (!active) return null;
+
   return (
     <div data-testid={testId} data-active={active} className={cn("flex flex-col gap-3", className)}>
       <div role="tablist" aria-label={G.tablist} className="flex flex-wrap gap-2">
-        {VARIANTS.map((v, i) => (
+        {variants.map((v, i) => (
           <button
             key={v}
             ref={(el) => {
@@ -76,6 +84,7 @@ export function ProjectGallery({
         <ProjectImage
           code={code}
           variant={active}
+          src={images?.[active]}
           alt={G.alt[active](name)}
           sizes="(min-width: 1024px) 60vw, 100vw"
           className="rounded-2xl"

@@ -24,6 +24,7 @@ function listing(code: string, phase: ListingPhase): ProjectListing {
     unitPrice: { cents: 10_000, currency: "USD" },
     targetTermMonths: phase === "sold" || phase === "finished" ? null : 3,
     settledOn: phase === "finished" ? "2026-09-01" : null,
+    images: [],
   } as unknown as ProjectListing;
 }
 

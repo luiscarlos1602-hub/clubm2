@@ -29,6 +29,15 @@ const IMAGE_VARIANT: Record<ProjectListing["phase"], ProjectImageVariant> = {
   finished: "despues",
 };
 
+const KIND_VARIANT = { before: "antes", after: "despues", projection: "proyeccion" } as const;
+
+/** La imagen del tipo que toca; si el inmueble no la tiene, la primera que tenga. */
+function pickImage(listing: ProjectListing, wanted: ProjectImageVariant) {
+  const byVariant = (v: ProjectImageVariant) => listing.images.find((i) => KIND_VARIANT[i.kind] === v);
+  const image = byVariant(wanted) ?? listing.images[0];
+  return { src: image?.url, variant: image ? KIND_VARIANT[image.kind] : wanted };
+}
+
 export type ProjectCardProps = TestIdProp & { listing: ProjectListing };
 
 /** Tarjeta de un proyecto: solo presenta lo que entrega la vista; no calcula nada. */
@@ -41,6 +50,7 @@ export function ProjectCard({
   const presentation = PHASE_PRESENTATION[phase];
   const isOpen = phase === "open";
   const isHistoric = phase === "sold" || phase === "finished";
+  const image = pickImage(listing, IMAGE_VARIANT[phase]);
   return (
     <article
       data-testid={testId}
@@ -54,12 +64,13 @@ export function ProjectCard({
       <Surface padding="md" className="h-full overflow-hidden">
         <ProjectImage
           code={listing.code}
-          variant={IMAGE_VARIANT[phase]}
-          alt={C.imageAlt(listing.name, IMAGE_VARIANT[phase])}
+          variant={image.variant}
+          src={image.src}
+          alt={C.imageAlt(listing.name, image.variant)}
           className="-mx-6 -mt-6 w-[calc(100%+3rem)] md:-mx-7 md:-mt-7 md:w-[calc(100%+3.5rem)]"
           data-testid="tarjeta-imagen"
         />
-        {IMAGE_VARIANT[phase] === "proyeccion" ? <ProjectionLabel data-testid="tarjeta-imagen-proyeccion" /> : null}
+        {image.variant === "proyeccion" ? <ProjectionLabel data-testid="tarjeta-imagen-proyeccion" /> : null}
         <div className="flex items-start justify-between gap-4">
           <ProjectSeal
             code={listing.code}
