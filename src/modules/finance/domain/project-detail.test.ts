@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { usd, usdUnits } from "@/shared/domain/money";
 import { asId } from "@/shared/domain/id";
 import type { PropertyId } from "@/modules/projects";
+import { isoDate } from "@/shared/domain/calendar-date";
 import { calculateHolderPayout } from "./holder-payout";
+import { createSettlement } from "./settlement";
 import { buildProjectDetail } from "./project-detail";
 import type { ProjectDetailSource } from "./project-detail-types";
 import { OTHER, PROCESS, source, update } from "./project-detail.test-fixtures";
@@ -63,6 +65,26 @@ describe("buildProjectDetail (D5)", () => {
     expect(expected.ok && d.realized).toEqual(expected.ok ? expected.value : null);
     expect(d.realized?.capital).toEqual(usdUnits(100));
     expect(d.realized?.gain).toEqual(usd(3_430));
+  });
+
+  it("realized con pérdida (ADR-019): P 57.000 → pierde USD 13,20 y devuelve USD 86,80", () => {
+    const s = source("finished", 100);
+    const loss = createSettlement({
+      ...s.settlement!,
+      settledOn: isoDate("2026-10-01"),
+      input: { ...s.settlement!.input, salePrice: usdUnits(57_000) },
+    });
+    if (!loss.ok) throw new Error(loss.error.code);
+    const d = build({ ...s, settlement: loss.value });
+    expect(d.realized).toMatchObject({
+      basis: "realized",
+      result: "loss",
+      capital: usdUnits(100),
+      loss: usd(1_320),
+      capitalReturned: usd(8_680),
+      gain: usd(0),
+      total: usd(8_680),
+    });
   });
 
   it("finished sin liquidación → MISSING_SETTLEMENT", () => {

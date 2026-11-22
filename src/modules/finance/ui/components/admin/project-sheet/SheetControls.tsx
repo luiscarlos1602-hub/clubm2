@@ -50,10 +50,12 @@ type TextFieldProps = {
   type?: "text" | "date";
   disabled?: boolean;
   suffix?: ReactNode;
+  /** Sustituye el id y el data-testid por defecto (`ficha-<name>`); lo usa el formulario de venta (W-5). */
+  testId?: string;
 };
 
-export function TextField({ label, registration, hint, formError, issueField, issues, placeholder, inputMode, type = "text", disabled, suffix }: TextFieldProps) {
-  const id = `ficha-${registration.name}`;
+export function TextField({ label, registration, hint, formError, issueField, issues, placeholder, inputMode, type = "text", disabled, suffix, testId }: TextFieldProps) {
+  const id = testId ?? `ficha-${registration.name}`;
   const invalid = Boolean(formError) || (issueField !== undefined && issues.some((i) => i.field === issueField));
   return (
     <div className="flex flex-col gap-2">

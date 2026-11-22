@@ -28,7 +28,8 @@ describe("FinanceScreen", () => {
       expect(screen.getByTestId("finanzas-base").textContent).toContain("realizada");
       fireEvent.change(screen.getByTestId("finanzas-selector"), { target: { value: "M2-002" } });
       expect(screen.getByTestId("finanzas-base").textContent).toContain("Simulación");
-      expect(screen.getByTestId("finanzas-liquidar")).toBeTruthy();
+      // Una proyección no se liquida: el botón solo existe con una venta registrada (W-5).
+      expect(screen.queryByTestId("finanzas-liquidar")).toBeNull();
     },
   );
 });

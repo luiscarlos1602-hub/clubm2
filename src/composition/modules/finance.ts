@@ -12,11 +12,13 @@ import { createGetProjectDetail, type GetProjectDetail } from "@/modules/finance
 import type {
   ProjectBudgetRepository,
   ProjectEconomicsRepository,
+  ProjectSaleRepository,
   SettlementRepository,
 } from "@/modules/finance/application/ports";
 import {
   createProjectBudgetMockRepository,
   createProjectEconomicsMockRepository,
+  createProjectSaleMockRepository,
   createSettlementMockRepository,
 } from "@/modules/finance/infrastructure/finance.mock-repository";
 import {
@@ -33,6 +35,9 @@ import {
   createCheckPublishReadiness,
   type CheckPublishReadiness,
 } from "@/modules/finance/application/check-publish-readiness";
+import { createRecordProjectSale, type RecordProjectSale } from "@/modules/finance/application/record-project-sale";
+import { createSettleProject, type SettleProject } from "@/modules/finance/application/settle-project";
+import { createDemoSaleSettlementWriter } from "../sale-settlement.demo-writer";
 import { createDemoProjectSheetWriter } from "../project-sheet.demo-writer";
 import type { DemoSnapshot } from "../demo-snapshot";
 import type { ParticipationsModule } from "./participations";
@@ -51,6 +56,10 @@ export type FinanceModule = {
   readonly saveProjectSheet: SaveProjectSheet;
   /** W-3: requisitos S4 al publicar (acquired → funding); es el `PublishGuard` de projects. */
   readonly checkPublishReadiness: CheckPublishReadiness;
+  /** W-5: ventas reales (lectura) y los dos comandos atómicos: registrar la venta (→ sold) y liquidar (→ settled). */
+  readonly saleRepository: ProjectSaleRepository;
+  readonly recordProjectSale: RecordProjectSale;
+  readonly settleProject: SettleProject;
 };
 
 export function registerFinance(
@@ -69,6 +78,8 @@ export function registerFinance(
   const economicsRepository = createProjectEconomicsMockRepository(source);
   const settlementRepository = createSettlementMockRepository(source);
   const budgetRepository = createProjectBudgetMockRepository(source);
+  const saleRepository = createProjectSaleMockRepository(source);
+  const saleSettlementWriter = createDemoSaleSettlementWriter(store);
   const getProjectDetail = createGetProjectDetail({
     listMarketplace: deps.participations.listMarketplace,
     projects: deps.projects.projectRepository,
@@ -104,6 +115,21 @@ export function registerFinance(
     economicsRepository,
     settlementRepository,
     budgetRepository,
+    saleRepository,
+    recordProjectSale: createRecordProjectSale({
+      projects: deps.projects.projectRepository,
+      sales: saleSettlementWriter,
+      clock: deps.clock,
+    }),
+    settleProject: createSettleProject({
+      projects: deps.projects.projectRepository,
+      sales: saleRepository,
+      settlements: { ...settlementRepository, ...saleSettlementWriter },
+      economics: economicsRepository,
+      classes: deps.participations.classRepository,
+      clock: deps.clock,
+      ids: deps.ids,
+    }),
     getProjectDetail,
     getHoldingProjections: createGetHoldingProjections({
       listMarketplace: deps.participations.listMarketplace,

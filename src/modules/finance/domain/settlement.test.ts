@@ -38,14 +38,16 @@ describe("finance · createSettlement", () => {
     expect(r.value.settledOn).toBe(SETTLED_ON);
     expect(r.value.input).toEqual(input);
     expect(r.value.distribution).toEqual(engine.value);
-    expect(r.value.distribution.basis).toBe("realized");
-    expect(r.value.distribution.toExternal).toEqual(usd(500_000));
-    expect(r.value.distribution.companyDirect).toEqual(usd(1_500_000));
+    const d = r.value.distribution;
+    expect(d.basis).toBe("realized");
+    if (d.kind !== "distributed") throw new Error("se esperaba reparto");
+    expect(d.toExternal).toEqual(usd(500_000));
+    expect(d.companyDirect).toEqual(usd(1_500_000));
   });
 
   it("Liquidación · C6 realizada 63/100 igual al motor", () => {
     const r = settle(realized(4_000_000, 0, 63));
-    if (!r.ok) throw new Error("se esperaba ok");
+    if (!r.ok || r.value.distribution.kind !== "distributed") throw new Error("se esperaba reparto");
     expect(r.value.distribution.toExternal).toEqual(usd(315_000));
     expect(r.value.distribution.companyFromFund).toEqual(usd(185_000));
   });
@@ -61,7 +63,7 @@ describe("finance · createSettlement", () => {
       participations: { total: 100, placed: 88, unitPrice: usdUnits(100) },
     };
     const r = settle(input);
-    if (!r.ok) throw new Error("se esperaba ok");
+    if (!r.ok || r.value.distribution.kind !== "distributed") throw new Error("se esperaba reparto");
     const d = r.value.distribution;
     expect(d.surplus).toEqual(usd(1_209_963));
     expect(d.fund).toEqual(usd(302_490));
@@ -72,16 +74,21 @@ describe("finance · createSettlement", () => {
     expect(d.companyDirect).toEqual(usd(907_473));
   });
 
-  it("Liquidación · C5 sin política de pérdidas", () => {
-    const r = settle(realized(1_900_000, 0, 100));
-    expect(r.ok).toBe(false);
-    if (r.ok) return;
-    expect(r.error.code).toBe("LOSS_POLICY_UNDEFINED");
+  it("Liquidación · C5 con pérdida se liquida (ADR-019)", () => {
+    const input = realized(1_900_000, 0, 100);
+    const r = settle(input);
+    const engine = calculateDistribution(input);
+    if (!r.ok || !engine.ok) throw new Error("se esperaba ok");
+    expect(r.value.distribution).toEqual(engine.value);
+    const d = r.value.distribution;
+    if (d.kind !== "loss") throw new Error("se esperaba pérdida");
+    expect(d.basis).toBe("realized");
+    expect(d.returned).toEqual({ external: usd(975_000), company: usd(925_000) });
   });
 
-  it("Liquidación · excedente cero tampoco liquida (sin reparto)", () => {
+  it("Liquidación · excedente cero se liquida devolviendo el aporte (C10)", () => {
     const r = settle(realized(2_000_000, 0, 100));
-    expect(r.ok ? null : r.error.code).toBe("LOSS_POLICY_UNDEFINED");
+    expect(r.ok && r.value.distribution.kind).toBe("distributed");
   });
 
   it("Liquidación · entrada inválida propaga el código del motor", () => {

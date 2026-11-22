@@ -166,7 +166,7 @@
 |---|---|---|
 | O1 | Si el proyecto se liquida sin excedente (o con pérdida), ¿qué parte del capital aportado se devuelve y cómo se informa? (H2 del maestro: pendiente) | Mostrar "por definir" en toda pantalla hasta decidirlo; nunca sugerir devolución del capital |
 
-**Respuesta final (22-nov, ADR-019):** no se devuelve dinero antes de la venta, haya ganancia o pérdida; si hay pérdida, los inversionistas absorben el 25 % y la empresa el 75 %, con tope en el aporte de cada titular (devolución mínima 0). Falta solo confirmar que no hay prelación de cobro (ADR-019 §4). W-5 ya puede liquidar con resultado negativo. Lo que sigue queda como historial.
+**Respuesta final (22-nov, ADR-019):** no se devuelve dinero antes de la venta, haya ganancia o pérdida; si hay pérdida, los inversionistas absorben el 25 % y la empresa el 75 %, con tope en el aporte de cada titular (devolución mínima 0). Sin prelación de cobro: confirmado por el usuario el 22-nov al abrir W-5 (ADR-019 §4). W-5 ya puede liquidar con resultado negativo. Lo que sigue queda como historial.
 
 **Respuesta parcial del usuario (22-nov, Etapa 1):** no se devuelve dinero hasta que se venda el inmueble; mientras no se venda, el proceso del proyecto sigue abierto. **Por definir:** qué parte del capital se devuelve si hay pérdida, cómo se reparte la pérdida entre empresa e inversionistas y el orden de cobro (M-001). Consecuencia para W-5: no se puede liquidar con resultado negativo hasta decidirlo; la UI sigue diciendo "política de pérdidas por definir".
 
@@ -225,3 +225,13 @@
 | W2-1 | ¿En qué etapa se puede crear un inmueble y qué es "publicar"? | Crear en `opportunity`, `due_diligence`, `acquired` o `funding`; "publicar" = guardar en `funding` (única creable visible al público) y exige los campos S4 "para publicar". Las demás etapas llegan con W-3 |
 | W2-2 | ¿Se cambian total y precio de la clase con participaciones ya colocadas? | No: con colocadas > 0 quedan bloqueados (`CLASS_LOCKED_BY_PLACEMENTS`); el resto de la ficha sí se edita |
 | W2-3 | ¿Se edita la ficha de un proyecto vendido o liquidado? | No: `sold` y `settled` se abren en solo lectura (`SHEET_LOCKED`); su resultado se fija en W-5 |
+
+## Bloque W5 · Venta y liquidación (W-5, 22-nov) (respondido)
+
+| # | Pregunta | Propuesta por defecto |
+|---|---|---|
+| W5-1 | Si lo cobrado en la venta menos sus costos (P − O) no alcanza para devolver a los inversionistas lo que les toca con el espejo 25/75, ¿qué pasa? (a) la empresa pone la diferencia de su bolsillo; (b) los inversionistas reciben todo P − O repartido por participación y la empresa recibe 0 | (b): nadie pone dinero que no salió de la venta. (a) equivale a una protección parcial y exigiría revisión legal |
+| W5-2 | ¿Se puede registrar una venta con costos de venta mayores que el precio (O > P)? | No: se rechaza al registrar (`SALE_COSTS_EXCEED_PRICE`) |
+| W5-3 | ¿Se corrige una venta ya registrada? ¿Qué fecha lleva la liquidación? | En W-5 la venta no se corrige (solo con "Reiniciar datos"); la liquidación lleva la fecha de hoy; F = presupuesto integral (el gasto real llega en W-4) |
+
+**Respuesta del usuario (22-nov, al aprobar el plan 012):** W5-1 → (b), los inversionistas reciben todo P − O y la empresa 0 (ADR-019 §5). W5-2 y W5-3 → propuestas por defecto aceptadas.

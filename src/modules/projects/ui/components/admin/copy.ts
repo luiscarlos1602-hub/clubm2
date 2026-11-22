@@ -185,8 +185,6 @@ export const COMMERCIAL_COPY = {
     publishDone: "Maqueta: el inmueble quedaría publicado. No se guardó nada.",
     offer: "Registrar oferta",
     offerDone: "Maqueta: la oferta quedaría registrada. No se guardó nada.",
-    close: "Cerrar venta",
-    closeDone: "Maqueta: la venta quedaría firmada. No se guardó nada.",
   },
   stalledNote: "Estancado: más de 6 meses desde la compra sin firma de venta.",
 } as const;

@@ -6,12 +6,12 @@ export type {
   DistributionInputErrorCode,
   CapitalReturn,
   Distribution,
-  NoDistribution,
+  LossDistribution,
   DistributionOutcome,
 } from "./domain/distribution";
 export { DEFAULT_DISTRIBUTION_SHARES, calculateDistribution } from "./domain/distribution";
 export { validateDistributionInput } from "./domain/validate-distribution-input";
-export type { HolderPayout } from "./domain/holder-payout";
+export type { HolderPayout, HolderPayoutErrorCode } from "./domain/holder-payout";
 export { calculateHolderPayout } from "./domain/holder-payout";
 export type { ProjectEconomics } from "./domain/project-economics";
 export { checkProjectEconomics } from "./domain/project-economics";
@@ -22,8 +22,12 @@ export type {
   SettlementErrorCode,
 } from "./domain/settlement";
 export { createSettlement } from "./domain/settlement";
-export type { ProfitRateErrorCode } from "./domain/profit-rate";
-export { calculateProfitRate } from "./domain/profit-rate";
+export type { ProfitRateErrorCode, RecoveryRateErrorCode } from "./domain/profit-rate";
+export { calculateProfitRate, calculateRecoveryRate } from "./domain/profit-rate";
+// W-5 · venta real y entrada de liquidación (plan 012 §3).
+export type { ProjectSale, ProjectSaleErrorCode } from "./domain/project-sale";
+export { checkProjectSale } from "./domain/project-sale";
+export { buildRealizedInput } from "./domain/settlement-input";
 // P4 · ficha interconectada (plan 006 §3.3–3.4). Sigue sin exportar UI (ADR-012).
 export type {
   BudgetCategory,

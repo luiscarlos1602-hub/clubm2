@@ -44,9 +44,10 @@ describe("estimateReservation [SUPUESTO P5-1: la reserva se suma a lo colocado]"
     );
   });
 
-  it("sin excedente → no_distribution", () => {
+  it("excedente negativo → loss con la devolución calculada (ADR-019)", () => {
     const r = estimateReservation({ ...M2_006, salePrice: usdUnits(10_000) }, 1);
-    expect(r.outcome.kind).toBe("no_distribution");
+    expect(r.outcome.kind).toBe("loss");
+    if (r.outcome.kind === "loss") expect(r.outcome.payout.gain).toEqual(usd(0));
   });
 });
 
@@ -59,7 +60,7 @@ describe("reservationAmount y projectHoldingGain", () => {
     expect(projectHoldingGain(M2_006, 2)).toEqual(usd(6_860));
   });
 
-  it("sin reparto → null; tenencia mayor que la colocación → null (no proyecta menos participaciones en silencio)", () => {
+  it("en pérdida → null (el portafolio con pérdida es de W-6); tenencia mayor que la colocación → null (no proyecta menos participaciones en silencio)", () => {
     expect(projectHoldingGain({ ...M2_006, salePrice: usdUnits(10_000) }, 1)).toBeNull();
     expect(projectHoldingGain({ ...M2_006, placed: 3 }, 5)).toBeNull();
     expect(projectHoldingGain({ ...M2_006, placed: 0 }, 1)).toBeNull();

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { usd, usdUnits } from "@/shared/domain/money";
-import { calculateProfitRate } from "./profit-rate";
+import { calculateProfitRate, calculateRecoveryRate } from "./profit-rate";
 
 describe("calculateProfitRate (ADR-013)", () => {
   it("C1 · 50 de ganancia sobre 100 de capital = 50 %", () => {
@@ -22,5 +22,26 @@ describe("calculateProfitRate (ADR-013)", () => {
   it("ganancia negativa no se expresa como %", () => {
     const r = calculateProfitRate(usd(-1), usdUnits(100));
     expect(r.ok).toBe(false);
+  });
+});
+
+describe("calculateRecoveryRate (ADR-019: % del aporte que se recupera)", () => {
+  it("C5 · 97,50 devueltos sobre 100 aportados = 97,5 %", () => {
+    expect(calculateRecoveryRate(usd(9_750), usdUnits(100))).toEqual({ ok: true, value: { bps: 9750 } });
+  });
+  it("C8 · tope: 0 devuelto = 0 %", () => {
+    expect(calculateRecoveryRate(usd(0), usdUnits(100))).toEqual({ ok: true, value: { bps: 0 } });
+  });
+  it("C10 · aporte completo = 100 %", () => {
+    expect(calculateRecoveryRate(usdUnits(100), usdUnits(100))).toEqual({ ok: true, value: { bps: 10_000 } });
+  });
+  it("redondea hacia abajo al punto básico", () => {
+    expect(calculateRecoveryRate(usd(2), usd(3))).toEqual({ ok: true, value: { bps: 6666 } });
+  });
+  it("capital cero → CAPITAL_NOT_POSITIVE; devolución negativa → NEGATIVE_RETURN (sin lanzar)", () => {
+    const zero = calculateRecoveryRate(usd(0), usd(0));
+    expect(zero.ok ? null : zero.error.code).toBe("CAPITAL_NOT_POSITIVE");
+    const negative = calculateRecoveryRate(usd(-1), usdUnits(100));
+    expect(negative.ok ? null : negative.error.code).toBe("NEGATIVE_RETURN");
   });
 });

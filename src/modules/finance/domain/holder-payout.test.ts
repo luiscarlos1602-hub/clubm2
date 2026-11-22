@@ -40,7 +40,10 @@ describe("finance · calculateHolderPayout", () => {
       value: {
         basis: "projection",
         held: 1,
+        result: "gain",
         capital: usd(10_000),
+        loss: usd(0),
+        capitalReturned: usd(10_000),
         gain: usd(5_000),
         total: usd(15_000),
       },
@@ -61,8 +64,47 @@ describe("finance · calculateHolderPayout", () => {
     });
   });
 
-  it("Cobro · C5 sin política de pérdidas", () => {
-    expect(codeOf(C5, 1)).toBe("LOSS_POLICY_UNDEFINED");
+  it("Cobro C5 · pérdida: 1 participación devuelve 97,50 y pierde 2,50 (ADR-019)", () => {
+    expect(calculateHolderPayout(C5, 1)).toEqual({
+      ok: true,
+      value: {
+        basis: "projection",
+        held: 1,
+        result: "loss",
+        capital: usd(10_000),
+        loss: usd(250),
+        capitalReturned: usd(9_750),
+        gain: usd(0),
+        total: usd(9_750),
+      },
+    });
+  });
+
+  it("Cobro C10 · excedente cero: recupera el aporte sin ganancia", () => {
+    const r = calculateHolderPayout(outcome(2_000_000, 100), 4);
+    expect(r.ok && r.value).toMatchObject({
+      result: "break_even",
+      capital: usd(40_000),
+      loss: usd(0),
+      capitalReturned: usd(40_000),
+      gain: usd(0),
+      total: usd(40_000),
+    });
+  });
+
+  it("Cobro · venta en 0 (borde W5-1): la devolución mínima es 0, nunca negativa", () => {
+    const r = calculateHolderPayout(outcome(0, 100), 3);
+    expect(r.ok && r.value).toMatchObject({
+      result: "loss",
+      capital: usd(30_000),
+      loss: usd(30_000),
+      capitalReturned: usd(0),
+      total: usd(0),
+    });
+  });
+
+  it("Cobro · en pérdida también exige held ≤ colocadas", () => {
+    expect(codeOf(outcome(1_900_000, 40), 41)).toBe("HELD_OUT_OF_RANGE");
   });
 
   it("Cobro · más participaciones que colocadas", () => {

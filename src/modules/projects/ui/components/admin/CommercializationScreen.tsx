@@ -94,7 +94,6 @@ export function CommercializationScreen() {
           <div className="flex flex-wrap gap-x-6 gap-y-4">
             <MockAction label={C.actions.publish} doneMessage={C.actions.publishDone} data-testid="com-publicar" />
             <MockAction label={C.actions.offer} doneMessage={C.actions.offerDone} variant="outline" data-testid="com-oferta" />
-            <MockAction label={C.actions.close} doneMessage={C.actions.closeDone} variant="outline" data-testid="com-cerrar" />
           </div>
         </div>
       </Section>

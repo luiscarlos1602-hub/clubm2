@@ -52,6 +52,7 @@ export function buildDemoSnapshot(clock: Clock): DemoSnapshot {
       {
         projectId: p.id,
         settledOn: p.timeline.settledOn,
+        signedOn: p.timeline.saleSignedOn ?? p.timeline.settledOn,
         terms: { total: cls.total, placed: cls.placed, unitPrice: cls.unitPrice },
       },
     ];

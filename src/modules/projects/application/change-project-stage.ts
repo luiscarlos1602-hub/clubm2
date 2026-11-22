@@ -34,7 +34,7 @@ export type ChangeProjectStage = (
 /**
  * W-3. Cambia la etapa con `changeProjectStatus` (fecha efectiva = hoy del `Clock`; → acquired sella la compra),
  * comprueba la coherencia y, al pasar de interna a publicada (acquired → funding), los requisitos S4.
- * Venta y liquidación quedan para W-5 (STAGE_RESERVED_FOR_SETTLEMENT). Guarda con `ProjectWriter`. Nunca lanza.
+ * Venta y liquidación van por los comandos atómicos de finance, W-5 (STAGE_RESERVED_FOR_SETTLEMENT). Guarda con `ProjectWriter`. Nunca lanza.
  */
 export function createChangeProjectStage(deps: {
   readonly projects: ProjectWriter & Pick<ProjectRepository, "findById">;
@@ -43,7 +43,7 @@ export function createChangeProjectStage(deps: {
 }): ChangeProjectStage {
   return async (projectId, to) => {
     if ((SETTLEMENT_STAGES as readonly ProjectStatus[]).includes(to)) {
-      return err("STAGE_RESERVED_FOR_SETTLEMENT", "la venta y la liquidación se registran en W-5");
+      return err("STAGE_RESERVED_FOR_SETTLEMENT", "la venta y la liquidación se registran con sus propios comandos (registrar venta y liquidar)");
     }
     const project = await deps.projects.findById(projectId);
     if (project === null) return err("PROJECT_NOT_FOUND", `no existe el proyecto ${projectId}`);

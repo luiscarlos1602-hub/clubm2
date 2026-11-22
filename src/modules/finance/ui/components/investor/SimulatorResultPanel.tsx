@@ -3,6 +3,7 @@ import { Surface } from "@/shared/ui/layout";
 import type { SimulationResult } from "../../../domain/simulator";
 import { PROJECT_DETAIL_COPY } from "./copy";
 import { GainFigure } from "./GainFigure";
+import { LossFigures } from "./LossFigures";
 
 const C = PROJECT_DETAIL_COPY.simulator;
 
@@ -38,15 +39,19 @@ export function SimulatorResultPanel({ result, requestedHeld }: { result: Simula
             {result.heldUsed < requestedHeld ? <p className="text-sm">{C.heldAdjusted(result.heldUsed)}</p> : null}
           </>
         ) : null}
-        {outcome.kind === "no_distribution" ? (
-          <div className="flex flex-col gap-3" data-testid="simulador-sin-reparto">
-            <p className="font-heading text-2xl font-medium">{C.noDistribution}</p>
-            <p>{C.noDistributionDescription}</p>
-            <div className="flex flex-col gap-1" data-testid="simulador-capital">
-              <span className="text-sm text-muted-foreground">{C.capital}</span>
-              <span className="text-2xl font-medium">{C.capitalPending}</span>
-              <span className="text-sm">{C.capitalPendingNote}</span>
-            </div>
+        {outcome.kind === "loss" ? (
+          <div className="flex flex-col gap-4" data-testid="simulador-sin-reparto">
+            <p className="font-heading text-2xl font-medium">{C.lossTitle}</p>
+            <p>{C.lossDescription}</p>
+            <LossFigures
+              payout={outcome.payout}
+              kind="projection"
+              labels={{ capital: C.capital, loss: C.lossAmount, returned: C.capitalReturned }}
+              testIdPrefix="simulador"
+              size="lg"
+            />
+            <p className="text-sm">{C.lossNote}</p>
+            {result.heldUsed < requestedHeld ? <p className="text-sm">{C.heldAdjusted(result.heldUsed)}</p> : null}
           </div>
         ) : null}
         {outcome.kind === "no_placement" ? (

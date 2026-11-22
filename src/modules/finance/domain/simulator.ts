@@ -7,7 +7,12 @@ import {
   type Money,
 } from "@/shared/domain/money";
 import { percentage } from "@/shared/domain/percentage";
-import { calculateDistribution, type Distribution, type NoDistribution } from "./distribution";
+import {
+  calculateDistribution,
+  type Distribution,
+  type DistributionOutcome,
+  type LossDistribution,
+} from "./distribution";
 import { calculateHolderPayout, type HolderPayout } from "./holder-payout";
 
 /** Supuestos base del proyecto (todo proyección). Los arma buildProjectDetail; nunca la pantalla. */
@@ -54,10 +59,10 @@ export const SIMULATION_RANGES: {
 
 export type SimulationOutcome =
   | { readonly kind: "payout"; readonly distribution: Distribution; readonly payout: HolderPayout }
-  /** O1/H2: capital "por definir". */
-  | { readonly kind: "no_distribution"; readonly distribution: NoDistribution }
-  /** Colocación 0 (C3). */
-  | { readonly kind: "no_placement"; readonly distribution: Distribution }
+  /** Excedente < 0: pérdida espejo 25/75 (ADR-019), rotulada como escenario. */
+  | { readonly kind: "loss"; readonly distribution: LossDistribution; readonly payout: HolderPayout }
+  /** Colocación 0 (C3), con ganancia o con pérdida. */
+  | { readonly kind: "no_placement"; readonly distribution: DistributionOutcome }
   | { readonly kind: "invalid" };
 
 export type SimulationResult = {
@@ -156,11 +161,12 @@ export function simulateProjection(
   });
   if (!calculated.ok) return done({ kind: "invalid" });
   const distribution = calculated.value;
-  if (distribution.kind === "no_distribution")
-    return done({ kind: "no_distribution", distribution });
   if (heldUsed < 1) return done({ kind: "no_placement", distribution });
   const payout = calculateHolderPayout(distribution, heldUsed);
+  if (!payout.ok) return done({ kind: "invalid" });
   return done(
-    payout.ok ? { kind: "payout", distribution, payout: payout.value } : { kind: "invalid" },
+    distribution.kind === "loss"
+      ? { kind: "loss", distribution, payout: payout.value }
+      : { kind: "payout", distribution, payout: payout.value },
   );
 }

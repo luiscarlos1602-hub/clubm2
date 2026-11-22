@@ -15,7 +15,7 @@ function subject(slice: SliceStore<FinanceSlice>) {
 }
 
 const terms = { total: 100, placed: 100, unitPrice: usdUnits(100) };
-describeFinanceRepositoryContract("mock vacío", () => subject(memorySlice({ economics: [], settlements: [], budgets: [] })));
+describeFinanceRepositoryContract("mock vacío", () => subject(memorySlice({ economics: [], settlements: [], budgets: [], sales: [] })));
 describeFinanceRepositoryContract("mock con semillas", () =>
   subject(
     memorySlice(

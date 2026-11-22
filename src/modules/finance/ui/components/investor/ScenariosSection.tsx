@@ -5,6 +5,7 @@ import { Section, Surface } from "@/shared/ui/layout";
 import type { ScenarioRow } from "../../../domain/scenarios";
 import { PROJECT_DETAIL_COPY } from "./copy";
 import { GainFigure } from "./GainFigure";
+import { LossFigures } from "./LossFigures";
 
 const C = PROJECT_DETAIL_COPY.scenarios;
 
@@ -32,9 +33,18 @@ export function ScenariosSection({ rows }: { rows: readonly ScenarioRow[] }) {
                 <GainFigure gain={row.outcome.payout.gain} capital={row.outcome.payout.capital} kind="projection" label={C.gain} size="md" data-testid={`escenario-${row.id}-ganancia`} />
                 <MoneyDisplay value={row.outcome.payout.total} kind="projection" label={C.payout} size="md" />
               </>
+            ) : row.outcome.kind === "loss" ? (
+              <>
+                <LossFigures
+                  payout={row.outcome.payout}
+                  kind="projection"
+                  labels={{ capital: C.capital, loss: PROJECT_DETAIL_COPY.loss.lossProjected, returned: PROJECT_DETAIL_COPY.loss.returnedProjected }}
+                  testIdPrefix={`escenario-${row.id}`}
+                />
+                <p className="font-medium" data-testid={`escenario-${row.id}-sin-reparto`}>{C.lossName}</p>
+              </>
             ) : (
               <>
-                <p className="text-sm text-muted-foreground" data-testid={`escenario-${row.id}-capital`}>{C.capitalTbd}</p>
                 <ProjectionLabel placement="below">
                   <p className="font-medium" data-testid={`escenario-${row.id}-sin-reparto`}>{C.noDistribution}</p>
                 </ProjectionLabel>

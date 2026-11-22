@@ -118,14 +118,10 @@ describe("finance · casos canónicos (docs/02 §4)", () => {
     });
   });
 
-  it("C5 · excedente negativo sin reparto", () => {
-    expect(outcomeOf(input(1_900_000, 0, 100))).toEqual({
-      kind: "no_distribution",
-      basis: "projection",
-      surplus: usd(-100_000),
-      reason: "NON_POSITIVE_SURPLUS",
-      lossPolicy: "to_be_defined",
-    });
+  it("C5 · excedente negativo → pérdida espejo 25/75 (detalle en distribution.loss.test.ts)", () => {
+    const o = outcomeOf(input(1_900_000, 0, 100));
+    expect(o.kind).toBe("loss");
+    expect(o.surplus).toEqual(usd(-100_000));
   });
 
   it("C6 · colocación 63/100", () => {
@@ -166,10 +162,11 @@ describe("finance · redondeo y bordes", () => {
     expect(d.companyTotal).toEqual(usd(1));
   });
 
-  it("Borde · excedente cero sin reparto", () => {
-    const o = outcomeOf(input(2_000_000, 0, 100));
-    expect(o.kind).toBe("no_distribution");
-    expect(o.surplus).toEqual(usd(0));
+  it("Borde · excedente cero: reparto en 0, cada titular recupera su aporte (C10)", () => {
+    const d = distributed(input(2_000_000, 0, 100));
+    expect(d.surplus).toEqual(usd(0));
+    expect(d.fund).toEqual(usd(0));
+    expect(d.companyTotal).toEqual(usd(0));
   });
 
   it("Borde · la base realizada se conserva en la salida", () => {

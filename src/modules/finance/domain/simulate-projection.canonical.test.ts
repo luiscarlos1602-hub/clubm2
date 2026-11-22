@@ -53,7 +53,7 @@ describe("simulateProjection contra el motor (CA5, docs/02 §4)", () => {
     const r = simulateProjection(C1, applyStressPreset(C1, neutralControls(C1), "placement-0"));
     expect(r.heldUsed).toBe(0);
     expect(r.outcome.kind).toBe("no_placement");
-    if (r.outcome.kind !== "no_placement") return;
+    if (r.outcome.kind !== "no_placement" || r.outcome.distribution.kind !== "distributed") return;
     expect(r.outcome.distribution.toExternal).toEqual(usd(0));
     expect(r.outcome.distribution.companyFromFund).toEqual(usdUnits(5_000));
     expect(r.outcome.distribution.companyDirect).toEqual(usdUnits(15_000));
@@ -69,13 +69,28 @@ describe("simulateProjection contra el motor (CA5, docs/02 §4)", () => {
     expect(payout.gain).toEqual(usd(2_250));
   });
 
-  it("C5: P 19.000 → no_distribution (política de pérdidas por definir)", () => {
+  it("C5: P 19.000 → loss · pérdida 1.000 · 2,50 por participación · devuelve 97,50 (ADR-019)", () => {
     const base = { ...C1, salePrice: usdUnits(19_000) };
     const r = simulateProjection(base, neutralControls(base));
-    expect(r.outcome.kind).toBe("no_distribution");
-    if (r.outcome.kind !== "no_distribution") return;
+    expect(r.outcome.kind).toBe("loss");
+    if (r.outcome.kind !== "loss") return;
     expect(r.outcome.distribution.surplus).toEqual(usdUnits(-1_000));
-    expect(r.outcome.distribution.lossPolicy).toBe("to_be_defined");
+    expect(r.outcome.distribution.lossPerParticipation).toEqual(usd(250));
+    expect(r.outcome.payout).toMatchObject({
+      result: "loss",
+      loss: usd(250),
+      capitalReturned: usd(9_750),
+      gain: usd(0),
+      total: usd(9_750),
+    });
+  });
+
+  it("C5 sin colocadas → no_placement con la pérdida calculada", () => {
+    const base = { ...C1, salePrice: usdUnits(19_000), placed: 0 };
+    const r = simulateProjection(base, neutralControls(base));
+    expect(r.outcome.kind).toBe("no_placement");
+    if (r.outcome.kind !== "no_placement") return;
+    expect(r.outcome.distribution.kind).toBe("loss");
   });
 
   it("C6: colocación 63 → externos 3.150 · empresa del fondo 1.850 · empresa 75 % 15.000 · cobro 150", () => {
@@ -135,12 +150,12 @@ describe("cifras de la ficha M2-006 (CA3)", () => {
     expect(payout.total).toEqual(usd(13_430));
   });
 
-  it("sale-20 → sin reparto; placement-0 → sin colocación", () => {
+  it("sale-20 → pérdida (escenario); placement-0 → sin colocación", () => {
     const sale = simulateProjection(
       M2_006,
       applyStressPreset(M2_006, neutralControls(M2_006), "sale-20"),
     );
-    expect(sale.outcome.kind).toBe("no_distribution");
+    expect(sale.outcome.kind).toBe("loss");
     const none = simulateProjection(
       M2_006,
       applyStressPreset(M2_006, neutralControls(M2_006), "placement-0"),

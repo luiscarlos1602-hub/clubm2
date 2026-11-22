@@ -6,3 +6,5 @@ export { ProjectProcessBoard } from "../investor/ProjectProcessBoard";
 export { OpportunityFigures } from "./OpportunityFigures";
 // W-2 · alta y edición de inmueble (B8, B9).
 export * from "./project-sheet";
+// W-5 · registro de la venta real (B4); lo compone app/admin/comercializacion.
+export { SaleRegistration } from "./SaleRegistration";

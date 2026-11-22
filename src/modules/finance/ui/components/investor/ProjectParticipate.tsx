@@ -11,10 +11,12 @@ import { useProjectDetail } from "../../hooks/use-project-detail";
 import { useReservationEstimate } from "../../hooks/use-reservation-estimate";
 import { PROJECT_DETAIL_COPY } from "./copy";
 import { GainFigure } from "./GainFigure";
+import { LossFigures } from "./LossFigures";
 import { ProjectDetailError, ProjectDetailLoading, ProjectDetailMissing } from "./ProjectDetailStates";
 import { RangeField } from "./RangeField";
 
 const C = PROJECT_DETAIL_COPY.participate;
+const L = PROJECT_DETAIL_COPY.loss;
 
 function Confirmation({ data, quantity }: { data: ProjectDetailData; quantity: number }) {
   const K = C.confirmation;
@@ -46,6 +48,17 @@ function Estimate({ data, quantity }: { data: ProjectDetailData; quantity: numbe
           <MoneyDisplay value={outcome.payout.capital} kind="capital" label={C.amount} size="lg" data-testid="participar-monto" />
           <GainFigure gain={outcome.payout.gain} capital={outcome.payout.capital} kind="projection" label={C.gain} size="md" data-testid="participar-ganancia" />
           <MoneyDisplay value={outcome.payout.total} kind="projection" label={C.payout} size="md" data-testid="participar-cobro" />
+        </>
+      ) : outcome.kind === "loss" ? (
+        <>
+          <LossFigures
+            payout={outcome.payout}
+            kind="projection"
+            labels={{ capital: C.amount, loss: L.lossProjected, returned: L.returnedProjected }}
+            testIdPrefix="participar"
+            size="lg"
+          />
+          <p className="text-sm" data-testid="participar-sin-estimacion">{C.lossNote}</p>
         </>
       ) : (
         <>
