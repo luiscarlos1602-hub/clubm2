@@ -9,14 +9,14 @@ const follow = (start: RouteId, n: number) => {
 };
 
 describe("route-map", () => {
-  it("tiene las 16 rutas (14 del producto + ingresar y panel, ADR-012)", () => {
-    const expected = ["p1", "p2", "login", "panel", "p3", "p4", "p5", "p6", "p7", "p8", "b1", "b2", "b3", "b4", "b5", "b6"];
+  it("tiene las 17 rutas (14 del producto + ingresar, panel y términos, ADR-012/013)", () => {
+    const expected = ["p1", "p2", "login", "terminos", "panel", "p3", "p4", "p5", "p6", "p7", "p8", "b1", "b2", "b3", "b4", "b5", "b6"];
     expect([...ROUTE_IDS]).toEqual(expected);
     expect(Object.keys(ROUTES).sort()).toEqual([...expected].sort());
   });
   it("hrefs únicos, con zona admin coherente", () => {
     const hrefs = ROUTE_IDS.map((id) => ROUTES[id].href);
-    expect(new Set(hrefs).size).toBe(16);
+    expect(new Set(hrefs).size).toBe(17);
     for (const id of ROUTE_IDS) {
       const r = ROUTES[id];
       expect(r.href.startsWith("/")).toBe(true);
@@ -46,6 +46,11 @@ describe("route-map", () => {
   it("flujos", () => {
     expect(follow("p1", 6)).toEqual(["p1", "p2", "panel", "p3", "p4", "p5", "p6"]);
     expect(follow("b1", 5)).toEqual(["b1", "b2", "b3", "b4", "b5", "p6"]);
+  });
+  it("terminos es pública, tiene su href y no está en la navegación", () => {
+    expect(ROUTES.terminos.href).toBe("/terminos");
+    expect(ROUTES.terminos.zone).toBe("public");
+    expect(Object.values(NAV_ITEMS).flat()).not.toContain("terminos");
   });
   it("NAV_ITEMS por zona", () => {
     expect(NAV_ITEMS.investor.every((id) => ROUTES[id].zone === "investor")).toBe(true);

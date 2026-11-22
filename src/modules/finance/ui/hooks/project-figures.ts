@@ -1,7 +1,7 @@
 import { addDays, type IsoDate } from "@/shared/domain/calendar-date";
 import { multiplyMoney, sumMoney, type Money } from "@/shared/domain/money";
 import { HOLDING_LIMITS } from "@/modules/participations";
-import type { SimulatorBase } from "./simulate";
+import { neutralControls, simulate, type SimulatorBase, type SimulatorResult } from "./simulate";
 import type { ProjectDetailData } from "./use-project-detail";
 
 /** Entradas del simulador a partir de lo que entrega el container (proyección). */
@@ -56,4 +56,11 @@ export function dateAfterPurchase(acquiredOn: IsoDate, offsetDays: number): IsoD
 /** Resumen de la reserva simulada: cantidad × precio por participación. */
 export function reservationAmount(unitPrice: Money, quantity: number): Money {
   return multiplyMoney(unitPrice, quantity);
+}
+
+/** Estimación de una reserva de `quantity` participaciones con el motor (proyección): la reserva se suma a lo ya colocado [SUPUESTO P5-1]. */
+export function estimateReservation(data: ProjectDetailData, quantity: number): SimulatorResult {
+  const base = toSimulatorBase(data);
+  const placed = Math.min(base.total, base.placed + quantity);
+  return simulate(base, { ...neutralControls(base, quantity), placed });
 }

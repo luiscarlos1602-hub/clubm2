@@ -38,6 +38,10 @@ export const EXAMPLE_HOLDINGS: readonly ExampleHolding[] = [
 export const EXAMPLE_TOTALS = {
   capital: usdCents(100_000),
   realized: usdCents(17_250),
+  /** Capital de las tenencias liquidadas (M2-003: 5 × 10.000 ¢): base del % de la ganancia realizada. */
+  settledCapital: usdCents(50_000),
+  /** Capital de las tenencias en curso (M2-005: 30.000 ¢ + M2-006: 20.000 ¢): base del % de la proyección total. */
+  inProgressCapital: usdCents(50_000),
 } as const;
 
 /** Histórico de la liquidación de M2-003 para 5 participaciones (semilla). */

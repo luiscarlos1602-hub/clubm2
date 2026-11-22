@@ -16,6 +16,7 @@ export type RouteId =
   | "b5"
   | "b6"
   | "login"
+  | "terminos"
   | "panel";
 
 export type AppPath = `/${string}`;
@@ -45,6 +46,13 @@ export const ROUTES: Readonly<Record<RouteId, RouteEntry>> = {
     pattern: "(publico)/ingresar",
     href: "/ingresar",
     next: "panel",
+  },
+  terminos: {
+    id: "terminos",
+    zone: "public",
+    pattern: "(publico)/terminos",
+    href: "/terminos",
+    next: "p1",
   },
   panel: {
     id: "panel",
@@ -119,6 +127,7 @@ export const ROUTE_IDS: readonly RouteId[] = [
   "p1",
   "p2",
   "login",
+  "terminos",
   "panel",
   "p3",
   "p4",

@@ -19,3 +19,18 @@ export {
 export { Wordmark, type WordmarkProps } from "./Wordmark";
 export { BrandSymbol, type BrandSymbolProps } from "./BrandSymbol";
 export { LegalNotice, type LegalNoticeProps } from "./LegalNotice";
+export {
+  ProjectImage,
+  projectImageSrc,
+  type ProjectImageProps,
+  type ProjectImageVariant,
+} from "./ProjectImage";
+export { ProjectGallery, type ProjectGalleryProps } from "./ProjectGallery";
+export {
+  ProcessBoard,
+  PROCESS_STAGES,
+  PROCESS_STAGE_LABEL,
+  type ProcessBoardProps,
+  type ProcessStageId,
+  type ProcessStageView,
+} from "./ProcessBoard";

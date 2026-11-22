@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { routeHref } from "@/shared/ui/app-shell";
 import type { TestIdProp } from "@/shared/ui/brand/types";
+import { LegalNotice } from "@/shared/ui/brand";
 import { PageHeader, Section } from "@/shared/ui/layout";
 import { Button } from "@/shared/ui/primitives/button";
 import { MARKETPLACE_COPY } from "../../copy";
@@ -34,6 +35,7 @@ export function ProjectMarketplace({ className, "data-testid": testId = "pagina-
             <ArrowRight aria-hidden />
           </Link>
         </Button>
+        <LegalNotice notice="riskNotice" variant="inline" data-testid="marketplace-aviso-riesgo" />
       </Section>
     </div>
   );

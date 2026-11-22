@@ -1,8 +1,9 @@
 import { formatIsoDate } from "@/shared/lib/format-date";
-import { LegalNotice, MoneyDisplay } from "@/shared/ui/brand";
+import { MoneyDisplay } from "@/shared/ui/brand";
 import { Section, Surface } from "@/shared/ui/layout";
 import type { Settlement } from "../../../domain/settlement";
 import { PROJECT_DETAIL_COPY } from "./copy";
+import { GainFigure } from "./GainFigure";
 
 const C = PROJECT_DETAIL_COPY.realized;
 
@@ -24,7 +25,7 @@ export function RealizedResult({ settlement }: { settlement: Settlement }) {
           <p className="text-sm text-muted-foreground">{C.note}</p>
         </Surface>
         <Surface>
-          <MoneyDisplay value={d.perParticipation} kind="realized" label={C.gainPerPart} size="md" data-testid="realizado-ganancia" />
+          <GainFigure gain={d.perParticipation} capital={input.participations.unitPrice} kind="realized" label={C.gainPerPart} size="md" data-testid="realizado-ganancia" />
           <dl className="grid gap-3 border-t border-border pt-5 text-sm sm:grid-cols-3">
             <div>
               <dt className="text-muted-foreground">{C.salePrice}</dt>
@@ -42,7 +43,6 @@ export function RealizedResult({ settlement }: { settlement: Settlement }) {
         </Surface>
       </div>
       <p className="text-sm text-muted-foreground" data-testid="realizado-sin-simulador">{C.noSimulator}</p>
-      <LegalNotice notice="riskNotice" />
     </Section>
   );
 }

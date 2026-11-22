@@ -4,8 +4,9 @@ import { formatIsoDate } from "@/shared/lib/format-date";
 import { projectHref } from "@/shared/ui/app-shell";
 import {
   BrandSymbol,
-  LegalNotice,
   MoneyDisplay,
+  ProjectImage,
+  type ProjectImageVariant,
   ProjectSeal,
   ProjectionLabel,
   StatusBadge,
@@ -17,6 +18,16 @@ import { MARKETPLACE_COPY } from "../../copy";
 import { PHASE_PRESENTATION } from "./phase-presentation";
 
 const C = MARKETPLACE_COPY.card;
+
+/** Después si la obra terminó; proyección mientras no (ADR-013). */
+const IMAGE_VARIANT: Record<ProjectListing["phase"], ProjectImageVariant> = {
+  open: "proyeccion",
+  placement_complete: "proyeccion",
+  renovation: "proyeccion",
+  on_sale: "despues",
+  sold: "despues",
+  finished: "despues",
+};
 
 export type ProjectCardProps = TestIdProp & { listing: ProjectListing };
 
@@ -40,7 +51,15 @@ export function ProjectCard({
         className,
       )}
     >
-      <Surface padding="md" className="h-full">
+      <Surface padding="md" className="h-full overflow-hidden">
+        <ProjectImage
+          code={listing.code}
+          variant={IMAGE_VARIANT[phase]}
+          alt={C.imageAlt(listing.name, IMAGE_VARIANT[phase])}
+          className="-mx-6 -mt-6 w-[calc(100%+3rem)] md:-mx-7 md:-mt-7 md:w-[calc(100%+3.5rem)]"
+          data-testid="tarjeta-imagen"
+        />
+        {IMAGE_VARIANT[phase] === "proyeccion" ? <ProjectionLabel data-testid="tarjeta-imagen-proyeccion" /> : null}
         <div className="flex items-start justify-between gap-4">
           <ProjectSeal
             code={listing.code}
@@ -102,12 +121,6 @@ export function ProjectCard({
               : ""}
           </p>
         ) : null}
-        <LegalNotice
-          notice="riskNotice"
-          variant="inline"
-          className="mt-auto"
-          data-testid="tarjeta-aviso-riesgo"
-        />
       </Surface>
     </article>
   );

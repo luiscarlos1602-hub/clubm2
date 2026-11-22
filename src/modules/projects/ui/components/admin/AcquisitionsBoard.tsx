@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { CheckCircle2, Circle } from "lucide-react";
 import { MoneyDisplay } from "@/shared/ui/brand";
 import { Eyebrow, PageHeader, Section, Surface } from "@/shared/ui/layout";
@@ -10,12 +11,17 @@ import { MockAction } from "@/shared/ui/admin";
 import { useAdminProjects, type ProjectRow } from "./use-admin-projects";
 
 
+const LINK = "rounded-sm font-medium underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50";
+
 function Card({ card }: { card: BoardCard }) {
   return (
     <li data-testid={`oportunidad-${card.id}`}>
       <Surface padding="sm" className="gap-2">
         <span className="font-mono text-xs text-muted-foreground">{card.id}</span>
-        <span className="font-medium">{card.name}</span>
+        <Link href={`/admin/adquisiciones/${card.id}`} data-testid={`oportunidad-ver-${card.id}`} className={LINK}>
+          {card.name}
+          <span className="sr-only"> · {C.openDetail}</span>
+        </Link>
         <span className="text-xs text-muted-foreground">{card.zone}</span>
         <MoneyDisplay value={card.asking} kind="amount" label={C.asking} size="sm" />
         <span className="text-xs text-muted-foreground">{C.checklistOf(card.checklist.done, card.checklist.total)}</span>
@@ -29,7 +35,10 @@ function ProjectCard({ row }: { row: ProjectRow }) {
     <li data-testid={`oportunidad-${row.project.code}`}>
       <Surface padding="sm" className="gap-2">
         <span className="font-mono text-xs text-muted-foreground">{row.project.code}</span>
-        <span className="font-medium">{row.project.name}</span>
+        <Link href={`/admin/adquisiciones/${row.project.slug}`} data-testid={`oportunidad-ver-${row.project.code}`} className={LINK}>
+          {row.project.name}
+          <span className="sr-only"> · {C.openDetail}</span>
+        </Link>
         <span className="text-xs text-muted-foreground">{row.property?.city} · {row.property?.zone}</span>
       </Surface>
     </li>

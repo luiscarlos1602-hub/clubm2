@@ -73,13 +73,16 @@ test.describe("recorridos por clic", () => {
     await expect(page).toHaveURL(/\/proyectos\/m2-006-chacao\/participar$/);
     await expect(page.getByTestId("pagina-p5")).toBeVisible();
 
-    await page.getByTestId("participar-aceptar-riesgos").click();
+    await expect(page.getByTestId("participar-ganancia")).toContainText("sobre el capital");
+    await expect(page.getByTestId("participar-reservar")).toBeDisabled();
+    await page.getByTestId("participar-aceptar-terminos").click();
     await page.getByTestId("participar-reservar").click();
     await expect(page.getByTestId("participar-confirmacion")).toBeVisible();
+    await expect(page.getByTestId("participar-asesor")).toHaveText("Un asesor te contactará para confirmar tu participación");
 
-    await page.getByTestId("participar-portafolio").click();
-    await expect(page).toHaveURL(/\/portafolio$/);
-    await expect(page.getByTestId("pagina-p6")).toBeVisible();
+    await page.getByTestId("participar-proyectos").click();
+    await expect(page).toHaveURL(/\/proyectos$/);
+    await expect(page.getByTestId("pagina-p3")).toBeVisible();
     expect(errors).toEqual([]);
   });
 

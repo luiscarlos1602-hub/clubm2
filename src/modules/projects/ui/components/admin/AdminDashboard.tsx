@@ -4,8 +4,8 @@ import Link from "next/link";
 import { MoneyDisplay } from "@/shared/ui/brand";
 import { Eyebrow, PageHeader, Section, Surface } from "@/shared/ui/layout";
 import { ADMIN_COMMON, DASHBOARD_COPY as C, STAGE_LABEL, WHEEL_LABEL } from "./copy";
-import { OWN_CAPITAL_IMMOBILIZED, PLACED_BY_CODE } from "./examples";
-import { AdminKpi } from "@/shared/ui/admin";
+import { AVAILABLE_BY_CODE, OWN_CAPITAL_IMMOBILIZED, PLACED_BY_CODE } from "./examples";
+import { AdminBarChart, AdminDonut, AdminKpi } from "@/shared/ui/admin";
 import { AdminQueryState } from "@/shared/ui/admin";
 import { TableScroll } from "@/shared/ui/admin";
 import { StageBadge, WheelBadge } from "./badges";
@@ -14,13 +14,17 @@ import { useAdminProjects } from "./use-admin-projects";
 import { formatIsoDate } from "@/shared/lib/format-date";
 import { PROJECT_STATUSES } from "../../../domain/project-status";
 
+const WHEEL_COLOR = { good: 1, medium: 4, bad: 2, in_progress: 5 } as const;
+
 /** B1 · Panel de operación. Las ruedas viven solo aquí (ADR-004). */
 export function AdminDashboard() {
   const query = useAdminProjects();
   const rows = query.data ?? [];
   const byStage = countByStatus(rows);
   const stages = PROJECT_STATUSES.filter((s) => (byStage[s] ?? 0) > 0);
-  const maxCount = Math.max(1, ...stages.map((s) => byStage[s] ?? 0));
+  const placementCodes = Object.keys(PLACED_BY_CODE);
+  const wheels = wheelShares(rows);
+  const measured = wheels.filter((w) => w.count > 0);
 
   return (
     <div data-testid="pagina-b1" data-route-id="b1" className="flex flex-col">
@@ -35,20 +39,36 @@ export function AdminDashboard() {
             <AdminKpi label={C.kpis.active} hint={C.kpis.activeHint} data-testid="admin-kpi-activos">{countActive(rows)}</AdminKpi>
             <AdminKpi label={C.kpis.placed} hint={C.kpis.placedHint} data-testid="admin-kpi-colocadas">{C.kpis.placedValue}</AdminKpi>
           </div>
-          <Surface data-testid="admin-por-etapa" padding="md">
-            <Eyebrow>{C.byStage.heading}</Eyebrow>
-            <ul className="flex flex-col gap-3">
-              {stages.map((s) => (
-                <li key={s} className="grid grid-cols-[7rem_1fr_2rem] items-center gap-3 text-sm sm:grid-cols-[9rem_1fr_2rem]">
-                  <span>{STAGE_LABEL[s]}</span>
-                  <span aria-hidden className="h-2.5 overflow-hidden rounded-full bg-line/30">
-                    <span className="block h-full rounded-full bg-primary" style={{ width: `${((byStage[s] ?? 0) * 100) / maxCount}%` }} />
-                  </span>
-                  <span className="text-right tabular-nums">{byStage[s]}</span>
-                </li>
-              ))}
-            </ul>
-          </Surface>
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Surface data-testid="admin-por-etapa" padding="md">
+              <Eyebrow>{C.byStage.heading}</Eyebrow>
+              <AdminBarChart
+                ariaLabel={C.charts.stageLabel}
+                layout="categories-y"
+                height={Math.max(180, stages.length * 44)}
+                data-testid="admin-grafica-etapas"
+                series={[{ key: "count", label: C.charts.stageLabel, color: 1 }]}
+                data={stages.map((s) => ({ label: STAGE_LABEL[s], count: byStage[s] ?? 0 }))}
+              />
+            </Surface>
+            <Surface data-testid="admin-colocacion" padding="md">
+              <Eyebrow>{C.charts.placementHeading}</Eyebrow>
+              <p className="text-sm text-muted-foreground">{C.charts.placementDescription}</p>
+              <AdminBarChart
+                ariaLabel={C.charts.placementLabel}
+                layout="categories-y"
+                stacked
+                categoryWidth={64}
+                height={Math.max(220, placementCodes.length * 40)}
+                data-testid="admin-grafica-colocacion"
+                series={[
+                  { key: "placed", label: C.charts.placed, color: 1 },
+                  { key: "available", label: C.charts.available, color: 5 },
+                ]}
+                data={placementCodes.map((code) => ({ label: code, placed: PLACED_BY_CODE[code] ?? 0, available: AVAILABLE_BY_CODE[code] ?? 0 }))}
+              />
+            </Surface>
+          </div>
         </AdminQueryState>
       </Section>
 
@@ -59,8 +79,15 @@ export function AdminDashboard() {
           <p className="max-w-[62ch] text-foreground/85">{C.wheels.description}</p>
           <p className="text-sm text-muted-foreground">{ADMIN_COMMON.internalOnly}</p>
         </div>
+        <Surface data-testid="admin-ruedas-grafica" padding="md">
+          <AdminDonut
+            ariaLabel={C.charts.wheelsLabel}
+            data-testid="admin-grafica-ruedas"
+            slices={measured.map((w) => ({ label: WHEEL_LABEL[w.wheel], value: w.count, color: WHEEL_COLOR[w.wheel] }))}
+          />
+        </Surface>
         <ul className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {wheelShares(rows).map((s) => (
+          {wheels.map((s) => (
             <li key={s.wheel} data-testid={`admin-rueda-${s.wheel}`}>
               <Surface padding="sm" className="gap-1">
                 <span className="text-sm text-muted-foreground">{WHEEL_LABEL[s.wheel]}</span>

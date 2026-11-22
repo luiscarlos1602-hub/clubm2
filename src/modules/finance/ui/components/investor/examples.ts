@@ -1,4 +1,5 @@
 import { usd, type Money } from "@/shared/domain/money";
+import type { ProcessStep, ProcessSteps } from "../../types";
 
 /**
  * Datos de ejemplo de la ficha P4 (maqueta, plan 007 paquete C). Nada de esto existe aún en el dominio.
@@ -9,15 +10,6 @@ import { usd, type Money } from "@/shared/domain/money";
  */
 
 export type BudgetLine = { readonly label: string; readonly amount: Money };
-export type MilestoneStatus = "done" | "current" | "upcoming";
-export type Milestone = {
-  readonly label: string;
-  readonly status: MilestoneStatus;
-  /** Días tras la compra (fecha real del hito); null si aún no ocurre. */
-  readonly offsetDays: number | null;
-  /** Mes objetivo desde la compra (proyección); solo en hitos futuros. */
-  readonly targetMonth: number | null;
-};
 export type ProjectUpdate = { readonly offsetDays: number; readonly title: string; readonly text: string };
 
 export type ProjectExample = {
@@ -27,7 +19,8 @@ export type ProjectExample = {
   readonly works: readonly BudgetLine[];
   /** Bolsa de gestión (suma USD 5.000). Los honorarios son parte del presupuesto, no una ganancia adicional. */
   readonly fees: readonly BudgetLine[];
-  readonly milestones: readonly Milestone[];
+  /** Tablero de proceso: fechas coherentes con la fase y la semilla (hoy = 22-nov-2026 en la semilla). */
+  readonly process: ProcessSteps;
   readonly updates: readonly ProjectUpdate[];
   readonly risks: readonly string[];
 };
@@ -44,9 +37,10 @@ const COMMON_RISKS = [
   "La venta puede tardar más que el plazo objetivo.",
 ] as const;
 
-const done = (label: string, offsetDays: number): Milestone => ({ label, status: "done", offsetDays, targetMonth: null });
-const current = (label: string, offsetDays: number | null = null): Milestone => ({ label, status: "current", offsetDays, targetMonth: null });
-const upcoming = (label: string, targetMonth: number): Milestone => ({ label, status: "upcoming", offsetDays: null, targetMonth });
+const d = (offsetDays: number): ProcessStep => ({ status: "done", offsetDays, started: true });
+/** Etapa en curso: `started` = ya empezó (fecha real); si no, la fecha es estimada. */
+const c = (offsetDays: number, started = true): ProcessStep => ({ status: "current", offsetDays, started });
+const u = (offsetDays: number): ProcessStep => ({ status: "upcoming", offsetDays, started: false });
 
 /** Clave = slug de la semilla de projects (M2-001…M2-006). M2-007 no se publica y no tiene ficha. */
 export const PROJECT_EXAMPLES = {
@@ -60,7 +54,7 @@ export const PROJECT_EXAMPLES = {
       { label: "Electricidad y plomería", amount: usd(110_000) }, // ejemplo
     ],
     fees: FEES,
-    milestones: [done("Compra del inmueble", 0), done("Reforma terminada", 62), done("Publicado en venta", 70), done("Firma de venta", 140), done("Liquidación", 160)],
+    process: { "inicio-obra": d(7), "obra-50": d(30), "obra-80": d(50), "inicio-venta": d(62), "en-venta": d(70), vendida: d(140) },
     updates: [
       { offsetDays: 160, title: "Liquidación realizada", text: "Se cerró la liquidación del proyecto y se registró el resultado realizado." },
       { offsetDays: 140, title: "Venta firmada", text: "Se firmó la venta del inmueble." },
@@ -79,7 +73,7 @@ export const PROJECT_EXAMPLES = {
       { label: "Jardín y exteriores", amount: usd(60_000) }, // ejemplo
     ],
     fees: FEES,
-    milestones: [done("Compra del inmueble", 0), done("Reforma terminada", 120), done("Publicado en venta", 135), current("Venta en curso"), upcoming("Firma de venta", 6)],
+    process: { "inicio-obra": d(10), "obra-50": d(50), "obra-80": d(100), "inicio-venta": d(120), "en-venta": c(135), vendida: u(300) },
     updates: [
       { offsetDays: 210, title: "Visitas de interesados", text: "Se atendieron nuevas visitas y se recibieron comentarios sobre precio y acabados." },
       { offsetDays: 135, title: "Publicada en venta", text: "La casa se publicó en los canales de venta de la empresa." },
@@ -97,7 +91,7 @@ export const PROJECT_EXAMPLES = {
       { label: "Electricidad y plomería", amount: usd(120_000) }, // ejemplo
     ],
     fees: FEES,
-    milestones: [done("Compra del inmueble", 0), done("Reforma terminada", 35), done("Publicado en venta", 42), done("Firma de venta", 75), done("Liquidación", 90)],
+    process: { "inicio-obra": d(3), "obra-50": d(15), "obra-80": d(28), "inicio-venta": d(35), "en-venta": d(42), vendida: d(75) },
     updates: [
       { offsetDays: 90, title: "Liquidación realizada", text: "Se cerró la liquidación y se registró el resultado realizado." },
       { offsetDays: 75, title: "Venta firmada", text: "Se firmó la venta del inmueble." },
@@ -115,7 +109,7 @@ export const PROJECT_EXAMPLES = {
       { label: "Carpintería", amount: usd(120_000) }, // ejemplo
     ],
     fees: FEES,
-    milestones: [done("Compra del inmueble", 0), done("Reforma terminada", 60), done("Publicado en venta", 75), current("Venta en curso"), upcoming("Firma de venta", 4)],
+    process: { "inicio-obra": d(5), "obra-50": d(25), "obra-80": d(45), "inicio-venta": d(60), "en-venta": c(75), vendida: u(125) },
     updates: [
       { offsetDays: 98, title: "Visitas programadas", text: "Se programaron visitas con interesados en la zona." },
       { offsetDays: 75, title: "Publicado en venta", text: "El apartamento se publicó para la venta." },
@@ -133,7 +127,7 @@ export const PROJECT_EXAMPLES = {
       { label: "Electricidad y plomería", amount: usd(110_000) }, // ejemplo
     ],
     fees: FEES,
-    milestones: [done("Compra del inmueble", 0), done("Demolición y preparación", 14), current("Reforma en curso"), upcoming("Publicación en venta", 2), upcoming("Firma de venta", 3)],
+    process: { "inicio-obra": d(7), "obra-50": c(50, false), "obra-80": u(58), "inicio-venta": u(62), "en-venta": u(66), vendida: u(100) },
     updates: [
       { offsetDays: 38, title: "Instalaciones eléctricas", text: "Avanza el cambio de instalaciones eléctricas y de plomería." },
       { offsetDays: 21, title: "Demolición terminada", text: "Terminó la demolición de la cocina y los baños." },
@@ -151,7 +145,7 @@ export const PROJECT_EXAMPLES = {
       { label: "Electricidad y plomería", amount: usd(110_000) }, // ejemplo
     ],
     fees: FEES,
-    milestones: [done("Compra del inmueble", 0), current("Colocación de participaciones"), upcoming("Inicio de obra", 1), upcoming("Publicación en venta", 3)],
+    process: { "inicio-obra": c(30, false), "obra-50": u(60), "obra-80": u(78), "inicio-venta": u(90), "en-venta": u(94), vendida: u(125) },
     updates: [
       { offsetDays: 9, title: "Presupuesto de obra definido", text: "Se cerró el presupuesto de reforma con sus rubros y honorarios." },
       { offsetDays: 3, title: "Colocación abierta", text: "Se abrió la colocación de participaciones económicas del proyecto." },

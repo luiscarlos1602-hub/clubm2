@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { projectHref, routeHref } from "@/shared/ui/app-shell";
-import { LegalNotice } from "@/shared/ui/brand";
 import { Section } from "@/shared/ui/layout";
 import { Button } from "@/shared/ui/primitives/button";
 import type { ProjectListing } from "@/modules/participations";
@@ -18,7 +17,6 @@ export function ParticipateCta({ listing }: { listing: ProjectListing }) {
         {C.title}
       </h2>
       <p className="max-w-[60ch] text-muted-foreground">{isOpen ? C.openDescription : C.closedDescription}</p>
-      <LegalNotice notice="riskNotice" />
       {isOpen ? (
         <Button asChild size="lg">
           <Link href={`${projectHref(listing.slug)}/participar`} data-testid="ficha-participar-final">

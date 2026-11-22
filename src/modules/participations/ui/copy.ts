@@ -1,5 +1,5 @@
 /** Textos de la vista de proyectos (P3). Revisión: skill copy-sin-promesas + check-copy.
- *  El aviso de riesgo y la etiqueta de proyección salen de LEGAL_COPY, no de aquí. */
+ *  El aviso de riesgo (uno por página) y la etiqueta de proyección salen de LEGAL_COPY, no de aquí. */
 export const MARKETPLACE_COPY = {
   header: {
     eyebrow: "Proyectos",
@@ -60,6 +60,10 @@ export const MARKETPLACE_COPY = {
       finished: "Histórico · proyecto finalizado",
     },
     settledOn: "Liquidado el",
+    imageAlt: (name: string, variant: "antes" | "despues" | "proyeccion") =>
+      variant === "proyeccion"
+        ? `${name}: render ilustrativo de la reforma prevista`
+        : `${name}: ilustración del inmueble renovado`,
     cta: (name: string) => `Ver la ficha de ${name}`,
   },
   nextStep: {

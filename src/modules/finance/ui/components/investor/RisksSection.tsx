@@ -1,10 +1,11 @@
-import { LegalNotice } from "@/shared/ui/brand";
+import { routeHref } from "@/shared/ui/app-shell";
+import Link from "next/link";
 import { BulletList, Section } from "@/shared/ui/layout";
 import { PROJECT_DETAIL_COPY } from "./copy";
 
 const C = PROJECT_DETAIL_COPY.risks;
 
-/** Riesgos del proyecto, en banda oscura con el aviso fijo. */
+/** Riesgos del proyecto, en banda oscura; los riesgos completos están en /terminos. El aviso fijo va en los puntos clave, no aquí. */
 export function RisksSection({ risks }: { risks: readonly string[] }) {
   return (
     <Section tone="dark" spacing="md" labelledBy="titulo-riesgos" innerClassName="grid gap-8 lg:grid-cols-2" data-testid="seccion-riesgos">
@@ -13,7 +14,13 @@ export function RisksSection({ risks }: { risks: readonly string[] }) {
           {C.title}
         </h2>
         <p className="max-w-[60ch]">{C.description}</p>
-        <LegalNotice notice="riskNotice" className="text-foreground" />
+        <Link
+          href={routeHref("terminos")}
+          className="w-fit underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          data-testid="riesgos-terminos"
+        >
+          {C.termsLink}
+        </Link>
       </div>
       <BulletList items={[...risks, C.capitalNote]} marker="dash" />
     </Section>

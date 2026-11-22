@@ -32,7 +32,7 @@ describe("LoginForm", () => {
 });
 
 describe("RegisterWizard", () => {
-  it("recorre los tres pasos y exige las cuatro casillas de riesgo", () => {
+  it("recorre los tres pasos y exige los cuatro puntos de riesgo y los términos", () => {
     render(<RegisterWizard />);
     expect(screen.getByTestId("registro-paso-datos")).toBeTruthy();
     fireEvent.click(screen.getByTestId("registro-continuar"));
@@ -40,7 +40,10 @@ describe("RegisterWizard", () => {
     fireEvent.click(screen.getByTestId("registro-continuar"));
     const finish = screen.getByTestId("registro-continuar") as HTMLButtonElement;
     expect(finish.disabled).toBe(true);
-    for (const box of screen.getAllByRole("checkbox")) fireEvent.click(box);
+    expect(screen.getByTestId("registro-terminos-enlace").getAttribute("href")).toBe("/terminos");
+    for (const box of screen.getAllByRole("checkbox").slice(0, 4)) fireEvent.click(box);
+    expect(finish.disabled).toBe(true);
+    fireEvent.click(screen.getByTestId("registro-terminos"));
     expect(finish.disabled).toBe(false);
     fireEvent.click(finish);
     expect(push).toHaveBeenCalledWith("/panel");

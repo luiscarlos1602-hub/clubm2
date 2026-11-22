@@ -3,12 +3,15 @@
 import { useState } from "react";
 import { MoneyDisplay } from "@/shared/ui/brand";
 import { Surface } from "@/shared/ui/layout";
-import { MockAction } from "@/shared/ui/admin";
+import { usd } from "@/shared/domain/money";
+import { formatMoney } from "@/shared/lib/format-money";
+import { AdminDonut, MockAction } from "@/shared/ui/admin";
 import { FINANCE_ADMIN_COPY } from "./copy";
 import { settlementView } from "./settlement-view";
 import type { FinanceRow } from "./use-admin-finance";
 
 const C = FINANCE_ADMIN_COPY.settlement;
+const CHARTS = FINANCE_ADMIN_COPY.charts;
 
 /** Resultado del motor para el proyecto elegido. Realizado si ya está liquidado; si no, proyección. */
 export function SettlementPanel({ rows }: { rows: readonly FinanceRow[] }) {
@@ -63,6 +66,22 @@ export function SettlementPanel({ rows }: { rows: readonly FinanceRow[] }) {
             <MoneyDisplay value={out.toExternal} kind={kind} label={C.toExternal} data-testid="finanzas-externos" />
             <MoneyDisplay value={out.companyTotal} kind={kind} label={C.companyTotal} data-testid="finanzas-empresa" />
             <MoneyDisplay value={out.roundingResidue} kind={kind} label={C.residue} data-testid="finanzas-residuo" />
+          </div>
+          <div className="flex flex-col gap-3 border-t border-border pt-6" data-testid="finanzas-grafica-reparto">
+            <h3 className="font-heading text-lg font-semibold">{CHARTS.splitHeading}</h3>
+            {out.toExternal.cents + out.companyTotal.cents > 0 ? (
+              <AdminDonut
+                ariaLabel={CHARTS.splitLabel}
+                data-testid="finanzas-anillo-reparto"
+                format={(v) => formatMoney(usd(v))}
+                slices={[
+                  { label: CHARTS.splitToExternal, value: out.toExternal.cents, color: 4 },
+                  { label: CHARTS.splitToCompany, value: out.companyTotal.cents, color: 1 },
+                ]}
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground" data-testid="finanzas-reparto-vacio">{CHARTS.splitNone}</p>
+            )}
           </div>
           <div className="grid gap-5 border-t border-border pt-6 sm:grid-cols-2">
             <MoneyDisplay value={out.capital.external} kind="capital" label={C.capitalExternal} data-testid="finanzas-capital-externo" />

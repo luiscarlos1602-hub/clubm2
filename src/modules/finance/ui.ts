@@ -3,3 +3,5 @@ export * from "./ui/components/investor";
 // Proyección base por tenencia: la misma cuenta del simulador de la ficha, para panel y portafolio.
 export { projectHolding, useHoldingProjections, type HoldingProjections, type HoldingProjectionRequest } from "./ui/hooks/holding-projection";
 export { loadProjectDetail, type ProjectDetailData } from "./ui/hooks/use-project-detail";
+export { profitRateLabel, PROFIT_RATE_COPY } from "./ui/hooks/profit-rate";
+export { processStagesFor } from "./ui/hooks/process-stages";

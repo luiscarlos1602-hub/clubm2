@@ -59,6 +59,16 @@ export const DASHBOARD_COPY = {
     none: "Sin compra todavía",
   },
   table: { heading: "Proyectos", placement: "Colocación", detail: "Ver obra" },
+  charts: {
+    heading: "Vista gráfica",
+    stageLabel: "Proyectos por etapa (cantidad)",
+    placementHeading: "Colocación por proyecto",
+    placementDescription: "Participaciones colocadas y disponibles de cada proyecto publicado (de 100).",
+    placementLabel: "Participaciones colocadas y disponibles por proyecto",
+    placed: "Colocadas",
+    available: "Disponibles",
+    wheelsLabel: "Ruedas de los proyectos medidos (cantidad)",
+  },
 } as const;
 
 export const ACQUISITIONS_COPY = {
@@ -87,55 +97,61 @@ export const ACQUISITIONS_COPY = {
     discarded: "Maqueta: M2-007 quedaría descartada. No se guardó nada.",
   },
   boardLabel: "Tablero de oportunidades",
+  openDetail: "Ver detalle",
 } as const;
 
-export const WORKS_COPY = {
-  eyebrow: "Backoffice · B3",
-  title: "Proyecto y obra",
-  description: "Presupuesto frente a gasto, hitos y avances que verá el inversionista. Cifras de ejemplo.",
-  notFound: { title: "No encontramos ese proyecto", description: "Revisa el enlace o vuelve al panel.", action: "Volver al panel" },
-  noWorks: { title: "Todavía no hay obra", description: "El proyecto está antes de la compra: no hay presupuesto de reforma asignado." },
-  budget: {
-    heading: "Presupuesto de recuperación frente a gasto",
-    description:
-      "Lo presupuestado, lo devengado y lo remanente se registran por separado. Los honorarios no se cuentan como utilidad adicional.",
-    budgeted: "Presupuestado",
-    spent: "Devengado o gastado",
-    remaining: "Remanente",
-    over: "Sobre el presupuesto",
-    lines: {
-      works: "Obra",
-      management_fee: "Honorarios de gestión",
-      contingency: "Contingencia",
-      reserve: "Reserva",
-    },
-    note: "Bolsa mixta de honorarios y contingencia (maestro §6).",
+export const OPPORTUNITY_COPY = {
+  eyebrow: "Backoffice · B2",
+  back: "Volver al tablero",
+  titleFallback: "Oportunidad",
+  notFound: { title: "No encontramos esa oportunidad", description: "Revisa el enlace o vuelve al tablero.", action: "Volver al tablero" },
+  stageLabel: { opportunity: "Oportunidad", due_diligence: "Due diligence", offer: "Oferta", acquired: "Comprado" },
+  property: {
+    heading: "Inmueble",
+    galleryNote: "Imágenes de referencia del tipo de inmueble; se reemplazan por fotos reales de la visita.",
+    kind: "Tipo",
+    zone: "Zona",
+    area: "Superficie",
+    rooms: "Habitaciones",
+    bathrooms: "Baños",
+    parking: "Puestos de estacionamiento",
+    condition: "Estado general",
+    source: "Origen de la oportunidad",
+    areaValue: (m2: number) => `${m2} m²`,
+    kinds: { apartment: "Apartamento", house: "Casa", duplex: "Dúplex" },
   },
-  milestones: {
-    heading: "Hitos",
+  dd: {
+    heading: "Due diligence",
+    description: "Revisión legal, técnica y financiera antes de la oferta. Estado de ejemplo.",
+    progress: (done: number, total: number) => `${done} de ${total} revisiones hechas`,
     done: "Hecho",
-    current: "En curso",
-    upcoming: "Próximo",
+    pending: "Pendiente",
+    listLabel: "Revisiones de due diligence",
   },
-  orders: {
-    heading: "Órdenes de trabajo",
-    columns: { order: "Orden", contractor: "Contratista", budget: "Presupuesto", status: "Estado" },
+  figures: {
+    heading: "Cifras de compra y presupuesto",
+    description: "Cifras de ejemplo: la compra la financia la empresa con capital propio y la reforma se financia con participaciones.",
+    asking: "Precio de referencia pedido",
+    offer: "Oferta realizada",
+    noOffer: "Sin oferta todavía",
+    reform: "Presupuesto de reforma de referencia (F)",
+    reformNote: "Se financia con participaciones económicas (ref. 100 × USD 100).",
+    sale: "Precio de venta de referencia",
+    notBought: "Capital propio: la compra aún no se ha ejecutado.",
   },
-  deviations: {
-    heading: "Desvíos",
-    none: "Sin desvíos registrados.",
-    some: "Hay una línea sobre su presupuesto: revisar con la unidad de reformas.",
-  },
-  publish: {
-    heading: "Publicar avance",
-    description: "El texto aparece fechado en la ficha del proyecto del inversionista.",
-    label: "Resumen del avance",
-    placeholder: "Qué se hizo esta semana, sin cifras de rentabilidad ni plazos ciertos.",
-    action: "Publicar avance",
-    done: "Maqueta: el avance se publicaría con fecha de hoy. No se guardó nada.",
-    history: "Avances publicados",
+  decision: {
+    heading: "Decisión",
+    description: "Solo es una maqueta: ninguna acción guarda datos ni mueve la oportunidad de columna.",
+    advance: "Pasar a la siguiente etapa",
+    advanced: "Maqueta: la oportunidad pasaría a la siguiente columna. No se guardó nada.",
+    discard: "Descartar oportunidad",
+    discarded: "Maqueta: la oportunidad quedaría descartada. No se guardó nada.",
+    bought: "La compra ya se ejecutó: el seguimiento continúa en el proyecto.",
+    openProject: "Abrir proyecto",
   },
 } as const;
+
+export { WORKS_COPY } from "./copy-works";
 
 export const COMMERCIAL_COPY = {
   eyebrow: "Backoffice · B4",

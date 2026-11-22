@@ -12,6 +12,8 @@ import { RegisterSteps } from "./RegisterSteps";
 
 const C = AUTH_COPY.register;
 const TOTAL = C.steps.length;
+/** Todas las casillas obligatorias de la lectura de riesgos (cada punto y los términos). */
+const REQUIRED_RISK_IDS: readonly string[] = [...C.risks.items.map((i) => i.id), C.risks.terms.id];
 
 /** Vista previa del registro en tres pasos. Estado solo local; al terminar fija el rol de la demo y va al panel. */
 export function RegisterWizard() {
@@ -20,7 +22,7 @@ export function RegisterWizard() {
   const [step, setStep] = useState(0);
   const [accepted, setAccepted] = useState<readonly string[]>([]);
   const last = step === TOTAL - 1;
-  const canFinish = accepted.length === C.risks.items.length;
+  const canFinish = REQUIRED_RISK_IDS.every((id) => accepted.includes(id));
 
   function toggle(id: string, checked: boolean) {
     setAccepted((prev) => (checked ? [...prev, id] : prev.filter((x) => x !== id)));

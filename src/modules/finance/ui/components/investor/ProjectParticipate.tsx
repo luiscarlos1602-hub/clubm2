@@ -1,14 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { projectHref, routeHref } from "@/shared/ui/app-shell";
 import { LegalNotice, MoneyDisplay, StatusBadge } from "@/shared/ui/brand";
 import { BulletList, PageHeader, Section, Surface } from "@/shared/ui/layout";
 import { Button } from "@/shared/ui/primitives/button";
-import { maxHeldFor, reservationAmount } from "../../hooks/project-figures";
+import { estimateReservation, maxHeldFor, reservationAmount } from "../../hooks/project-figures";
 import { useProjectDetail, type ProjectDetailData } from "../../hooks/use-project-detail";
 import { PROJECT_DETAIL_COPY } from "./copy";
+import { GainFigure } from "./GainFigure";
 import { ProjectDetailError, ProjectDetailLoading, ProjectDetailMissing } from "./ProjectDetailStates";
 import { RangeField } from "./RangeField";
 
@@ -18,21 +19,44 @@ function Confirmation({ data, quantity }: { data: ProjectDetailData; quantity: n
   const K = C.confirmation;
   return (
     <div role="status">
-    <Surface variant="dark" padding="lg" data-testid="participar-confirmacion">
-      <StatusBadge tone="in-progress" label={K.status} data-testid="participar-estado" />
-      <h2 className="font-heading text-3xl font-medium">{K.title}</h2>
-      <p className="max-w-[60ch]">{K.description}</p>
-      <MoneyDisplay value={reservationAmount(data.listing.unitPrice, quantity)} kind="capital" label={C.amount} size="lg" />
-      <Button asChild className="w-fit">
-        <Link href={routeHref("p6")} data-testid="participar-portafolio">{K.portfolio}</Link>
-      </Button>
-    </Surface>
+      <Surface variant="dark" padding="lg" data-testid="participar-confirmacion">
+        <StatusBadge tone="in-progress" label={K.status} data-testid="participar-estado" />
+        <h2 className="font-heading text-3xl font-medium" data-testid="participar-asesor">{K.title}</h2>
+        <p className="max-w-[60ch]">{K.description}</p>
+        <MoneyDisplay value={reservationAmount(data.listing.unitPrice, quantity)} kind="capital" label={C.amount} size="lg" />
+        <Button asChild className="w-fit">
+          <Link href={routeHref("p3")} data-testid="participar-proyectos">{K.projects}</Link>
+        </Button>
+      </Surface>
+    </div>
+  );
+}
+
+function Estimate({ data, quantity }: { data: ProjectDetailData; quantity: number }) {
+  const outcome = useMemo(() => estimateReservation(data, quantity).outcome, [data, quantity]);
+  return (
+    <div className="flex flex-col gap-3 border-t border-border pt-5" data-testid="participar-resumen" aria-live="polite">
+      <h2 className="font-heading text-xl font-medium">{C.summaryTitle}</h2>
+      <MoneyDisplay value={data.listing.unitPrice} kind="amount" label={C.unitPrice} size="sm" />
+      <p className="text-sm">{C.quantity}: <span className="font-medium" data-testid="participar-cantidad-resumen">{quantity}</span></p>
+      {outcome.kind === "payout" ? (
+        <>
+          <MoneyDisplay value={outcome.payout.capital} kind="capital" label={C.amount} size="lg" data-testid="participar-monto" />
+          <GainFigure gain={outcome.payout.gain} capital={outcome.payout.capital} kind="projection" label={C.gain} size="md" data-testid="participar-ganancia" />
+          <MoneyDisplay value={outcome.payout.total} kind="projection" label={C.payout} size="md" data-testid="participar-cobro" />
+        </>
+      ) : (
+        <>
+          <MoneyDisplay value={reservationAmount(data.listing.unitPrice, quantity)} kind="capital" label={C.amount} size="lg" data-testid="participar-monto" />
+          <p className="text-sm" data-testid="participar-sin-estimacion">{C.noEstimate}</p>
+        </>
+      )}
+      <p className="text-sm text-muted-foreground">{C.summaryNote}</p>
     </div>
   );
 }
 
 function ReservationForm({ data }: { data: ProjectDetailData }) {
-  const { listing, example } = data;
   const max = maxHeldFor(data);
   const [quantity, setQuantity] = useState(1);
   const [accepted, setAccepted] = useState(false);
@@ -52,16 +76,11 @@ function ReservationForm({ data }: { data: ProjectDetailData }) {
           testId="participar-cantidad"
         />
         <p className="text-sm text-muted-foreground">{C.quantityHelp(max)}</p>
-        <div className="flex flex-col gap-3 border-t border-border pt-5" data-testid="participar-resumen" aria-live="polite">
-          <h2 className="font-heading text-xl font-medium">{C.summaryTitle}</h2>
-          <MoneyDisplay value={listing.unitPrice} kind="amount" label={C.unitPrice} size="md" />
-          <p className="text-sm">{C.quantity}: <span className="font-medium" data-testid="participar-cantidad-resumen">{quantity}</span></p>
-          <MoneyDisplay value={reservationAmount(listing.unitPrice, quantity)} kind="capital" label={C.amount} size="lg" data-testid="participar-monto" />
-        </div>
+        <Estimate data={data} quantity={quantity} />
       </Surface>
       <Surface variant="dark" padding="lg">
         <h2 className="font-heading text-xl font-medium">{C.risksTitle}</h2>
-        <BulletList items={example.risks} marker="dash" />
+        <BulletList items={data.example.risks} marker="dash" />
         <LegalNotice notice="riskNotice" className="text-foreground" />
         <div className="flex items-start gap-3">
           <input
@@ -69,10 +88,21 @@ function ReservationForm({ data }: { data: ProjectDetailData }) {
             type="checkbox"
             checked={accepted}
             onChange={(e) => setAccepted(e.target.checked)}
-            data-testid="participar-aceptar-riesgos"
+            data-testid="participar-aceptar-terminos"
             className="mt-1 size-5 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           />
-          <label htmlFor={checkboxId} className="text-sm">{C.riskCheckbox}</label>
+          <label htmlFor={checkboxId} className="text-sm">
+            {C.acceptPrefix}
+            <Link
+              href={routeHref("terminos")}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              data-testid="participar-terminos"
+            >
+              {C.acceptLink}
+            </Link>
+          </label>
         </div>
         <Button type="button" size="lg" disabled={!accepted} onClick={() => setReserved(true)} data-testid="participar-reservar">
           {C.reserve}
@@ -83,7 +113,7 @@ function ReservationForm({ data }: { data: ProjectDetailData }) {
   );
 }
 
-/** Pantalla P5 (maqueta): elegir cantidad, aceptar riesgos y "Reservar (simulado)". No guarda nada. */
+/** Pantalla P5 (maqueta, abierta a todos): cantidad, estimación del motor, términos y "Reservar (simulado)". No guarda nada. */
 export function ProjectParticipate({ slug }: { slug: string }) {
   const query = useProjectDetail(slug);
   if (query.isPending) return <ProjectDetailLoading testId="participar-cargando" />;

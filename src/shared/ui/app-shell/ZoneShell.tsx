@@ -6,12 +6,14 @@ import { LegalNotice, Wordmark } from "@/shared/ui/brand";
 import { PAGE_CONTAINER as CONTAINER } from "@/shared/ui/layout";
 import type { TestIdProp } from "@/shared/ui/brand/types";
 import { ActiveNavLinks } from "./ActiveNavLinks";
+import { AdminSidebar } from "./AdminSidebar";
 import { DemoToolbar } from "./DemoToolbar";
 import { LogoutLink } from "./LogoutLink";
 import { MobileNav } from "./MobileNav";
 import { NavLinks } from "./NavLinks";
 import { SkipLink } from "./SkipLink";
 import { ROLE_HOME, ZONE_DEFAULT_ROLE, type Zone } from "./demo-role";
+import { routeHref } from "./route-map";
 import { SHELL_COPY } from "./shell-copy";
 
 export type ZoneShellProps = TestIdProp & {
@@ -66,17 +68,7 @@ export function ZoneShell({ zone, children, demoTools, className, "data-testid":
         </div>
       </header>
       <div className={cn("flex flex-1", admin && "lg:flex-row")}>
-        {admin ? (
-          <aside className="hidden w-64 shrink-0 border-r border-line/40 bg-card lg:block">
-            <nav
-              aria-label={SHELL_COPY.navLabel[zone]}
-              data-testid="nav-principal"
-              className="sticky top-12 p-4"
-            >
-              <ZoneNav zone={zone} orientation="vertical" />
-            </nav>
-          </aside>
-        ) : null}
+        {admin ? <AdminSidebar /> : null}
         <div className="flex min-w-0 flex-1 flex-col">
           <main
             id="contenido"
@@ -90,6 +82,15 @@ export function ZoneShell({ zone, children, demoTools, className, "data-testid":
               <p className="font-heading text-lg text-foreground">{brand.tagline}</p>
               <LegalNotice notice="riskNotice" variant="block" />
               <p className="text-sm text-muted-foreground">{SHELL_COPY.footerNote}</p>
+              <p className="text-sm">
+                <Link
+                  href={routeHref("terminos")}
+                  data-testid="pie-terminos"
+                  className="rounded-sm font-medium text-foreground underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  {SHELL_COPY.termsLink}
+                </Link>
+              </p>
               <DemoToolbar demoTools={demoTools} />
             </div>
           </footer>

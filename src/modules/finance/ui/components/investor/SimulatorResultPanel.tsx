@@ -2,6 +2,7 @@ import { LegalNotice, MoneyDisplay, ProjectionLabel } from "@/shared/ui/brand";
 import { Surface } from "@/shared/ui/layout";
 import type { SimulatorResult } from "../../hooks/simulate";
 import { PROJECT_DETAIL_COPY } from "./copy";
+import { GainFigure } from "./GainFigure";
 
 const C = PROJECT_DETAIL_COPY.simulator;
 
@@ -15,7 +16,7 @@ export function SimulatorResultPanel({ result, requestedHeld }: { result: Simula
         {outcome.kind === "payout" ? (
           <>
             <MoneyDisplay value={outcome.payout.capital} kind="capital" label={C.capital} size="lg" data-testid="simulador-capital" />
-            <MoneyDisplay value={outcome.payout.gain} kind="projection" label={C.gain} size="md" data-testid="simulador-ganancia" />
+            <GainFigure gain={outcome.payout.gain} capital={outcome.payout.capital} kind="projection" label={C.gain} size="md" data-testid="simulador-ganancia" />
             <MoneyDisplay value={outcome.payout.total} kind="projection" label={C.payout} size="md" data-testid="simulador-cobro" />
             <dl className="grid gap-3 border-t border-line/40 pt-5 text-sm sm:grid-cols-3">
               <div>

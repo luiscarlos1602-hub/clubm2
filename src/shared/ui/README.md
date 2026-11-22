@@ -99,6 +99,23 @@ Dentro de un tono, `bg-primary` / `text-foreground` / `text-muted-foreground` / 
 - Props clave: `title?` (sin él es decorativo), `className` para tamaño y color (`currentColor`).
 - No usar para: reemplazar el wordmark en la cabecera.
 
+### ProjectImage · projectImageSrc
+- Archivo: `ProjectImage.tsx`
+- Cuándo usarlo: toda imagen de un proyecto. Pinta la ilustración `public/images/proyectos/<código en minúsculas>/<variante>.svg` (16:10) con el rótulo fijo "Imagen de referencia".
+- Props clave: `code`, `variant` (`antes` · `despues` · `proyeccion`), `alt`, `priority?`, `sizes?`, `className?`.
+- Reglas: después = obra terminada; mientras no, usa `proyeccion`. No usar para fotos reales sin rótulo. Los textos están en `project-media-copy.ts`.
+
+### ProjectGallery
+- Archivo: `ProjectGallery.tsx` (cliente)
+- Cuándo usarlo: ficha del proyecto. Pestañas Antes · Después · Proyección (render) con teclado (flechas, Inicio, Fin); la pestaña Proyección lleva `ProjectionLabel`.
+- Props clave: `code`, `name`, `defaultVariant?` (por defecto `despues`).
+
+### ProcessBoard
+- Archivo: `ProcessBoard.tsx` (presentacional)
+- Cuándo usarlo: etapas de obra y venta. `PROCESS_STAGES`, `PROCESS_STAGE_LABEL`, `ProcessStageView` (`id`, `status`, `date` ISO, `estimated`, `note?`).
+- Props clave: `stages`, `orientation?` (`horizontal` en `md`+ y vertical en móvil · `vertical` siempre). Las fechas con `estimated: true` llevan `ProjectionLabel`.
+- No usar para: calcular fechas (las entrega el dominio).
+
 ### LegalNotice
 - Archivo: `LegalNotice.tsx`
 - Cuándo usarlo: avisos fijos (`demoBanner`, `simulatorDisclaimer`, `riskNotice`, `legalPlaceholder`).
@@ -124,6 +141,13 @@ Importa desde `@/shared/ui/app-shell`. La navegación sale de `route-map.ts`; no
 - Archivos: `NavLinks.tsx` (presentacional), `ActiveNavLinks.tsx` (cliente, `usePathname`), `MobileNav.tsx` (Sheet).
 - Cuándo usarlos: solo desde `ZoneShell`. `ActiveNavLinks` siempre dentro de `Suspense` (cacheComponents).
 - No usar para: menús de otra naturaleza.
+- Props clave de `NavLinks`: `zone`, `orientation`, `activeId`, `onNavigate?`, `showIcons?` (muestra el icono de `route-icons.ts` junto a la etiqueta) y `collapsed?` (solo iconos; la etiqueta pasa a `aria-label`, e implica `showIcons`).
+
+### AdminSidebar
+- Archivo: `AdminSidebar.tsx` (cliente)
+- Cuándo usarlo: solo desde `ZoneShell` en la zona `admin`, solo escritorio (`lg`); en móvil lo reemplaza `MobileNav`. Menú lateral con iconos y plegable a solo iconos (`NavLinks` con `showIcons`/`collapsed`).
+- Props clave: ninguna; el estado plegado es local y no se guarda. Botón con `aria-expanded`/`aria-controls`.
+- No usar para: navegación del inversionista ni del visitante.
 
 ### RoutePlaceholder
 - Archivo: `RoutePlaceholder.tsx`
@@ -158,3 +182,6 @@ Importa desde `@/shared/ui/admin`. Las usan projects, finance e investors en sus
 - `TableScroll` — contiene el desborde horizontal de una tabla (región enfocable con `label`); recibe el contenido de la `<table>` (`thead`/`tbody`) y estiliza `th`/`td`.
 - `MockAction` — botón de maqueta: `label`, `doneMessage`, `variant?`; muestra la confirmación y no guarda nada.
 - `AdminQueryState` — carga, error y vacío de una vista con datos: `isPending`, `isError`, `isEmpty`, `onRetry`, `testId`.
+- `AdminBarChart` — barras con tokens de marca y tabla de apoyo accesible: `ariaLabel`, `data` (`{label, ...valores}`), `series` (`{key, label, color}`), `layout?` (`categories-x` · `categories-y`), `stacked?`, `format?`, `height?`, `categoryWidth?`. Pinta lo que recibe; no calcula.
+- `AdminDonut` — anillo con leyenda HTML: `ariaLabel`, `slices` (`{label, value, color}`), `center?` (ya formateado), `format?`, `size?`. Si no hay nada que repartir, no lo pintes: muestra un texto "sin reparto".
+- `ChartColor` — `1 | 2 | 3 | 4 | 5`: índice del token `--chart-N` de `globals.css`. Los colores de gráficas son solo estos tokens.

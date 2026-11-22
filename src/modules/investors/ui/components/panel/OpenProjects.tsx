@@ -27,7 +27,6 @@ export function OpenProjects({ listings }: { listings: readonly ProjectListing[]
               <span className="text-muted-foreground text-sm">{C.unitPrice}</span>
               <MoneyDisplay value={l.unitPrice} kind="amount" size="md" />
             </div>
-            <LegalNotice notice="riskNotice" variant="inline" />
             <Button asChild variant="outline" className="mt-auto">
               <Link href={projectHref(l.slug)}>
                 {C.cta}
@@ -40,6 +39,7 @@ export function OpenProjects({ listings }: { listings: readonly ProjectListing[]
       <Button asChild variant="outline" className="w-fit">
         <Link href={routeHref("p3")}>{C.all}</Link>
       </Button>
+      <LegalNotice notice="riskNotice" variant="inline" />
     </div>
   );
 }

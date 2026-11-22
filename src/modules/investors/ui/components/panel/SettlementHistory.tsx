@@ -1,8 +1,10 @@
 import { formatIsoDate } from "@/shared/lib/format-date";
 import { formatMoney } from "@/shared/lib/format-money";
 import type { ProjectListing } from "@/modules/participations";
+import { profitRateLabel } from "@/modules/finance/ui";
 import { MoneyDisplay } from "@/shared/ui/brand";
 import { IndexLabel, Surface } from "@/shared/ui/layout";
+import { ProfitRateLine } from "./ProfitRateLine";
 import { EXAMPLE_SETTLEMENT } from "./examples";
 import { PANEL_COPY } from "./copy";
 
@@ -10,6 +12,7 @@ const C = PANEL_COPY.portfolio;
 
 /** Histórico de M2-003: pasos y cifras ya realizadas (capital y ganancia en bloques separados). */
 export function SettlementHistory({ listing }: { listing: ProjectListing | null }) {
+  const rate = profitRateLabel(EXAMPLE_SETTLEMENT.realized, EXAMPLE_SETTLEMENT.capital);
   return (
     <div className="grid gap-10 lg:grid-cols-2" data-testid="portafolio-historico">
       <ol className="flex flex-col gap-6">
@@ -29,6 +32,7 @@ export function SettlementHistory({ listing }: { listing: ProjectListing | null 
       <Surface padding="lg" data-testid="portafolio-historico-cifras">
         <MoneyDisplay value={EXAMPLE_SETTLEMENT.capital} kind="capital" label={C.capitalReturned} size="lg" />
         <MoneyDisplay value={EXAMPLE_SETTLEMENT.realized} kind="realized" size="lg" />
+        <ProfitRateLine text={rate} data-testid="portafolio-historico-porcentaje" />
       </Surface>
     </div>
   );

@@ -62,14 +62,15 @@ export const AUTH_COPY = {
       ],
     },
     risks: {
-      intro: "Antes de continuar, confirma que leíste y entiendes cada punto.",
+      intro: "Estos son los puntos clave. El detalle está en los términos y condiciones, que también debes aceptar.",
       items: [
         { id: "perdida", label: "Entiendo que puedo perder parte o la totalidad de mi aporte." },
         { id: "proyeccion", label: "Entiendo que las cifras futuras son proyecciones y no están garantizadas." },
         { id: "plazo", label: "Entiendo que los plazos son estimados y pueden cambiar." },
         { id: "participacion", label: "Entiendo que una participación económica no me hace dueño del inmueble." },
       ],
-      pending: "Marca los cuatro puntos para continuar.",
+      terms: { id: "terminos", before: "He leído y acepto los", link: "términos y condiciones", after: "completos, con los riesgos y las condiciones." },
+      pending: "Marca todos los puntos para continuar.",
     },
   },
 } as const;

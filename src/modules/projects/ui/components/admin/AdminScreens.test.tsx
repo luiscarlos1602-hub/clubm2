@@ -8,6 +8,7 @@ import type { IsoDate } from "@/shared/domain/calendar-date";
 import { AcquisitionsBoard } from "./AcquisitionsBoard";
 import { AdminDashboard } from "./AdminDashboard";
 import { CommercializationScreen } from "./CommercializationScreen";
+import { OpportunityDetailScreen } from "./OpportunityDetailScreen";
 import { ProjectWorksScreen } from "./ProjectWorksScreen";
 
 afterEach(cleanup);
@@ -58,5 +59,41 @@ describe("backoffice de projects", () => {
   it("comercialización lista los inmuebles en venta", async () => {
     setup(<CommercializationScreen />);
     expect(await screen.findByTestId("admin-com-fila-M2-002")).toBeTruthy();
+  });
+
+  it("el kanban enlaza cada oportunidad a su detalle", async () => {
+    setup(<AcquisitionsBoard />);
+    const link = await screen.findByTestId("oportunidad-ver-OP-014");
+    expect(link.getAttribute("href")).toBe("/admin/adquisiciones/OP-014");
+    expect(screen.getByTestId("oportunidad-ver-M2-007").getAttribute("href")).toBe("/admin/adquisiciones/m2-007-zona");
+  });
+
+  it("el detalle de oportunidad muestra inmueble, due diligence, cifras y decisión", async () => {
+    setup(<OpportunityDetailScreen id="OP-015" />);
+    expect(await screen.findByTestId("adq-detalle-inmueble")).toBeTruthy();
+    expect(screen.getByTestId("adq-detalle-galeria")).toBeTruthy();
+    expect(screen.getByTestId("adq-detalle-progreso").textContent).toContain("1 de 6");
+    expect(screen.getByTestId("adq-detalle-cifras")).toBeTruthy();
+    expect(screen.getByTestId("adq-detalle-decision")).toBeTruthy();
+  });
+
+  it("el detalle resuelve el proyecto en due diligence y avisa si no existe", async () => {
+    setup(<OpportunityDetailScreen id="m2-007-zona" />);
+    expect((await screen.findByTestId("adq-detalle-progreso")).textContent).toContain("3 de 6");
+    cleanup();
+    setup(<OpportunityDetailScreen id="xx" />);
+    expect(await screen.findByTestId("adq-detalle-no-encontrado")).toBeTruthy();
+  });
+
+  it("el proyecto muestra galería, colocación, gráfica de presupuesto, proceso e inversionistas", async () => {
+    const Stub = ({ code, acquiredOn }: { code: string; acquiredOn: string; "data-testid"?: string }) => <ol data-testid="obra-proceso">{code} {acquiredOn}</ol>;
+    setup(<ProjectWorksScreen idOrSlug="m2-005-zona" ProcessView={Stub} />);
+    expect(await screen.findByTestId("obra-galeria")).toBeTruthy();
+    expect(screen.getByTestId("obra-grafica-colocacion")).toBeTruthy();
+    expect(screen.getByTestId("obra-grafica-presupuesto")).toBeTruthy();
+    expect(screen.getByTestId("obra-proceso")).toBeTruthy();
+    expect(screen.getByTestId("obra-inversionistas")).toBeTruthy();
+    expect(screen.getByTestId("obra-proceso").textContent).toContain("M2-005");
+    expect(screen.queryByTestId("obra-hitos")).toBeNull();
   });
 });

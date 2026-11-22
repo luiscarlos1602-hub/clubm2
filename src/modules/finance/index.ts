@@ -21,3 +21,5 @@ export type {
   SettlementErrorCode,
 } from "./domain/settlement";
 export { createSettlement } from "./domain/settlement";
+export type { ProfitRateErrorCode } from "./domain/profit-rate";
+export { calculateProfitRate } from "./domain/profit-rate";

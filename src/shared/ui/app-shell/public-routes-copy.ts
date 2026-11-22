@@ -1,6 +1,6 @@
 import type { RouteCopy } from "./route-copy-types";
 
-export const PUBLIC_ROUTES_COPY: Readonly<Record<"p1" | "p2" | "login" | "panel" | "p3" | "p4" | "p5" | "p6" | "p7" | "p8", RouteCopy>> = {
+export const PUBLIC_ROUTES_COPY: Readonly<Record<"p1" | "p2" | "login" | "terminos" | "panel" | "p3" | "p4" | "p5" | "p6" | "p7" | "p8", RouteCopy>> = {
   p1: {
     navLabel: "Inicio",
     title: "Así funciona el club",
@@ -75,6 +75,14 @@ export const PUBLIC_ROUTES_COPY: Readonly<Record<"p1" | "p2" | "login" | "panel"
     emptyTitle: "El acceso es de demostración",
     emptyDescription: "No se valida ninguna contraseña: cualquier dato te lleva al panel de ejemplo.",
     nextLabel: "Entrar al panel",
+  },
+  terminos: {
+    navLabel: "Términos y condiciones",
+    title: "Términos y condiciones",
+    phrase: "Aquí leerás, en un solo lugar, los riesgos y las condiciones de una participación económica.",
+    emptyTitle: "Los términos aún no están disponibles",
+    emptyDescription: "Es una versión de ejemplo, sujeta a revisión legal.",
+    nextLabel: "Volver al inicio",
   },
   panel: {
     navLabel: "Panel",

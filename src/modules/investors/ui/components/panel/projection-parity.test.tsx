@@ -37,6 +37,8 @@ describe("la proyección del panel coincide con la de la ficha (motor único)", 
     // panel: la tenencia de ejemplo
     render(<Providers container={c}><PanelScreen /></Providers>);
     await waitFor(() => expect(screen.getByTestId(`panel-participacion-${code.toLowerCase()}-proyeccion`).textContent).toContain(formatMoney(perHolding!)));
+    // el % sale del motor (ganancia / capital) y lleva el rótulo de proyección
+    expect(screen.getByTestId(`panel-participacion-${code.toLowerCase()}-proyeccion-porcentaje`).textContent).toMatch(/^\d+(,\d+)? % sobre el capital.*no garantizada/);
     cleanup();
 
     // portafolio: misma cifra en la tabla

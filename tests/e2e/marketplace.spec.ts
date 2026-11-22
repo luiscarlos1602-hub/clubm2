@@ -62,7 +62,9 @@ test.describe("marketplace P3", () => {
     expect(norm(await c.getByTestId("tarjeta-plazo").textContent())).toContain("Plazo objetivo: 3 meses");
     await expect(c.getByTestId("projection-label")).toBeVisible();
     expect(norm(await c.getByTestId("projection-label").textContent())).toContain("Proyección · no garantizada");
-    expect(norm(await c.getByTestId("tarjeta-aviso-riesgo").textContent())).toContain(LEGAL_COPY.riskNotice);
+    await expect(c.getByTestId("tarjeta-aviso-riesgo")).toHaveCount(0);
+    await expect(c.getByTestId("tarjeta-imagen")).toHaveAttribute("data-variant", "proyeccion");
+    expect(norm(await p3(page).getByTestId("marketplace-aviso-riesgo").textContent())).toContain(LEGAL_COPY.riskNotice);
   });
 
   test("4 M2-002 en venta sin tono de atención", async ({ page }) => {

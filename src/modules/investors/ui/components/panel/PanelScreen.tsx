@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { profitRateLabel } from "@/modules/finance/ui";
 import { LegalNotice } from "@/shared/ui/brand";
 import { routeHref } from "@/shared/ui/app-shell";
 import { PageHeader, Section, Eyebrow } from "@/shared/ui/layout";
@@ -47,6 +48,8 @@ export function PanelScreen() {
         <FigureTriad
           {...EXAMPLE_TOTALS}
           projection={projections.data?.total ?? null}
+          realizedRate={profitRateLabel(EXAMPLE_TOTALS.realized, EXAMPLE_TOTALS.settledCapital)}
+          projectionRate={profitRateLabel(projections.data?.total ?? null, EXAMPLE_TOTALS.inProgressCapital)}
           notes={{ capital: C.summary.capitalNote, realized: C.summary.realizedNote, projection: C.summary.projectionNote }}
           testIdPrefix="panel-resumen"
         />

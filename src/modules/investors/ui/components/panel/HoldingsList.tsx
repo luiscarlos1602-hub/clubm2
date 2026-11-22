@@ -3,6 +3,9 @@ import { ArrowRight } from "lucide-react";
 import { projectHref } from "@/shared/ui/app-shell";
 import { MoneyDisplay, ProjectSeal, StatusBadge, type StatusTone } from "@/shared/ui/brand";
 import { Surface } from "@/shared/ui/layout";
+import { HoldingProcess } from "./HoldingProcess";
+import { ProfitRateLine } from "./ProfitRateLine";
+import { VisitDialog } from "./VisitDialog";
 import type { HoldingRow } from "./holding-rows";
 import type { HoldingStatus } from "./examples";
 import { PANEL_COPY } from "./copy";
@@ -14,7 +17,7 @@ const TONE: Record<HoldingStatus, StatusTone> = { settled: "neutral", renovation
 export function HoldingsList({ rows }: { rows: readonly HoldingRow[] }) {
   return (
     <ul className="grid gap-6 lg:grid-cols-3" data-testid="panel-participaciones">
-      {rows.map(({ holding, listing, projection }) => (
+      {rows.map(({ holding, listing, projection, realizedRate, projectionRate }) => (
         <Surface as="li" key={holding.code} padding="md" data-testid={`panel-participacion-${holding.code.toLowerCase()}`}>
           <div className="flex items-start justify-between gap-4">
             {listing ? <ProjectSeal code={holding.code} date={listing.acquiredOn} size="sm" /> : <span className="font-mono text-sm">{holding.code}</span>}
@@ -28,7 +31,10 @@ export function HoldingsList({ rows }: { rows: readonly HoldingRow[] }) {
           <div className="border-line grid gap-4 border-t pt-4">
             <MoneyDisplay value={holding.capital} kind="capital" size="md" />
             {holding.realized ? (
-              <MoneyDisplay value={holding.realized} kind="realized" size="md" />
+              <div className="flex flex-col gap-1">
+                <MoneyDisplay value={holding.realized} kind="realized" size="md" />
+                <ProfitRateLine text={realizedRate} data-testid={`panel-participacion-${holding.code.toLowerCase()}-porcentaje`} />
+              </div>
             ) : (
               <div className="flex flex-col gap-1">
                 <span className="text-muted-foreground text-sm">{C.holdings.realized}</span>
@@ -36,9 +42,14 @@ export function HoldingsList({ rows }: { rows: readonly HoldingRow[] }) {
               </div>
             )}
             {projection ? (
-              <MoneyDisplay value={projection} kind="projection" size="sm" data-testid={`panel-participacion-${holding.code.toLowerCase()}-proyeccion`} />
+              <div className="flex flex-col gap-1">
+                <MoneyDisplay value={projection} kind="projection" size="sm" data-testid={`panel-participacion-${holding.code.toLowerCase()}-proyeccion`} />
+                <ProfitRateLine text={projectionRate} projection data-testid={`panel-participacion-${holding.code.toLowerCase()}-proyeccion-porcentaje`} />
+              </div>
             ) : null}
           </div>
+          <HoldingProcess code={holding.code} acquiredOn={listing?.acquiredOn ?? null} />
+          {listing && holding.status !== "settled" ? <VisitDialog code={holding.code} name={listing.name} /> : null}
           {listing ? (
             <Link
               href={projectHref(listing.slug)}

@@ -4,7 +4,10 @@ import type { Money } from "@/shared/domain/money";
 import { MoneyDisplay } from "@/shared/ui/brand";
 import { PageHeader, Section } from "@/shared/ui/layout";
 import { StageBadge } from "@/modules/projects/backoffice-ui";
-import { AdminKpi, AdminQueryState, TableScroll } from "@/shared/ui/admin";
+import { usd } from "@/shared/domain/money";
+import { formatMoney } from "@/shared/lib/format-money";
+import { AdminBarChart, AdminDonut, AdminKpi, AdminQueryState, TableScroll } from "@/shared/ui/admin";
+import { Surface } from "@/shared/ui/layout";
 import { FINANCE_ADMIN_COPY as C } from "./copy";
 import { EXTERNAL_CAPITAL_BY_CODE, EXTERNAL_CAPITAL_TOTAL, OWN_CAPITAL_TOTAL } from "./examples";
 import { SettlementPanel } from "./SettlementPanel";
@@ -29,6 +32,38 @@ export function FinanceScreen() {
             <AdminKpi label={C.kpis.own} data-testid="fin-kpi-propio"><MoneyDisplay value={OWN_CAPITAL_TOTAL} kind="amount" size="lg" /></AdminKpi>
             <AdminKpi label={C.kpis.external} data-testid="fin-kpi-externo"><MoneyDisplay value={EXTERNAL_CAPITAL_TOTAL} kind="amount" size="lg" /></AdminKpi>
             <AdminKpi label={C.kpis.settled} data-testid="fin-kpi-liquidados">{settledCount}</AdminKpi>
+          </div>
+          <div className="grid gap-6 lg:grid-cols-12">
+            <Surface className="min-w-0 lg:col-span-7" data-testid="fin-grafica-proyectos">
+              <h3 className="font-heading text-lg font-semibold">{C.charts.byProjectHeading}</h3>
+              <AdminBarChart
+                ariaLabel={C.charts.byProjectLabel}
+                format={(v) => formatMoney(usd(v))}
+                data-testid="fin-grafica-barras"
+                series={[
+                  { key: "own", label: C.charts.own, color: 1 },
+                  { key: "external", label: C.charts.external, color: 5 },
+                ]}
+                data={funded.map(({ project, economics }) => ({
+                  label: project.code,
+                  own: economics?.acquisitionCost.cents ?? 0,
+                  external: EXTERNAL_CAPITAL_BY_CODE[project.code]?.cents ?? 0,
+                }))}
+              />
+            </Surface>
+            <Surface className="min-w-0 lg:col-span-5" data-testid="fin-grafica-total">
+              <h3 className="font-heading text-lg font-semibold">{C.charts.totalHeading}</h3>
+              <AdminDonut
+                ariaLabel={C.charts.totalLabel}
+                data-testid="fin-grafica-anillo"
+                format={(v) => formatMoney(usd(v))}
+                slices={[
+                  { label: C.charts.own, value: OWN_CAPITAL_TOTAL.cents, color: 1 },
+                  { label: C.charts.external, value: EXTERNAL_CAPITAL_TOTAL.cents, color: 5 },
+                ]}
+              />
+              <p className="text-xs text-muted-foreground">{C.charts.note}</p>
+            </Surface>
           </div>
           <TableScroll label={C.cash.tableLabel} data-testid="fin-tabla-caja">
             <thead><tr>

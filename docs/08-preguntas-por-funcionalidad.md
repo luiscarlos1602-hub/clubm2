@@ -181,3 +181,9 @@
 | Q2 | ¿El retraso en la venta tiene costo (mantenimiento, impuestos) que reduzca la ganancia? | No se estima: solo alarga el plazo proyectado |
 | Q3 | Escenarios conservador/base/optimista: ¿qué deltas usar? | Conservador venta −10 % y obra +20 %; optimista venta +5 % |
 | Q4 | Contenido y formatos del club (eventos, academia, visitas) | "Por definir" en la vitrina |
+
+## Bloque R · Reserva (ADR-013) 🟠
+
+| # | Pregunta | Propuesta por defecto (aplicada como [SUPUESTO]) |
+|---|---|---|
+| P5-1 | En la estimación de una reserva (P5), ¿la reserva se suma a lo ya colocado o se estima sobre la colocación actual? | Se suma a lo ya colocado (tope: el total de la clase): el resumen muestra el reparto que resultaría si la reserva se concreta. `estimateReservation` lo cubre con tests (1, hasta llenar disponibles, sin reparto) |

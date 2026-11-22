@@ -70,7 +70,7 @@ describe("MarketplaceBrowser", () => {
     expect(screen.getAllByTestId("tarjeta-proyecto")).toHaveLength(3);
   });
 
-  it("histórico sin proyección; abierto con plazo como proyección y aviso de riesgo", async () => {
+  it("histórico sin proyección; abierto con plazo como proyección e imagen según fase, sin aviso por tarjeta", async () => {
     setup(() => Promise.resolve(THREE));
     const cards = await screen.findAllByTestId("tarjeta-proyecto");
     const finished = cards.find((c) => c.getAttribute("data-phase") === "finished")!;
@@ -79,7 +79,9 @@ describe("MarketplaceBrowser", () => {
     const open = cards.find((c) => c.getAttribute("data-phase") === "open")!;
     expect(within(within(open).getByTestId("tarjeta-plazo-proyeccion")).getByTestId("tarjeta-plazo")).toBeTruthy();
     expect(within(open).getByTestId("projection-label")).toBeTruthy();
-    expect(within(open).getByTestId("tarjeta-aviso-riesgo")).toBeTruthy();
+    expect(within(open).queryByTestId("tarjeta-aviso-riesgo")).toBeNull();
+    expect(within(open).getByTestId("tarjeta-imagen").getAttribute("data-variant")).toBe("proyeccion");
+    expect(within(finished).getByTestId("tarjeta-imagen").getAttribute("data-variant")).toBe("despues");
   });
 
   it("no menciona ruedas ni estancamiento", async () => {

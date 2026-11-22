@@ -34,8 +34,8 @@ export function MobileNav({ zone, className, "data-testid": testId = "nav-movil"
           <SheetTitle>{SHELL_COPY.menuTitle}</SheetTitle>
         </SheetHeader>
         <nav aria-label={SHELL_COPY.navLabel[zone]} className="px-4">
-          <Suspense fallback={<NavLinks zone={zone} orientation="vertical" activeId={null} onNavigate={close} />}>
-            <ActiveNavLinks zone={zone} orientation="vertical" onNavigate={close} />
+          <Suspense fallback={<NavLinks zone={zone} orientation="vertical" activeId={null} onNavigate={close} showIcons={zone === "admin"} />}>
+            <ActiveNavLinks zone={zone} orientation="vertical" onNavigate={close} showIcons={zone === "admin"} />
           </Suspense>
         </nav>
       </SheetContent>

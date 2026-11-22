@@ -1,6 +1,8 @@
 import { formatMoney } from "@/shared/lib/format-money";
 import { TableScroll } from "@/shared/ui/admin";
 import { ProjectionLabel, StatusBadge, type StatusTone } from "@/shared/ui/brand";
+import { ProfitRateLine } from "./ProfitRateLine";
+import { VisitDialog } from "./VisitDialog";
 import type { HoldingStatus } from "./examples";
 import type { HoldingRow } from "./holding-rows";
 import { PANEL_COPY } from "./copy";
@@ -24,10 +26,11 @@ export function PortfolioTable({ rows }: { rows: readonly HoldingRow[] }) {
             <th scope="col">{C.holdings.capital}</th>
             <th scope="col">{C.holdings.realized}</th>
             <th scope="col">{C.holdings.projection}</th>
+            <th scope="col">{C.visit.column}</th>
           </tr>
         </thead>
         <tbody>
-          {rows.map(({ holding, listing, projection }) => (
+          {rows.map(({ holding, listing, projection, realizedRate, projectionRate }) => (
             <tr key={holding.code} data-testid={`portafolio-fila-${holding.code.toLowerCase()}`}>
               <th scope="row" className={ROW_HEAD}>
                 <span className="font-medium">{listing?.name ?? holding.code}</span>
@@ -36,17 +39,28 @@ export function PortfolioTable({ rows }: { rows: readonly HoldingRow[] }) {
               <td className={TD}><StatusBadge tone={TONE[holding.status]} label={C.status[holding.status]} /></td>
               <td className={TD}>{holding.quantity}</td>
               <td className={TD}>{formatMoney(holding.capital)}</td>
-              <td className={TD}>{holding.realized ? formatMoney(holding.realized) : <span className="text-muted-foreground">{C.holdings.noRealized}</span>}</td>
+              <td className={TD}>
+                {holding.realized ? (
+                  <div className="flex flex-col gap-1">
+                    <span>{formatMoney(holding.realized)}</span>
+                    <ProfitRateLine text={realizedRate} data-testid={`portafolio-fila-${holding.code.toLowerCase()}-porcentaje`} />
+                  </div>
+                ) : (
+                  <span className="text-muted-foreground">{C.holdings.noRealized}</span>
+                )}
+              </td>
               <td className={TD}>
                 {projection ? (
                   <div className="flex flex-col gap-1">
                     <span>{formatMoney(projection)}</span>
+                    <ProfitRateLine text={projectionRate} data-testid={`portafolio-fila-${holding.code.toLowerCase()}-proyeccion-porcentaje`} />
                     <ProjectionLabel />
                   </div>
                 ) : (
                   <span className="text-muted-foreground">—</span>
                 )}
               </td>
+              <td className={TD}>{listing && holding.status !== "settled" ? <VisitDialog code={holding.code} name={listing.name} /> : <span className="text-muted-foreground">—</span>}</td>
             </tr>
           ))}
         </tbody>

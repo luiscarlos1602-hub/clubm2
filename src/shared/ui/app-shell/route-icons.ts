@@ -1,4 +1,5 @@
 import {
+  FileText,
   Building2,
   Contact,
   Gauge,
@@ -35,5 +36,6 @@ export const ROUTE_ICONS: Readonly<Record<RouteId, LucideIcon>> = {
   b5: Landmark,
   b6: Contact,
   login: LogIn,
+  terminos: FileText,
   panel: LayoutDashboard,
 };

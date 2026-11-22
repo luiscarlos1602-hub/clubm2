@@ -1,7 +1,10 @@
+import Link from "next/link";
+import { routeHref } from "@/shared/ui/app-shell";
 import { AUTH_COPY } from "./copy";
 
 const E = AUTH_COPY.register.experience;
 const R = AUTH_COPY.register.risks;
+const REQUIRED_IDS: readonly string[] = [...R.items.map((i) => i.id), R.terms.id];
 
 function RadioGroup({ legend, name, options }: { legend: string; name: string; options: readonly { value: string; label: string }[] }) {
   return (
@@ -44,7 +47,23 @@ export function RegisterSteps({ step, accepted, onToggle }: Props) {
           {item.label}
         </label>
       ))}
-      {accepted.length < R.items.length && <p className="text-sm text-muted-foreground">{R.pending}</p>}
+      <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-card p-3.5 text-sm has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50">
+        <input
+          type="checkbox"
+          checked={accepted.includes(R.terms.id)}
+          onChange={(e) => onToggle(R.terms.id, e.target.checked)}
+          className="mt-0.5 size-4 shrink-0 accent-primary"
+          data-testid="registro-terminos"
+        />
+        <span>
+          {R.terms.before}{" "}
+          <Link href={routeHref("terminos")} target="_blank" rel="noopener" className="font-medium underline underline-offset-4" data-testid="registro-terminos-enlace">
+            {R.terms.link}
+          </Link>{" "}
+          {R.terms.after}
+        </span>
+      </label>
+      {REQUIRED_IDS.some((id) => !accepted.includes(id)) && <p className="text-sm text-muted-foreground">{R.pending}</p>}
     </fieldset>
   );
 }

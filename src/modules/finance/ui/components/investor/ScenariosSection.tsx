@@ -1,8 +1,11 @@
-import { MoneyDisplay, ProjectionLabel } from "@/shared/ui/brand";
+import { routeHref } from "@/shared/ui/app-shell";
+import Link from "next/link";
+import { LegalNotice, MoneyDisplay, ProjectionLabel } from "@/shared/ui/brand";
 import { Section, Surface } from "@/shared/ui/layout";
 import { buildScenarioRows } from "../../hooks/scenarios";
 import type { SimulatorBase } from "../../hooks/simulate";
 import { PROJECT_DETAIL_COPY } from "./copy";
+import { GainFigure } from "./GainFigure";
 
 const C = PROJECT_DETAIL_COPY.scenarios;
 
@@ -28,7 +31,7 @@ export function ScenariosSection({ base }: { base: SimulatorBase }) {
             {row.outcome.kind === "payout" ? (
               <>
                 <MoneyDisplay value={row.outcome.payout.capital} kind="capital" label={C.capital} size="md" data-testid={`escenario-${row.id}-capital`} />
-                <MoneyDisplay value={row.outcome.payout.gain} kind="projection" label={C.gain} size="md" data-testid={`escenario-${row.id}-ganancia`} />
+                <GainFigure gain={row.outcome.payout.gain} capital={row.outcome.payout.capital} kind="projection" label={C.gain} size="md" data-testid={`escenario-${row.id}-ganancia`} />
                 <MoneyDisplay value={row.outcome.payout.total} kind="projection" label={C.payout} size="md" />
               </>
             ) : (
@@ -42,6 +45,12 @@ export function ScenariosSection({ base }: { base: SimulatorBase }) {
           </Surface>
         ))}
       </ul>
+      <div className="flex flex-col gap-2">
+        <LegalNotice notice="riskNotice" />
+        <Link href={routeHref("terminos")} className="w-fit text-sm underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring" data-testid="escenarios-terminos">
+          {PROJECT_DETAIL_COPY.termsLink}
+        </Link>
+      </div>
     </Section>
   );
 }
