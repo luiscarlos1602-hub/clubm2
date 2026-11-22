@@ -46,6 +46,13 @@ function settlementOf(s: DemoSnapshot, n: number) {
   return found;
 }
 
+/** La distribución de una liquidación semilla con ganancia; falla si fuera pérdida. */
+function gainOf(s: DemoSnapshot, n: number) {
+  const d = settlementOf(s, n).distribution;
+  if (d.kind !== "distributed") throw new Error(`M2-00${n} no se liquidó con ganancia`);
+  return d;
+}
+
 describe("Semillas", () => {
   it("7 proyectos M2-001…M2-007 con ids, códigos y slugs únicos", () => {
     const { projects } = snapshot().projects;
@@ -126,8 +133,23 @@ describe("Semillas", () => {
     }
   });
 
+  it("cada liquidada tiene su venta, igual a la entrada de su liquidación y a la fecha del proyecto (W-5)", () => {
+    const s = snapshot();
+    expect(s.finance.sales).toHaveLength(2);
+    for (const st of s.finance.settlements) {
+      const sale = s.finance.sales.find((x) => x.projectId === st.projectId);
+      const project = s.projects.projects.find((p) => p.id === st.projectId);
+      expect(sale).toBeDefined();
+      expect(sale?.salePrice).toEqual(st.input.salePrice);
+      expect(sale?.saleCosts).toEqual(st.input.saleCosts);
+      expect(sale?.signedOn).toBe(project?.timeline.saleSignedOn);
+    }
+    // ningún proyecto no liquidado tiene venta
+    expect(s.finance.sales.every((x) => s.finance.settlements.some((st) => st.projectId === x.projectId))).toBe(true);
+  });
+
   it("M2-001 cifras esperadas con residuo K1 de 90 ¢", () => {
-    const d = settlementOf(snapshot(), 1).distribution;
+    const d = gainOf(snapshot(), 1);
     expect(d.surplus).toEqual(usd(1_209_963));
     expect(d.fund).toEqual(usd(302_490));
     expect(d.perParticipation).toEqual(usd(3_024));
@@ -140,7 +162,7 @@ describe("Semillas", () => {
   });
 
   it("M2-003 cifras esperadas", () => {
-    const d = settlementOf(snapshot(), 3).distribution;
+    const d = gainOf(snapshot(), 3);
     expect(d.surplus).toEqual(usd(1_380_000));
     expect(d.fund).toEqual(usd(345_000));
     expect(d.perParticipation).toEqual(usd(3_450));

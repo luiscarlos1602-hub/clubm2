@@ -1,5 +1,10 @@
 import type { SliceReader } from "@/shared/infrastructure/demo-store";
-import type { ProjectBudgetRepository, ProjectEconomicsRepository, SettlementRepository } from "../application/ports";
+import type {
+  ProjectBudgetRepository,
+  ProjectEconomicsRepository,
+  ProjectSaleRepository,
+  SettlementRepository,
+} from "../application/ports";
 import type { FinanceSlice } from "./seed";
 
 export function createProjectEconomicsMockRepository(
@@ -24,5 +29,13 @@ export function createProjectBudgetMockRepository(source: SliceReader<FinanceSli
   return {
     findByProject: (projectId) =>
       Promise.resolve(source.read().budgets.find((b) => b.projectId === projectId) ?? null),
+  };
+}
+
+export function createProjectSaleMockRepository(source: SliceReader<FinanceSlice>): ProjectSaleRepository {
+  return {
+    list: () => Promise.resolve([...source.read().sales]),
+    findByProject: (projectId) =>
+      Promise.resolve(source.read().sales.find((x) => x.projectId === projectId) ?? null),
   };
 }

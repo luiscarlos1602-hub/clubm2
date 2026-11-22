@@ -3,9 +3,11 @@ import type { IsoDate } from "@/shared/domain/calendar-date";
 import { asId } from "@/shared/domain/id";
 import { usd, usdUnits } from "@/shared/domain/money";
 import { idSchema, isoDateSchema, moneySchema } from "@/shared/infrastructure/zod-schemas";
-import type { Distribution, ParticipationTerms } from "../domain/distribution";
+import type { DistributionOutcome, ParticipationTerms } from "../domain/distribution";
 import type { ProjectEconomics } from "../domain/project-economics";
 import { BUDGET_ITEMS, checkProjectBudget, type ProjectBudget } from "../domain/budget";
+import type { ProjectSale } from "../domain/project-sale";
+import { buildRealizedInput } from "../domain/settlement-input";
 import { createSettlement, type Settlement } from "../domain/settlement";
 import { buildBudgetSeed } from "./seed-budget";
 
@@ -13,6 +15,8 @@ export type FinanceSlice = {
   readonly economics: readonly ProjectEconomics[];
   readonly settlements: readonly Settlement[];
   readonly budgets: readonly ProjectBudget[];
+  /** W-5: venta real por proyecto (una; no se corrige). Los snapshots guardados sin este campo se leen como []. */
+  readonly sales: readonly ProjectSale[];
 };
 
 const termsSchema = z.object({
@@ -33,10 +37,13 @@ const inputSchema = z.object({
   shares: z.object({ fund: percentageSchema, company: percentageSchema }).optional(),
 });
 
-const distributionSchema: z.ZodType<Distribution> = z.object({
+const participationsOutcomeSchema = termsSchema.extend({ retained: z.number().int().min(0) });
+const capitalSchema = z.object({ external: moneySchema, company: moneySchema });
+
+const gainDistributionSchema = z.object({
   kind: z.literal("distributed"),
   basis: z.enum(["projection", "realized"]),
-  participations: termsSchema.extend({ retained: z.number().int().min(0) }),
+  participations: participationsOutcomeSchema,
   surplus: moneySchema,
   fund: moneySchema,
   perParticipation: moneySchema,
@@ -45,7 +52,46 @@ const distributionSchema: z.ZodType<Distribution> = z.object({
   companyFromFund: moneySchema,
   companyDirect: moneySchema,
   companyTotal: moneySchema,
-  capital: z.object({ external: moneySchema, company: moneySchema }),
+  capital: capitalSchema,
+});
+
+export const lossDistributionSchema = z.object({
+  kind: z.literal("loss"),
+  basis: z.enum(["projection", "realized"]),
+  participations: participationsOutcomeSchema,
+  surplus: moneySchema,
+  loss: moneySchema,
+  investorsLossPool: moneySchema,
+  lossPerParticipation: moneySchema,
+  roundingResidue: moneySchema,
+  capExcess: moneySchema,
+  proceedsShortfall: moneySchema,
+  externalLoss: moneySchema,
+  companyLoss: moneySchema,
+  returnPerParticipation: moneySchema,
+  capital: capitalSchema,
+  returned: capitalSchema,
+});
+
+/** Unión discriminada por `kind`: una liquidación con pérdida se guarda y vuelve idéntica. */
+export const distributionSchema: z.ZodType<DistributionOutcome> = z.discriminatedUnion("kind", [
+  gainDistributionSchema,
+  lossDistributionSchema,
+]);
+
+export const saleSchema: z.ZodType<ProjectSale> = z.object({
+  projectId: idSchema<"Project">(),
+  salePrice: moneySchema,
+  saleCosts: moneySchema,
+  signedOn: isoDateSchema,
+});
+
+export const settlementSchema: z.ZodType<Settlement> = z.object({
+  id: idSchema<"Settlement">(),
+  projectId: idSchema<"Project">(),
+  settledOn: isoDateSchema,
+  input: inputSchema,
+  distribution: distributionSchema,
 });
 
 export const budgetSchema = z.object({
@@ -63,16 +109,9 @@ export const economicsSchema = z.object({
 
 export const financeSliceSchema: z.ZodType<FinanceSlice> = z.object({
   economics: z.array(economicsSchema),
-  settlements: z.array(
-    z.object({
-      id: idSchema<"Settlement">(),
-      projectId: idSchema<"Project">(),
-      settledOn: isoDateSchema,
-      input: inputSchema,
-      distribution: distributionSchema,
-    }),
-  ),
+  settlements: z.array(settlementSchema),
   budgets: z.array(budgetSchema),
+  sales: z.array(saleSchema).default([]),
 });
 
 export type FinanceSeedContext = {
@@ -80,6 +119,8 @@ export type FinanceSeedContext = {
   readonly settled: readonly {
     readonly projectId: Settlement["projectId"];
     readonly settledOn: IsoDate;
+    /** Fecha de firma de la venta (`timeline.saleSignedOn`); si falta, la de liquidación. */
+    readonly signedOn?: IsoDate;
     readonly terms: ParticipationTerms;
   }[];
 };
@@ -112,6 +153,7 @@ export function buildFinanceSeed(ctx: FinanceSeedContext): FinanceSlice {
     estimatedSaleCosts: usdUnits(e.o),
   }));
 
+  const sales: ProjectSale[] = [];
   const settlements: Settlement[] = ctx.settled.map((s) => {
     const key = s.projectId.replace(/^prj_/, "") as keyof typeof REALIZED;
     const realized = REALIZED[key];
@@ -119,18 +161,22 @@ export function buildFinanceSeed(ctx: FinanceSeedContext): FinanceSlice {
     if (realized === undefined || base === undefined) {
       throw new Error(`semilla de finanzas: sin venta realizada para ${s.projectId}`);
     }
+    const sale: ProjectSale = {
+      projectId: s.projectId,
+      salePrice: realized.salePrice,
+      saleCosts: realized.saleCosts,
+      signedOn: s.signedOn ?? s.settledOn,
+    };
+    sales.push(sale);
     const result = createSettlement({
       id: asId<"Settlement">(realized.id),
       projectId: s.projectId,
       settledOn: s.settledOn,
-      input: {
-        basis: "realized",
-        salePrice: realized.salePrice,
-        acquisitionCost: base.acquisitionCost,
-        recoveryBudget: base.recoveryBudget,
-        saleCosts: realized.saleCosts,
-        participations: { total: s.terms.total, placed: s.terms.placed, unitPrice: s.terms.unitPrice },
-      },
+      input: buildRealizedInput({
+        sale,
+        economics: base,
+        terms: { total: s.terms.total, placed: s.terms.placed, unitPrice: s.terms.unitPrice },
+      }),
     });
     if (!result.ok) {
       throw new Error(`semilla de finanzas: ${result.error.code} en ${s.projectId}`);
@@ -146,5 +192,5 @@ export function buildFinanceSeed(ctx: FinanceSeedContext): FinanceSlice {
     if (!checked.ok) throw new Error(`semilla de finanzas: presupuesto ${checked.error.code} en ${budget.projectId}`);
   }
 
-  return financeSliceSchema.parse({ economics, settlements, budgets });
+  return financeSliceSchema.parse({ economics, settlements, budgets, sales });
 }

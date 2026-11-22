@@ -10,7 +10,7 @@ import { CONTRACT_PROJECT_ID, contractBudget, contractEconomics } from "../appli
 import { createSaveProjectEconomics } from "../application/save-project-economics";
 
 function setup(projectExists = true, failBudget = false) {
-  const slice = memorySlice<FinanceSlice>({ economics: [], settlements: [], budgets: [] });
+  const slice = memorySlice<FinanceSlice>({ economics: [], settlements: [], budgets: [], sales: [] });
   const save = createSaveProjectEconomics({
     projects: { findById: (id) => Promise.resolve(projectExists && id === CONTRACT_PROJECT_ID ? ({ id } as Project) : null) },
     economics: { ...createProjectEconomicsMockRepository(slice), ...createProjectEconomicsMockWriter(slice) },
@@ -70,7 +70,7 @@ describe("saveProjectEconomics (W-1)", () => {
 describe("saveProjectEconomics · fallo del presupuesto tras guardar la economía", () => {
   it("restaura la economía anterior", async () => {
     // economía ya guardada; el writer de presupuesto rechaza
-    const slice = memorySlice<FinanceSlice>({ economics: [contractEconomics], settlements: [], budgets: [] });
+    const slice = memorySlice<FinanceSlice>({ economics: [contractEconomics], settlements: [], budgets: [], sales: [] });
     const save = createSaveProjectEconomics({
       projects: { findById: (id) => Promise.resolve({ id } as Project) },
       economics: { ...createProjectEconomicsMockRepository(slice), ...createProjectEconomicsMockWriter(slice) },

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { isoDate } from "@/shared/domain/calendar-date";
 import { fixedClock } from "@/shared/domain/clock";
+import { usdUnits } from "@/shared/domain/money";
 import { memoryStorage } from "@/shared/infrastructure/browser-storage";
 import { contractBudget, contractEconomics } from "@/modules/finance/application/finance-repository.contract";
 import { contractClass } from "@/modules/participations/application/participations-repository.contract";
@@ -86,5 +87,54 @@ describe("Cambio de etapa W-3 a través del contenedor", () => {
     expect((await c.projects.changeProjectStage(works.id, "on_sale")).ok).toBe(true);
     const listed = await createContainer({ clock, storage }).participations.listMarketplace();
     expect(listed.find((l) => l.code === "M2-005")?.stage).toBe("on_sale");
+  });
+});
+
+describe("Venta y liquidación W-5 a través del contenedor", () => {
+  const onSale = async (c: ReturnType<typeof createContainer>) => {
+    const found = (await c.projects.projectRepository.list()).find((p) => p.code === "M2-004");
+    if (found === undefined) throw new Error("sin M2-004");
+    return found;
+  };
+
+  it("la venta y la liquidación (con pérdida) sobreviven a un contenedor nuevo sobre el mismo almacenamiento", async () => {
+    const storage = memoryStorage();
+    const c = createContainer({ clock, storage });
+    const project = await onSale(c);
+    expect(project.status).toBe("on_sale");
+
+    const sale = await c.finance.recordProjectSale({
+      projectId: project.id,
+      salePrice: usdUnits(47_000),
+      saleCosts: usdUnits(1_000),
+      signedOn: clock.today(),
+    });
+    expect(sale.ok).toBe(true);
+    const afterSale = createContainer({ clock, storage });
+    expect((await afterSale.projects.projectRepository.findById(project.id))?.status).toBe("sold");
+    expect((await afterSale.finance.saleRepository.findByProject(project.id))?.salePrice).toEqual(usdUnits(47_000));
+
+    const settled = await afterSale.finance.settleProject(project.id);
+    expect(settled.ok && settled.value.distribution.kind).toBe("loss");
+    const reloaded = createContainer({ clock, storage });
+    expect((await reloaded.projects.projectRepository.findById(project.id))?.status).toBe("settled");
+    expect(await reloaded.finance.settlementRepository.findByProject(project.id)).toEqual(settled.ok ? settled.value : null);
+    expect(await reloaded.finance.saleRepository.list()).toHaveLength(3);
+  });
+
+  it("una venta rechazada no toca el almacenamiento", async () => {
+    const storage = memoryStorage();
+    const c = createContainer({ clock, storage });
+    const project = await onSale(c);
+    await c.projects.projectRepository.list();
+    const before = storage.getItem(c.demo.storageKey);
+    const r = await c.finance.recordProjectSale({
+      projectId: project.id,
+      salePrice: usdUnits(1_000),
+      saleCosts: usdUnits(2_000),
+      signedOn: clock.today(),
+    });
+    expect(!r.ok && r.error.code).toBe("SALE_COSTS_EXCEED_PRICE");
+    expect(storage.getItem(c.demo.storageKey)).toBe(before);
   });
 });
