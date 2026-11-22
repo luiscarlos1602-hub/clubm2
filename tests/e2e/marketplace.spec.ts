@@ -160,6 +160,7 @@ test.describe("marketplace P3", () => {
   });
 
   test("capturas", async ({ page }, info) => {
+    test.skip(!process.env.CAPTURAS, "Solo con CAPTURAS=1 (pnpm capturas)");
     await open(page);
     await page.screenshot({
       path: `docs/qa/P3/proyectos-${info.project.name === "movil-390" ? 390 : 1440}.png`,

@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { isoDate } from "@/shared/domain/calendar-date";
+import { fixedClock } from "@/shared/domain/clock";
 import { asId } from "@/shared/domain/id";
 import type { Project, ProjectCode, Property } from "../domain/project";
+import type { ProjectStatus } from "../domain/project-status";
+import { createChangeProjectStage } from "./change-project-stage";
 import type { ProjectRepository, ProjectWriter, PropertyRepository, PropertyWriter } from "./ports";
 
 export type ProjectsRepositoryContractSubject = {
@@ -133,6 +136,68 @@ export function describeProjectsRepositoryContract(
       expect(!badSlug.ok && badSlug.error.code).toBe("INVALID_RECORD");
       expect(!badCode.ok && badCode.error.code).toBe("INVALID_RECORD");
       expect(await repo.projects.findById(contractProject.id)).toBeNull();
+    });
+    it("etapa (W-3): la compra sellada se relee igual por id, slug y list", async () => {
+      await repo.properties.save(contractProperty);
+      const inReview: Project = {
+        ...contractProject,
+        status: "due_diligence",
+        timeline: { acquiredOn: null, saleSignedOn: null, settledOn: null },
+      };
+      await repo.projects.save(inReview);
+      const bought: Project = {
+        ...inReview,
+        status: "acquired",
+        timeline: { ...inReview.timeline, acquiredOn: isoDate("2026-11-20") },
+      };
+      expect(await repo.projects.save(bought)).toEqual({ ok: true, value: bought });
+      expect(await repo.projects.findById(bought.id)).toEqual(bought);
+      expect(await repo.projects.findBySlug(bought.slug)).toEqual(bought);
+      expect((await repo.projects.list()).find((p) => p.id === bought.id)).toEqual(bought);
+    });
+
+    it("etapa (W-3): changeProjectStage recorre B2 → B3 sobre el puerto y cada paso queda guardado", async () => {
+      await repo.properties.save(contractProperty);
+      await repo.projects.save({
+        ...contractProject,
+        status: "opportunity",
+        timeline: { acquiredOn: null, saleSignedOn: null, settledOn: null },
+      });
+      const today = isoDate("2026-11-22");
+      const change = createChangeProjectStage({
+        projects: repo.projects,
+        clock: fixedClock(today),
+        publishGuard: () => Promise.resolve([]),
+      });
+      const path: readonly ProjectStatus[] = [
+        "due_diligence",
+        "acquired",
+        "funding",
+        "renovation",
+        "on_sale",
+        "stalled",
+        "on_sale",
+      ];
+      for (const to of path) {
+        const r = await change(contractProject.id, to);
+        expect(r.ok, `→ ${to}`).toBe(true);
+        expect((await repo.projects.findById(contractProject.id))?.status).toBe(to);
+      }
+      const final = await repo.projects.findBySlug(contractProject.slug);
+      expect(final?.timeline).toEqual({ acquiredOn: today, saleSignedOn: null, settledOn: null });
+    });
+
+    it("etapa (W-3): un cambio rechazado no toca lo guardado", async () => {
+      await repo.properties.save(contractProperty);
+      await repo.projects.save(contractProject);
+      const change = createChangeProjectStage({
+        projects: repo.projects,
+        clock: fixedClock(isoDate("2026-11-22")),
+        publishGuard: () => Promise.resolve([]),
+      });
+      const r = await change(contractProject.id, "opportunity");
+      expect(!r.ok && r.error.code).toBe("INVALID_TRANSITION");
+      expect(await repo.projects.findById(contractProject.id)).toEqual(contractProject);
     });
   });
 }

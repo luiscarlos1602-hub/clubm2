@@ -67,3 +67,18 @@ export const FINANCE_ADMIN_COPY = {
     conciliationText: "La caja y el reparto se concilian contra el extracto bancario antes de liquidar (pendiente de definir).",
   },
 } as const;
+
+/** W-3 · cifras de la ficha en el detalle de una oportunidad (B2). Datos simulados. */
+export const OPPORTUNITY_FIGURES_COPY = {
+  heading: "Cifras de compra y presupuesto",
+  description: "Cifras de la ficha del inmueble: la compra la paga la empresa con capital propio y la reforma se financia con participaciones económicas. Datos simulados.",
+  offer: "Oferta o precio de referencia (C)",
+  bought: "Precio de compra (C)",
+  reform: "Presupuesto de reforma (F)",
+  reformNote: "Se financia con participaciones económicas.",
+  sale: "Precio de venta objetivo",
+  saleCosts: "Costos de venta estimados",
+  notBought: "Capital propio: la compra aún no se ha ejecutado.",
+  editSheet: "Editar cifras en la ficha",
+  unavailable: "No pudimos leer las cifras de la ficha.",
+} as const;

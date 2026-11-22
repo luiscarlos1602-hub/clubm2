@@ -49,3 +49,42 @@ describe("Escrituras W-1 a través del contenedor", () => {
     expect(await createContainer({ clock, storage }).projects.propertyRepository.findById(contractProperty.id)).toBeNull();
   });
 });
+
+describe("Cambio de etapa W-3 a través del contenedor", () => {
+  const byCode = async (c: ReturnType<typeof createContainer>, code: string) => {
+    const found = (await c.projects.projectRepository.list()).find((p) => p.code === code);
+    if (found === undefined) throw new Error(`sin ${code}`);
+    return found;
+  };
+
+  it("comprar la oportunidad en due diligence sobrevive a recargar y sella la fecha de hoy", async () => {
+    const storage = memoryStorage();
+    const c = createContainer({ clock, storage });
+    const dd = await byCode(c, "M2-007");
+    const r = await c.projects.changeProjectStage(dd.id, "acquired");
+    expect(r.ok).toBe(true);
+    const reloaded = await byCode(createContainer({ clock, storage }), "M2-007");
+    expect(reloaded.status).toBe("acquired");
+    expect(reloaded.timeline.acquiredOn).toBe(clock.today());
+  });
+
+  it("publicar sin la ficha completa se rechaza con lo que falta y no toca el almacenamiento", async () => {
+    const storage = memoryStorage();
+    const c = createContainer({ clock, storage });
+    const dd = await byCode(c, "M2-007");
+    await c.projects.changeProjectStage(dd.id, "acquired");
+    const before = storage.getItem(c.demo.storageKey);
+    const r = await c.projects.changeProjectStage(dd.id, "funding");
+    expect(!r.ok && r.error.code).toBe("NOT_READY_TO_PUBLISH");
+    expect(storage.getItem(c.demo.storageKey)).toBe(before);
+  });
+
+  it("poner en venta un proyecto en obra se refleja en la cara pública tras recargar", async () => {
+    const storage = memoryStorage();
+    const c = createContainer({ clock, storage });
+    const works = await byCode(c, "M2-005");
+    expect((await c.projects.changeProjectStage(works.id, "on_sale")).ok).toBe(true);
+    const listed = await createContainer({ clock, storage }).participations.listMarketplace();
+    expect(listed.find((l) => l.code === "M2-005")?.stage).toBe("on_sale");
+  });
+});

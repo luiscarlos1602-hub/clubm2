@@ -29,6 +29,10 @@ import {
 } from "@/modules/finance/application/save-project-economics";
 import { createGetProjectSheet, type GetProjectSheet } from "@/modules/finance/application/get-project-sheet";
 import { createSaveProjectSheet, type SaveProjectSheet } from "@/modules/finance/application/save-project-sheet";
+import {
+  createCheckPublishReadiness,
+  type CheckPublishReadiness,
+} from "@/modules/finance/application/check-publish-readiness";
 import { createDemoProjectSheetWriter } from "../project-sheet.demo-writer";
 import type { DemoSnapshot } from "../demo-snapshot";
 import type { ParticipationsModule } from "./participations";
@@ -45,6 +49,8 @@ export type FinanceModule = {
   /** W-2: ficha de inmueble por slug (cualquier etapa) y su guardado atómico. */
   readonly getProjectSheet: GetProjectSheet;
   readonly saveProjectSheet: SaveProjectSheet;
+  /** W-3: requisitos S4 al publicar (acquired → funding); es el `PublishGuard` de projects. */
+  readonly checkPublishReadiness: CheckPublishReadiness;
 };
 
 export function registerFinance(
@@ -85,6 +91,7 @@ export function registerFinance(
   });
   return {
     getProjectSheet,
+    checkPublishReadiness: createCheckPublishReadiness({ getSheet: getProjectSheet }),
     saveProjectSheet: createSaveProjectSheet({
       getSheet: getProjectSheet,
       projects: deps.projects.projectRepository,

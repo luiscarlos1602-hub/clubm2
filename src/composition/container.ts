@@ -55,10 +55,18 @@ export function createContainer(options: ContainerOptions = {}): Container {
     parse: parseDemoSnapshot,
   });
 
-  const projects = registerProjects(store);
+  // finance se registra después (depende de projects): la guarda de publicación la resuelve al usarse.
+  let finance: FinanceModule | null = null;
+  const projects = registerProjects(store, {
+    clock,
+    publishGuard: (next) => {
+      if (finance === null) throw new Error("composition: finance aún no está registrado");
+      return finance.checkPublishReadiness(next);
+    },
+  });
   const participations = registerParticipations(store, projects);
   const ids = options.ids ?? randomIdGenerator();
-  const finance = registerFinance(store, { projects, participations, clock, ids });
+  finance = registerFinance(store, { projects, participations, clock, ids });
 
   return {
     clock,

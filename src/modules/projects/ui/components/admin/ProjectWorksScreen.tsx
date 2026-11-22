@@ -8,7 +8,8 @@ import { projectEditHref } from "@/shared/ui/app-shell";
 import { PageHeader, Section } from "@/shared/ui/layout";
 import { Button } from "@/shared/ui/primitives/button";
 import type { ProjectStatus } from "../../../domain/project-status";
-import { ADMIN_COMMON, WORKS_COPY as C } from "./copy";
+import { ADMIN_COMMON, STAGE_ACTIONS_COPY, WORKS_COPY as C } from "./copy";
+import { StageActions } from "./StageActions";
 import type { WorksProfile } from "./examples";
 import { StageBadge, WheelBadge } from "./badges";
 import {
@@ -66,6 +67,18 @@ export function ProjectWorksScreen({ idOrSlug, ProcessView }: { idOrSlug: string
           )}
         </AdminQueryState>
       </Section>
+
+      {row ? (
+        <Section tone="light" ruled spacing="md" labelledBy="obra-etapa-h" innerClassName="grid gap-6 lg:grid-cols-12">
+          <div className="flex flex-col gap-2 lg:col-span-5">
+            <h2 id="obra-etapa-h" className="font-heading text-2xl font-semibold">{STAGE_ACTIONS_COPY.heading}</h2>
+            <p className="text-muted-foreground">{STAGE_ACTIONS_COPY.description}</p>
+          </div>
+          <div className="lg:col-span-7">
+            <StageActions project={row.project} testId="obra-etapa" />
+          </div>
+        </Section>
+      ) : null}
 
       {row ? <WorksOverviewSection row={row} /> : null}
 
