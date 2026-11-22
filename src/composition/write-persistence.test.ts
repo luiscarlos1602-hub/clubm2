@@ -122,6 +122,29 @@ describe("Venta y liquidación W-5 a través del contenedor", () => {
     expect(await reloaded.finance.saleRepository.list()).toHaveLength(3);
   });
 
+  it("un snapshot club-demo:v2 guardado antes de W-5 (sin finance.sales) se lee con [] y deja vender y liquidar", async () => {
+    const storage = memoryStorage();
+    const first = createContainer({ clock, storage });
+    await first.projects.projectRepository.list();
+    const stored = JSON.parse(storage.getItem(first.demo.storageKey) ?? "null") as { finance: Record<string, unknown> } | null;
+    expect(stored).not.toBeNull();
+    if (stored === null) return;
+    delete stored.finance.sales;
+    storage.setItem(first.demo.storageKey, JSON.stringify(stored));
+
+    const c = createContainer({ clock, storage });
+    expect(await c.finance.saleRepository.list()).toEqual([]);
+    const project = await onSale(c);
+    const sale = await c.finance.recordProjectSale({
+      projectId: project.id,
+      salePrice: usdUnits(47_000),
+      saleCosts: usdUnits(1_000),
+      signedOn: clock.today(),
+    });
+    expect(sale.ok).toBe(true);
+    expect((await c.finance.settleProject(project.id)).ok).toBe(true);
+  });
+
   it("una venta rechazada no toca el almacenamiento", async () => {
     const storage = memoryStorage();
     const c = createContainer({ clock, storage });

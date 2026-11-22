@@ -98,6 +98,29 @@ export function describeSaleSettlementWriterContract(
       expect(await s.projects.findById(s.project.id)).toEqual(s.project);
     });
 
+    it("record y settle: registro de otro proyecto → INVALID_RECORD y nada cambia", async () => {
+      const other = sale(s.project, { projectId: asId<"Project">("prj_otro_01") });
+      const r = await s.writer.record({ project: sold, sale: other });
+      expect(!r.ok && r.error.code).toBe("INVALID_RECORD");
+      expect(await s.sales.findByProject(s.project.id)).toBeNull();
+      expect(await s.projects.findById(s.project.id)).toEqual(s.project);
+
+      await s.writer.record({ project: sold, sale: sale(s.project) });
+      const settledProject = mustChange(sold, "settled", SETTLED_ON);
+      const foreign = { ...settlementOf(s.project, { salePrice: 47_000, saleCosts: 1_000 }), projectId: asId<"Project">("prj_otro_01") };
+      const t = await s.writer.settle({ project: settledProject, settlement: foreign });
+      expect(!t.ok && t.error.code).toBe("INVALID_RECORD");
+      expect(await s.settlements.findByProject(s.project.id)).toBeNull();
+      expect((await s.projects.findById(s.project.id))?.status).toBe("sold");
+    });
+
+    it("settle: proyecto inexistente → REFERENCE_NOT_FOUND", async () => {
+      const ghost = { ...mustChange(sold, "settled", SETTLED_ON), id: asId<"Project">("prj_fantasma_01") };
+      const settlement = { ...settlementOf(s.project, { salePrice: 47_000, saleCosts: 1_000 }), projectId: ghost.id };
+      const r = await s.writer.settle({ project: ghost, settlement });
+      expect(!r.ok && r.error.code).toBe("REFERENCE_NOT_FOUND");
+    });
+
     it("settle sin venta → REFERENCE_NOT_FOUND y nada cambia", async () => {
       const settledProject = mustChange(sold, "settled", SETTLED_ON);
       const r = await s.writer.settle({ project: settledProject, settlement: settlementOf(s.project, { salePrice: 47_000, saleCosts: 1_000 }) });

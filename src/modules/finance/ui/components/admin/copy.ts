@@ -57,6 +57,8 @@ export const FINANCE_ADMIN_COPY = {
     companyTotal: "Total empresa (75 % + fondo no colocado + residuo)",
     capitalExternal: "Capital devuelto a inversionistas",
     capitalCompany: "Capital devuelto a la empresa",
+    capitalContributedExternal: "Capital aportado por inversionistas",
+    capitalContributedCompany: "Capital aportado por la empresa",
     capitalNote:
       "El capital se devuelve aparte de la ganancia; no se suma a ella. Si el proyecto cierra con pérdida, el aporte puede recuperarse solo en parte.",
     noDistribution: "Sin excedente que repartir: cada participación recupera su aporte, sin ganancia.",
@@ -70,7 +72,7 @@ export const FINANCE_ADMIN_COPY = {
     lossPerParticipation: "Pérdida por participación",
     returnedExternal: "Devuelto a las participaciones colocadas",
     returnedCompany: "Devuelto a la empresa",
-    lossNote: "La pérdida se reparte con el mismo criterio 25/75 y ninguna participación pierde más que su aporte.",
+    lossNote: "La pérdida se reparte con el mismo criterio 25/75; ninguna participación puede perder más que su aporte y puede recuperarse solo en parte. Si lo cobrado en la venta no alcanza, las participaciones colocadas reciben todo lo cobrado y la empresa nada.",
     holderHeading: "Por participación",
     holderTag: "Realizado",
     holderCapital: "Capital aportado",

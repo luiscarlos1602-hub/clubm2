@@ -77,8 +77,8 @@ function LossResult({ out, kind }: { out: LossDistribution; kind: MoneyKind }) {
       <p className="text-sm text-muted-foreground">{C.lossNote}</p>
       <SplitChart external={out.externalLoss} company={out.companyLoss} />
       <div className="grid gap-5 border-t border-border pt-6 sm:grid-cols-2">
-        <MoneyDisplay value={out.capital.external} kind="capital" label={C.capitalExternal} data-testid="finanzas-capital-externo" />
-        <MoneyDisplay value={out.capital.company} kind="capital" label={C.capitalCompany} data-testid="finanzas-capital-empresa" />
+        <MoneyDisplay value={out.capital.external} kind="capital" label={C.capitalContributedExternal} data-testid="finanzas-capital-externo" />
+        <MoneyDisplay value={out.capital.company} kind="capital" label={C.capitalContributedCompany} data-testid="finanzas-capital-empresa" />
       </div>
     </>
   );

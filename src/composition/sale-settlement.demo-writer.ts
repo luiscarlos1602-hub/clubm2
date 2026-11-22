@@ -14,8 +14,12 @@ import type { DemoSnapshot } from "./demo-snapshot";
 export function createDemoSaleSettlementWriter(store: DemoStore<DemoSnapshot>): ProjectSaleWriter & SettlementWriter {
   async function apply<T>(
     project: Parameters<ProjectSaleWriter["record"]>[0]["project"],
+    recordProjectId: string,
     write: (finance: ReturnType<typeof memorySlice<DemoSnapshot["finance"]>>) => Result<T, RepositoryWriteError>,
   ): Promise<Result<T, RepositoryWriteError>> {
+    if (recordProjectId !== project.id) {
+      return err("INVALID_RECORD", `el registro es del proyecto ${recordProjectId}, no de ${project.id}`);
+    }
     const base = store.read();
     if (!base.projects.projects.some((p) => p.id === project.id)) {
       return err("REFERENCE_NOT_FOUND", `no existe el proyecto ${project.id}`);
@@ -32,7 +36,7 @@ export function createDemoSaleSettlementWriter(store: DemoStore<DemoSnapshot>): 
   }
 
   return {
-    record: ({ project, sale }) => apply(project, (finance) => recordSaleInSlice(finance, sale)),
-    settle: ({ project, settlement }) => apply(project, (finance) => recordSettlementInSlice(finance, settlement)),
+    record: ({ project, sale }) => apply(project, sale.projectId, (finance) => recordSaleInSlice(finance, sale)),
+    settle: ({ project, settlement }) => apply(project, settlement.projectId, (finance) => recordSettlementInSlice(finance, settlement)),
   };
 }
