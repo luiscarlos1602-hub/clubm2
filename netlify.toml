@@ -1,0 +1,8 @@
+# Despliegue en Netlify (Next.js 16 con el adaptador OpenNext, auto-instalado por Netlify).
+[build]
+  command = "pnpm build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  LEFTHOOK = "0"
