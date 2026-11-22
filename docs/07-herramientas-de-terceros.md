@@ -8,7 +8,7 @@
 | Necesidad | v1 (Etapa 1, datos simulados) | Producción (Etapa 2–3 del maestro) | Notas |
 |---|---|---|---|
 | Código y versiones | 🟢 Git local → **GitHub** | GitHub | Necesito que crees el repo cuando quieras subirlo |
-| Hosting | 🟢 **Vercel** (plan Hobby; cuenta creada el 22-nov) | Vercel Pro | URL pública; despliegue automático desde `main` |
+| Hosting | 🟢 **Netlify** (plan gratuito; `netlify.toml`, ADR-017) | Netlify Pro | URL pública; despliegue automático desde `main` y preview por rama |
 | Base de datos | 🟢 Ninguna: semillas + `localStorage` | 🔵 **Supabase** (Postgres) | Alternativa: Neon. La arquitectura ya deja el puerto listo |
 | Autenticación | 🟢 Selector de rol simulado | 🔵 **Supabase Auth** (email + Google, magic link) | Alternativa: Clerk |
 | Archivos (fotos, documentos) | 🟢 Imágenes en `public/` | 🔵 Supabase Storage o **Cloudinary** | Documentos legales en bucket privado con URLs firmadas |
@@ -31,7 +31,7 @@
 | Email marketing / newsletter | — | 🔵 **Brevo** o Mailchimp | |
 | WhatsApp | 🟢 Botón "Escríbenos" (enlace wa.me) | 🔵 **WhatsApp Business Cloud API** (Meta) | Canal principal en Venezuela ❓ |
 | CRM | 🟢 Módulo propio con datos simulados | 🔵❓ Propio (ya modelado) o **HubSpot** gratis | Recomiendo propio + exportación |
-| Analítica de producto | 🟢 Opcional: **Vercel Analytics** | 🔵 **PostHog** (embudos registro → inversión) + **Meta Pixel** / Google Tag para campañas | |
+| Analítica de producto | 🟢 Opcional: analítica del hosting (**Netlify Analytics**) | 🔵 **PostHog** (embudos registro → inversión) + **Meta Pixel** / Google Tag para campañas | |
 | Eventos y charlas | 🟢 Calendario propio simulado | 🔵 **Luma** o Cal.com + Zoom / Google Meet / YouTube Live | |
 | Comunidad | 🟢 Vitrina en "El club" | 🔵❓ Propia, **Circle**, Discord o comunidad de WhatsApp | |
 | Academia / video | 🟢 Fichas de cursos con video de YouTube | 🔵 YouTube no listado o **Mux** | |
@@ -55,6 +55,6 @@
 ## 6. Resumen: qué necesito de ti para la demo
 
 1. Nada de pago es obligatorio.
-2. Una cuenta de **GitHub** (repo) y **Vercel** (despliegue) cuando lleguemos a F5.
+2. Una cuenta de **GitHub** (repo) y **Netlify** (despliegue, ADR-017) cuando lleguemos a F5.
 3. Opcional: una **API key de Claude** si quieres la función de IA en vivo; si no, la simulo.
 4. Opcional: fotos reales o logo si los tienes.

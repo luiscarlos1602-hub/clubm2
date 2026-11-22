@@ -6,7 +6,7 @@
 
 | Pieza | Elección | Por qué |
 |---|---|---|
-| Framework | **Next.js 16 (App Router)** (ADR-008) | Rutas por carpeta, layouts por zona (público / inversionista / admin), despliegue trivial en Vercel |
+| Framework | **Next.js 16 (App Router)** (ADR-008) | Rutas por carpeta, layouts por zona (público / inversionista / admin), despliegue en Netlify con el adaptador OpenNext (ADR-017) |
 | Lenguaje | **TypeScript `strict`** | El motor financiero no admite `any` |
 | Estilos | **Tailwind CSS v4** + **shadcn/ui** (Radix) | Componentes accesibles y editables, look premium rápido |
 | Validación | **Zod** | Esquemas para formularios y semillas |

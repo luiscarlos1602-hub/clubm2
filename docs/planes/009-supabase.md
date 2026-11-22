@@ -240,9 +240,9 @@ RLS por tabla (todas con `enable row level security`; ninguna política `using (
 
 | Variable | Dónde | Notas |
 |---|---|---|
-| `NEXT_PUBLIC_DATA_SOURCE` | `.env.local`, Vercel | `demo` (defecto) · `supabase` |
-| `NEXT_PUBLIC_SUPABASE_URL` | `.env.local`, Vercel | `https://qatwjyreqshiwtdkovbd.supabase.co` (MCP `get_project_url`) |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `.env.local`, Vercel | clave pública (MCP `get_publishable_keys`; vale la `anon` o la `sb_publishable_…`) |
+| `NEXT_PUBLIC_DATA_SOURCE` | `.env.local`, Netlify | `demo` (defecto) · `supabase` |
+| `NEXT_PUBLIC_SUPABASE_URL` | `.env.local`, Netlify | `https://qatwjyreqshiwtdkovbd.supabase.co` (MCP `get_project_url`) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `.env.local`, Netlify | clave pública (MCP `get_publishable_keys`; vale la `anon` o la `sb_publishable_…`) |
 | `SUPABASE_SERVICE_ROLE_KEY` | **en ningún lado** | D2. `composition/secrets-guard.test.ts` falla si aparece `service_role`/`SERVICE_ROLE` en `src/`, `scripts/` o `.env.example` |
 
 `.env.example` (versionado; `.gitignore` ya lo permite) con las tres primeras y valores vacíos.
@@ -258,7 +258,7 @@ Un archivo pertenece a un solo paquete. "Orq." = agente principal (único que us
 
 | # | Agente | Archivos (exclusivos) | Depende de | Paralelo con | Criterios |
 |---|---|---|---|---|---|
-| 0 | Orq. | Aprobación de ADR-015 y respuestas S1–S5 del usuario; `pnpm add -E @supabase/supabase-js @supabase/ssr` (`package.json`, `pnpm-lock.yaml`); `.env.example`; en el panel de Supabase: **desactivar registro abierto** (Auth → "Allow new users to sign up" off), Site URL y redirect URLs (localhost + Vercel) | — | 1 | CA6, CA9 |
+| 0 | Orq. | Aprobación de ADR-015 y respuestas S1–S5 del usuario; `pnpm add -E @supabase/supabase-js @supabase/ssr` (`package.json`, `pnpm-lock.yaml`); `.env.example`; en el panel de Supabase: **desactivar registro abierto** (Auth → "Allow new users to sign up" off), Site URL y redirect URLs (localhost + Netlify) | — | 1 | CA6, CA9 |
 | 1 | datos-demo | `supabase/migrations/0001_base.sql` … `0007_save_project_sheet.sql`; `src/composition/supabase-schema-drift.test.ts` (lee los SQL y compara cada `-- enum:` con `PUBLIC_STAGES`, `PROJECT_STATUSES` − `stalled`, `PROCESS_STAGE_KINDS`, `PROCESS_STEP_STATUSES`, `PROJECT_RISK_KINDS`, `BUDGET_ITEMS`, `PROJECT_IMAGE_KINDS`, `TEAM_ROLES`, `MAX_MONEY_CENTS`, `PROJECT_SLUG_PATTERN`) | contratos §3.2 | 0, 3 | CA1–CA4, CA10 |
 | 2 | Orq. (MCP) | Aplica 0001→0007 con `apply_migration` (nombre = nombre de archivo sin `.sql`, en orden); `list_tables` + `list_migrations`; `get_advisors` security y performance → corrige con paquete 1 si hay ERROR; ejecuta las consultas de §5.3; `generate_typescript_types` → escribe `src/shared/infrastructure/supabase/database.types.ts` | 1 | 3 | CA1–CA4 |
 | 3 | dominio-financiero | `src/modules/team/**` salvo `infrastructure/` y `ui/` (`CLAUDE.md`, `domain/team-member.ts`+test, `application/ports.ts`, `index.ts`); `architecture.modules.mjs` (línea `team`); `src/modules/projects/domain/project-image.ts`+test, `project-code.ts`+test; `src/modules/projects/application/ports.ts`, `upload-project-image.ts`+test, `remove-project-image.ts`+test; `src/modules/projects/index.ts`; `src/modules/finance/domain/project-sheet.ts`+test, `project-detail-types.ts`; `src/modules/finance/application/ports.ts`, `get-project-sheet.ts`+test, `save-project-sheet.ts`+test, `get-project-detail.ts`(+test, añade `images`); `src/modules/finance/index.ts`; `CLAUDE.md` de projects y finance | contratos §3.1; P4 integrado | 1, 2 | CA5, CA8 |
@@ -338,7 +338,7 @@ Notas de capas para los agentes:
 | S6 | ¿Se cargan los 7 proyectos de ejemplo en la base real? | Sí, marcados como simulados y borrables de una vez |
 | S7 | ¿Las fotos pueden estar en un bucket de lectura pública? | Sí, sin direcciones, placas ni rostros; JPG/PNG/WebP/AVIF ≤ 5 MB; galería ≤ 12 |
 | S8 | ¿Un editor puede borrar un proyecto? | No: solo admin y solo si no está publicado |
-| S9 | ¿El modo por defecto en Vercel pasa a `supabase` al terminar? | Sí en producción; `demo` en local y en los tests |
+| S9 | ¿El modo por defecto en Netlify pasa a `supabase` al terminar? | Sí en producción; `demo` en local y en los tests |
 
 ## 7. ADR requerido
 Sí → `docs/decisiones/ADR-015-persistencia-supabase-y-modulo-team.md` (propuesto): módulo `team`, elemento `proxy` en las reglas de capas, carpeta `supabase/`, escrituras desde el navegador bajo RLS sin Server Actions ni service role, `stalled` en tabla interna, `NEXT_PUBLIC_DATA_SOURCE`. No cambia la tabla de dependencias entre capas existente: la amplía con `team` (base del orden) y `proxy`.

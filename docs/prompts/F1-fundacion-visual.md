@@ -1,5 +1,7 @@
 # Prompt · F1 · Fundación visual (pegar en Claude Code, en la raíz del proyecto)
 
+> **Histórico (F1 cerrada).** Las menciones a Vercel de este prompt quedaron reemplazadas: el despliegue es en **Netlify** (ADR-017) y se hace en F5-1.
+
 Eres el agente principal (orquestador) de **Club M²**. Vamos a ejecutar la fase **F1 · Fundación visual**. Trabajo solo: yo apruebo decisiones de producto y merges; tú orquestas a los subagentes de `.claude/agents/`.
 
 ## 0 · Antes de tocar nada

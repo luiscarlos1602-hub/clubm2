@@ -20,7 +20,7 @@ Rama: `feat/app-navegacion`. Sale de `main` **después de integrar F1-2** (tiene
 - **CA8 · Capas.** `pnpm lint` sin errores: `app/` solo importa `shared-ui`, `shared-lib` y `module-api`. Ningún archivo de F1-5 importa `@/modules/*/backoffice` ni `@/composition`. No se crea ningún módulo de negocio (§2, decisión D1).
 - **CA9 · `data-testid`.** Están los de §5.2, en kebab-case y estables.
 - **CA10 · E2E.** `tests/e2e/rutas.spec.ts` recorre las 14 rutas en `movil-390` y `desktop-1440` y verifica CA2, CA5, CA6 y CA7. `tests/e2e/navegacion.spec.ts` verifica CA3 y CA4. `andamiaje.spec.ts` se adapta a la nueva raíz. `sistema.spec.ts` sigue en verde.
-- **CA11 · Verde.** `pnpm verify` pasa completo. [PROPUESTO] `pnpm build` también pasa (con `cacheComponents: true`, las rutas dinámicas exigen `Suspense` alrededor de `usePathname`, ver §6 R1). Es requisito para F1-6 (Vercel).
+- **CA11 · Verde.** `pnpm verify` pasa completo. [PROPUESTO] `pnpm build` también pasa (con `cacheComponents: true`, las rutas dinámicas exigen `Suspense` alrededor de `usePathname`, ver §6 R1). Es requisito para F1-6 (despliegue; hoy Netlify, ADR-017).
 
 ## 2. Módulos afectados
 

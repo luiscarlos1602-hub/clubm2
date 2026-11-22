@@ -13,7 +13,7 @@
 | A5 / A6 | Propuesta por defecto (presentación en vivo + URL; Caracas + Valencia) | — |
 | B1–B3 Stack | Aceptado: Next + TS + Tailwind + shadcn, sin backend, selector de rol | ADR-001 |
 | B4 Equipo | **Trabaja solo** | `04 §2.2` |
-| B5 Cuentas | GitHub: sí · Vercel: se crea el 22-nov | `07` |
+| B5 Cuentas | GitHub: sí · Vercel: se crea el 22-nov (hosting **reemplazado por Netlify**, ADR-017) | `07` |
 | D1–D7 Simulador | Propuestas por defecto aceptadas | `02 §4` |
 | H1–H4 Liquidación | Propuestas por defecto aceptadas | `02` |
 | K1–K4 Motor | Propuestas por defecto; **las ruedas son internas y no se muestran a inversionistas** | ADR-004 |

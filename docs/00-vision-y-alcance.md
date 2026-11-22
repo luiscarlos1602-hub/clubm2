@@ -69,7 +69,7 @@ El objetivo de la v1 es que un visitante (futuro miembro, aliado o inversionista
 - Recorrido completo sin errores en móvil (390 px) y desktop (1440 px).
 - El simulador reproduce exactamente las tablas del documento maestro (100, 50 y 0 participaciones colocadas).
 - Ninguna frase de la UI promete rendimiento (revisión de cumplimiento aprobada) y ninguna pantalla de inversionista muestra ruedas.
-- Recorrido de presentación de 5 minutos escrito y ensayado (`docs/09-guion-demo.md`, F5) y URL pública en Vercel.
+- Recorrido de presentación de 5 minutos escrito y ensayado (`docs/09-guion-demo.md`, F5) y URL pública en Netlify (ADR-017).
 
 ## 6. Supuestos a validar contigo
 
@@ -80,5 +80,5 @@ El objetivo de la v1 es que un visitante (futuro miembro, aliado o inversionista
 | S3 | Nombre **Club M²** (ADR-003) e identidad | Negro + dorado del placeholder | ✅ identidad completa de `marketing/02-branding.md`: paleta cal y arcilla, Fraunces + Inter + IBM Plex Mono, tuteo (ADR-005) |
 | S4 | Selector de rol en vez de login | Login simulado con usuarios demo | ✅ aceptado |
 | S5 | Excedente del simulador = venta − compra − presupuesto integral − costos de venta (hipótesis contractual del ejemplo del documento §6) | Otra fórmula si ya la definieron | ✅ aceptado |
-| S6 | Despliegue en Vercel | Otro hosting | ✅ aceptado (cuenta creada el 22-nov) |
+| S6 | Despliegue en **Netlify** (`netlify.toml`) | Vercel (lo previsto hasta el 22-nov) | ✅ aceptado (ADR-017) |
 | S7 | Repositorio git local en esta carpeta; GitHub cuando lo crees | — | ✅ aceptado |

@@ -7,7 +7,7 @@
 | Fase | Objetivo | Entregable | Puerta de salida |
 |---|---|---|---|
 | **F0 · Fundamentos** ✅ | Docs, agentes, skills, decisiones | `docs/` + `.claude/` + `CLAUDE.md` | Decisiones 🔴 respondidas (22-nov) |
-| **F1 · Fundación visual** | Andamiaje, design system Club M² (`/sistema`), motor de reparto, semillas, 14 rutas navegables | App navegable desplegada en Vercel | `verify` verde · C1–C6 · `/sistema` aprobado por el usuario |
+| **F1 · Fundación visual** | Andamiaje, design system Club M² (`/sistema`), motor de reparto, semillas, 14 rutas navegables | App navegable (despliegue movido a F5, en Netlify: ADR-017) | `verify` verde · C1–C6 · `/sistema` aprobado por el usuario |
 | **F2 · Flujo del inversionista** | P1 → P2 → P3 → P4 → P5 → P6 + P8 | Recorrido visitante → inversionista → portafolio | E2E inversionista · cumplimiento sin 🔴 |
 | **F3 · Flujo operativo** | B2, B6 → B3 → B4 → B5 → B1 | Backoffice que alimenta la cara del inversionista | E2E admin con el "momento wow" |
 | **F4 · Club y pulido** | P7, fotografía, microinteracciones, AA, rendimiento, SEO | Producto pulido | Auditoría AA · Lighthouse ≥ 90 móvil |
@@ -67,7 +67,7 @@ Mecánica: el orquestador lanza los subagentes en el mismo mensaje con aislamien
 
 - Tú eres dueño de producto **y** único revisor humano: los agentes revisores hacen la revisión técnica; tú apruebas el plan de las funcionalidades L, las decisiones de producto y el merge a `main`.
 - Máximo 3 paquetes en paralelo: más no acelera porque tu atención es el cuello de botella.
-- Ramas cortas (`feat/<modulo>-<desc>`), una por funcionalidad, merge en cuanto pasa la revisión. `main` siempre desplegable en Vercel.
+- Ramas cortas (`feat/<modulo>-<desc>`), una por funcionalidad, merge en cuanto pasa la revisión. `main` siempre desplegable en Netlify (ADR-017).
 - Ritmo de producto, no de hackathon: no se salta la revisión para ir más rápido, pero basta un revisor por cambio (ADR-016).
 - **Una sola sesión escribiendo por carpeta**: dos sesiones en el mismo árbol ya rompieron el tablero (retro F1, plan 010).
 
