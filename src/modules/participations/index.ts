@@ -23,3 +23,4 @@ export {
 } from "./domain/marketplace-filters";
 export type { ListMarketplace, ListMarketplaceDeps } from "./application/list-marketplace";
 export { ProjectMarketplace, type ProjectMarketplaceProps } from "./ui/components/investor/ProjectMarketplace";
+export { MARKETPLACE_QUERY_KEY } from "./ui/hooks/use-marketplace";

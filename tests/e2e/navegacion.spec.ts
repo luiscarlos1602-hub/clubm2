@@ -29,28 +29,21 @@ test.describe("navegación", () => {
     }
   });
 
-  test("selector de rol", async ({ page }) => {
+  test("inicio de sesión de demostración: Ingresar → panel → Salir", async ({ page }) => {
     const errors: string[] = [];
     page.on("console", (m) => {
       if (m.type() === "error") errors.push(m.text());
     });
     page.on("pageerror", (e) => errors.push(e.message));
     await page.goto("/");
-    const sel = page.getByTestId("selector-rol");
-    await expect(sel).toContainText("Visitante");
-    await sel.click();
-    await page.getByTestId("selector-rol-admin").click();
-    await expect(page).toHaveURL(/\/admin$/);
-    await page.reload();
-    await expect(page.getByTestId("selector-rol")).toContainText("Admin");
-    await page.goto("/");
-    await expect(page.getByTestId("selector-rol")).toContainText("Admin");
-    await page.getByTestId("selector-rol").click();
-    await page.getByTestId("selector-rol-investor").click();
-    await expect(page).toHaveURL(/\/proyectos$/);
-    await page.reload();
-    await page.goto("/");
-    await expect(page.getByTestId("selector-rol")).toContainText("Inversionista");
+    await expect(page.getByTestId("selector-rol")).toHaveCount(0);
+    await page.goto("/ingresar");
+    await page.getByTestId("ingresar-correo").fill("persona@ejemplo.com");
+    await page.getByTestId("ingresar-clave").fill("demo");
+    await page.getByTestId("ingresar-entrar").click();
+    await expect(page).toHaveURL(/\/panel$/);
+    await page.locator('[data-testid="salir"]:visible').click();
+    await expect(page).toHaveURL(/\/$/);
     expect(errors).toEqual([]);
   });
 

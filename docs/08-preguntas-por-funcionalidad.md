@@ -172,3 +172,12 @@
 | P3-Q3 | ¿Cómo se muestra un proyecto vendido y aún no liquidado? | "Vendido", dentro de "Finalizados" |
 | P3-Q4 | ¿El plazo objetivo es único (3 meses) y se sigue mostrando en un proyecto que ya lo superó? | Sí, como proyección no garantizada (L5, sin "días sin vender") |
 | P3-Q5 | ¿Una colocación completa en `funding` entra en "Abiertos a participar"? | No, solo en "Todas" |
+
+## Bloque Q · Maqueta visual (ADR-012, 22-nov) 🟠
+
+| # | Pregunta | Propuesta por defecto (aplicada en la maqueta) |
+|---|---|---|
+| Q1 | ¿Cómo se reparte la bolsa de 5.000 del presupuesto integral (honorarios, contingencia, reserva)? | Ejemplo: 2.500 · 1.500 · 1.000, rotulado como ejemplo |
+| Q2 | ¿El retraso en la venta tiene costo (mantenimiento, impuestos) que reduzca la ganancia? | No se estima: solo alarga el plazo proyectado |
+| Q3 | Escenarios conservador/base/optimista: ¿qué deltas usar? | Conservador venta −10 % y obra +20 %; optimista venta +5 % |
+| Q4 | Contenido y formatos del club (eventos, academia, visitas) | "Por definir" en la vitrina |

@@ -11,6 +11,8 @@ import {
   Search,
   UserCircle,
   UserPlus,
+  LogIn,
+  LayoutDashboard,
   Users,
   Wallet,
   type LucideIcon,
@@ -32,4 +34,6 @@ export const ROUTE_ICONS: Readonly<Record<RouteId, LucideIcon>> = {
   b4: Megaphone,
   b5: Landmark,
   b6: Contact,
+  login: LogIn,
+  panel: LayoutDashboard,
 };

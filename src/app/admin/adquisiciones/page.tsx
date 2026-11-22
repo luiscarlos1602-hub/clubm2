@@ -1,7 +1,8 @@
-import { RoutePlaceholder, routeMetadata } from "@/shared/ui/app-shell";
+import { AcquisitionsBoard } from "@/modules/projects/backoffice-ui";
+import { routeMetadata } from "@/shared/ui/app-shell";
 
 export const metadata = routeMetadata("b2");
 
-export default function AcquisitionsPage() {
-  return <RoutePlaceholder routeId="b2" />;
+export default function AdminAcquisitionsPage() {
+  return <AcquisitionsBoard />;
 }

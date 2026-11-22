@@ -94,11 +94,13 @@ Proyecto Inmobiliario/
 │   │   ├── (publico)/             # Sin sesión
 │   │   │   ├── page.tsx           # P1 Landing
 │   │   │   ├── registro/          # P2
+│   │   │   ├── ingresar/          # Acceso de demostración (ADR-012)
 │   │   │   └── como-funciona/      # (no creada: por ahora sección de P1; ver docs/08 M3)
 │   │   ├── (inversionista)/       # Layout con navegación del miembro
 │   │   │   ├── proyectos/                 # P3 Marketplace
 │   │   │   ├── proyectos/[slug]/          # P4 Ficha + simulador
 │   │   │   ├── proyectos/[slug]/participar/  # P5
+│   │   │   ├── panel/                     # Inicio del inversionista (ADR-012)
 │   │   │   ├── portafolio/                # P6
 │   │   │   ├── club/                      # P7
 │   │   │   └── cuenta/                    # P8
@@ -146,7 +148,7 @@ Proyecto Inmobiliario/
 │   │   │   ├── primitives/        # button, card, dialog… (generadas por shadcn)
 │   │   │   ├── README.md          # catálogo de componentes (lo leen los agentes antes de crear uno)
 │   │   │   ├── brand/             # MoneyDisplay, StatusBadge, ProjectionLabel, DemoBanner, legal-copy.ts
-│   │   │   ├── app-shell/         # Navegación por zona, selector de rol, mapa de rutas (F1-5)
+│   │   │   ├── app-shell/         # Navegación por zona, "Salir", mapa de rutas (F1-5; sin selector de rol, ADR-012)
 │   │   │   └── showcase/          # Secciones de la página interna /sistema
 │   │   ├── infrastructure/        # demo-store (localStorage), clock, reset
 │   │   ├── lib/                   # formateadores es-VE, cn(), utilidades
@@ -167,7 +169,7 @@ Proyecto Inmobiliario/
 
 ## 4. Reglas de dependencia (verificadas por ESLint)
 
-| Desde ↓ puede importar → | domain propio | application propio | infra propio | ui propio | `index.ts` de otro módulo | shared/domain | shared/ui·lib | composition |
+| Desde ↓ puede importar → | domain propio | application propio | infra propio | ui propio | `index.ts` / `ui.ts` de otro módulo | shared/domain | shared/ui·lib | composition |
 |---|---|---|---|---|---|---|---|---|
 | **domain** | ✅ | ❌ | ❌ | ❌ | ✅ solo tipos/funciones de domain | ✅ | ❌ | ❌ |
 | **application** | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ lib | ❌ |
@@ -225,7 +227,7 @@ El código lo escriben y revisan agentes que empiezan cada tarea sin memoria. Es
 | Dinero solo en el motor | `no-restricted-syntax` sobre aritmética con `.cents` fuera de `shared/domain`, `modules/finance`, `modules/projects` | "Ninguna pantalla calcula dinero — docs/01 §4 regla 5" |
 | Sin `any`, sin `export default` (salvo page/layout), sin `console.log` | reglas de `typescript-eslint` / `import` | — |
 | Copy sin promesas | `scripts/check-copy.mjs` en `verify:fast` y en el hook de edición | Sugiere el texto permitido |
-| Ruedas solo internas (ADR-004) | `no-restricted-imports`: `app/(publico)`, `app/(inversionista)` y `ui/components/investor/` no importan `modules/*/backoffice`; `check-copy` regla R9 sobre la palabra "rueda" | "Las ruedas son internas — docs/01 §8.3" |
+| Ruedas solo internas (ADR-004) | `no-restricted-imports`: fuera de `app/admin/**` y `ui/components/admin/**` nadie importa `modules/*/backoffice` ni `modules/*/backoffice-ui`; `check-copy` regla R9 sobre la palabra "rueda" | "Las ruedas son internas — docs/01 §8.3" |
 | Fuentes de verdad intocables | hook `proteger-fuentes.sh` + `deny` en `.claude/settings.json` | Explica cómo proceder (ADR) |
 
 Los mensajes de error citan la sección del doc: un agente que choca con la regla sabe dónde leer cómo corregirla.
@@ -242,9 +244,11 @@ Los mensajes de error citan la sección del doc: un agente que choca con la regl
 9. **Puntos de registro por módulo** (`composition/modules/<m>.ts`, `architecture.modules.mjs`): agregar un módulo no edita archivos compartidos más que en una línea.
 10. **Comandos acotados**: `pnpm vitest run src/modules/<m>` en segundos; el feedback rápido es lo que permite a un agente iterar.
 
-### 8.3 API pública por audiencia (ADR-004)
-Un módulo puede tener **dos** entradas públicas:
-- `index.ts`: lo que cualquier capa `ui` o `app/` puede usar.
-- `backoffice.ts`: lo exclusivo del backoffice (ruedas, KPIs internos, márgenes). Solo lo importan `app/admin/**` y `ui/components/admin/**`.
+### 8.3 API pública por audiencia (ADR-004, ADR-012)
+Un módulo puede tener hasta **cuatro** entradas públicas:
+- `index.ts`: tipos y lógica (domain/application). Lo usan otros módulos, `composition` y `ui`.
+- `backoffice.ts`: lógica exclusiva del backoffice (ruedas, KPIs internos, márgenes).
+- `ui.ts`: pantallas públicas y del inversionista, para `app/` y para la `ui` de otros módulos. **`composition` nunca la importa** (evita el ciclo ui → `useContainer` → composition).
+- `backoffice-ui.ts`: pantallas del backoffice.
 
-Los componentes de `ui/components/` se separan en `investor/`, `admin/` y `shared/`. Así una regla de negocio de visibilidad ("el inversionista no ve ruedas") es una regla de imports que el lint comprueba, no una instrucción que un agente puede olvidar.
+`backoffice.ts` y `backoffice-ui.ts` solo los importan `app/admin/**` y `ui/components/admin/**`. Los componentes de `ui/components/` se separan en `investor/`, `admin/` y `shared/`. Así una regla de negocio de visibilidad ("el inversionista no ve ruedas") es una regla de imports que el lint comprueba (`src/architecture-rules.test.ts`), no una instrucción que un agente puede olvidar.

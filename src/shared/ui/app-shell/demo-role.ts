@@ -5,10 +5,10 @@ export type DemoRole = "visitor" | "investor" | "admin";
 
 export const DEMO_ROLES: readonly DemoRole[] = ["visitor", "investor", "admin"];
 
-/** Adónde lleva el selector al elegir cada rol. */
+/** Inicio de cada rol: a donde lleva el logo de su zona y la salida de sesión. */
 export const ROLE_HOME: Readonly<Record<DemoRole, AppPath>> = {
   visitor: "/",
-  investor: "/proyectos",
+  investor: "/panel",
   admin: "/admin",
 };
 

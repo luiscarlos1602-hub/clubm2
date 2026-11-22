@@ -1,6 +1,6 @@
 import type { RouteCopy } from "./route-copy-types";
 
-export const PUBLIC_ROUTES_COPY: Readonly<Record<"p1" | "p2" | "p3" | "p4" | "p5" | "p6" | "p7" | "p8", RouteCopy>> = {
+export const PUBLIC_ROUTES_COPY: Readonly<Record<"p1" | "p2" | "login" | "panel" | "p3" | "p4" | "p5" | "p6" | "p7" | "p8", RouteCopy>> = {
   p1: {
     navLabel: "Inicio",
     title: "Así funciona el club",
@@ -67,5 +67,21 @@ export const PUBLIC_ROUTES_COPY: Readonly<Record<"p1" | "p2" | "p3" | "p4" | "p5
     emptyTitle: "Tu perfil aún no tiene datos",
     emptyDescription: "La verificación de esta demo es simulada.",
     nextLabel: "Ir a mi portafolio",
+  },
+  login: {
+    navLabel: "Ingresar",
+    title: "Ingresar al club",
+    phrase: "Aquí entrarás con tu correo para ver tu panel, tus participaciones y los proyectos del club.",
+    emptyTitle: "El acceso es de demostración",
+    emptyDescription: "No se valida ninguna contraseña: cualquier dato te lleva al panel de ejemplo.",
+    nextLabel: "Entrar al panel",
+  },
+  panel: {
+    navLabel: "Panel",
+    title: "Tu panel",
+    phrase: "Aquí verás tu capital, tus resultados y las novedades de los proyectos en los que participas.",
+    emptyTitle: "Aún no participas en ningún proyecto",
+    emptyDescription: "Cuando reserves una participación de ejemplo, aparecerá aquí.",
+    nextLabel: "Ver proyectos",
   },
 };

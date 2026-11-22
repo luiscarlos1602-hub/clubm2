@@ -7,6 +7,7 @@ import { PAGE_CONTAINER as CONTAINER } from "@/shared/ui/layout";
 import type { TestIdProp } from "@/shared/ui/brand/types";
 import { ActiveNavLinks } from "./ActiveNavLinks";
 import { DemoToolbar } from "./DemoToolbar";
+import { LogoutLink } from "./LogoutLink";
 import { MobileNav } from "./MobileNav";
 import { NavLinks } from "./NavLinks";
 import { SkipLink } from "./SkipLink";
@@ -16,7 +17,7 @@ import { SHELL_COPY } from "./shell-copy";
 export type ZoneShellProps = TestIdProp & {
   zone: Zone;
   children: ReactNode;
-  /** Hueco para herramientas de simulación en la barra superior de simulación. */
+  /** Herramientas de la demo, mostradas en el pie (p. ej. "Reiniciar datos simulados"). */
   demoTools?: ReactNode;
 };
 
@@ -39,7 +40,6 @@ export function ZoneShell({ zone, children, demoTools, className, "data-testid":
       className={cn("flex min-h-full flex-1 flex-col", className)}
     >
       <SkipLink />
-      <DemoToolbar zone={zone} demoTools={demoTools} />
       <header className="border-b border-line/40 bg-background">
         <div className={cn(CONTAINER, "flex h-16 items-center justify-between gap-4")}>
           <Link
@@ -59,7 +59,10 @@ export function ZoneShell({ zone, children, demoTools, className, "data-testid":
               <ZoneNav zone={zone} orientation="horizontal" />
             </nav>
           ) : null}
-          <MobileNav zone={zone} />
+          <div className="flex items-center gap-2">
+            {zone !== "public" ? <LogoutLink /> : null}
+            <MobileNav zone={zone} />
+          </div>
         </div>
       </header>
       <div className={cn("flex flex-1", admin && "lg:flex-row")}>
@@ -87,6 +90,7 @@ export function ZoneShell({ zone, children, demoTools, className, "data-testid":
               <p className="font-heading text-lg text-foreground">{brand.tagline}</p>
               <LegalNotice notice="riskNotice" variant="block" />
               <p className="text-sm text-muted-foreground">{SHELL_COPY.footerNote}</p>
+              <DemoToolbar demoTools={demoTools} />
             </div>
           </footer>
         </div>

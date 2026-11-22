@@ -111,15 +111,14 @@ Importa desde `@/shared/ui/app-shell`. La navegación sale de `route-map.ts`; no
 
 ### ZoneShell
 - Archivo: `ZoneShell.tsx` (Server Component)
-- Cuándo usarlo: único contenido de cada layout de zona (`public` · `investor` · `admin`). Incluye enlace de salto, `DemoBanner`, barra de simulación con `RoleSwitcher`, cabecera, navegación, `main#contenido` y pie.
-- Props clave: `zone`, `children`, `demoTools?` (hueco en la barra de simulación), (siempre a todo el ancho: cada pantalla se compone con `PageHeader` y `Section`).
+- Cuándo usarlo: único contenido de cada layout de zona (`public` · `investor` · `admin`). Incluye enlace de salto, cabecera (con "Salir" en las zonas con sesión), navegación, `main#contenido` y pie (con las herramientas de la demo). Sin cintillo (ADR-011) ni selector de rol: el rol lo fija `/ingresar`.
+- Props clave: `zone`, `children`, `demoTools?` (herramientas de la demo en el pie), (siempre a todo el ancho: cada pantalla se compone con `PageHeader` y `Section`).
 - No usar para: páginas sueltas ni layouts anidados.
 
-### RoleSwitcher
-- Archivo: `RoleSwitcher.tsx` (cliente)
-- Cuándo usarlo: ya va dentro de `ZoneShell`. Guarda el rol y navega al inicio de ese rol.
-- Props clave: `zone`.
-- No usar para: autenticación ni permisos (no hay protección de rutas en F1).
+### LogoutLink
+- Archivo: `LogoutLink.tsx` (cliente)
+- Cuándo usarlo: ya va dentro de `ZoneShell` (zonas inversionista y admin). Vuelve el rol a visitante y lleva a la portada.
+- No usar para: autenticación real (el acceso es de demostración; no hay protección de rutas).
 
 ### NavLinks · ActiveNavLinks · MobileNav
 - Archivos: `NavLinks.tsx` (presentacional), `ActiveNavLinks.tsx` (cliente, `usePathname`), `MobileNav.tsx` (Sheet).
@@ -150,3 +149,12 @@ Importa desde `@/shared/ui/app-shell`. La navegación sale de `route-map.ts`; no
 
 ## Cómo pedir un componente nuevo
 Antes de crear uno, revisa este catálogo. Si falta, descríbelo en el plan de la funcionalidad (nombre, props, dónde se usa) para que el arquitecto lo añada aquí con su contrato y su test. No lo dupliques dentro de un módulo.
+
+## Piezas genéricas del backoffice (`src/shared/ui/admin/`)
+
+Importa desde `@/shared/ui/admin`. Las usan projects, finance e investors en sus pantallas de admin; no conocen dominio ni calculan dinero. Textos de estado en `admin-copy.ts`.
+
+- `AdminKpi` — indicador: `label`, `children` (la cifra la entrega quien lo usa), `hint?`.
+- `TableScroll` — contiene el desborde horizontal de una tabla (región enfocable con `label`); recibe el contenido de la `<table>` (`thead`/`tbody`) y estiliza `th`/`td`.
+- `MockAction` — botón de maqueta: `label`, `doneMessage`, `variant?`; muestra la confirmación y no guarda nada.
+- `AdminQueryState` — carga, error y vacío de una vista con datos: `isPending`, `isError`, `isEmpty`, `onRetry`, `testId`.

@@ -1,7 +1,8 @@
-import { RoutePlaceholder, routeMetadata } from "@/shared/ui/app-shell";
+import { CommercializationScreen } from "@/modules/projects/backoffice-ui";
+import { routeMetadata } from "@/shared/ui/app-shell";
 
 export const metadata = routeMetadata("b4");
 
-export default function SalesPage() {
-  return <RoutePlaceholder routeId="b4" />;
+export default function AdminCommercializationPage() {
+  return <CommercializationScreen />;
 }

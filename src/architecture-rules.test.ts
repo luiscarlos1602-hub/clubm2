@@ -34,6 +34,16 @@ describe("reglas de arquitectura (lint)", () => {
       expect((await errorsFor(file, BACKOFFICE)).join(), file).not.toContain("Las ruedas son internas");
     }
   });
+  it("ADR-004/012 · backoffice-ui.ts solo en app/admin y ui/components/admin", async () => {
+    const code = "import { A } from '@/modules/projects/backoffice-ui'; export { A };";
+    expect((await errorsFor("src/app/(inversionista)/probe.ts", code)).join()).toContain("Las ruedas son internas");
+    expect((await errorsFor("src/modules/finance/ui/components/investor/probe.ts", code)).join()).toContain("Las ruedas son internas");
+    expect((await errorsFor("src/app/admin/probe.ts", code)).join()).not.toContain("Las ruedas son internas");
+  });
+  it("ADR-012 · composition no importa pantallas (ui.ts)", async () => {
+    const msgs = await errorsFor("src/composition/probe.ts", "import { A } from '@/modules/finance/ui'; export { A };");
+    expect(msgs.join()).toContain("composition no importa pantallas");
+  });
   it("capas · shared/ui no importa módulos", async () => {
     const msgs = await errorsFor("src/shared/ui/probe.ts", "import { a } from '@/modules/finance'; export { a };");
     expect(msgs.join()).toContain("Import prohibido entre capas");

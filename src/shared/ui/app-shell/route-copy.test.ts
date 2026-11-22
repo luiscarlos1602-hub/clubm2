@@ -4,7 +4,7 @@ import { routeCopy } from "./route-copy";
 import { SHELL_COPY } from "./shell-copy";
 
 describe("route-copy", () => {
-  it("las 14 rutas tienen todos los campos y respetan el vocabulario", () => {
+  it("las rutas tienen todos los campos y respetan el vocabulario", () => {
     for (const id of ROUTE_IDS) {
       const c = routeCopy(id);
       for (const v of Object.values(c)) {

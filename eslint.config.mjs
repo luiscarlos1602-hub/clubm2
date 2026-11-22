@@ -6,7 +6,7 @@ import { moduleOrder } from "./architecture.modules.mjs";
 
 // ── Capas (docs/01-arquitectura.md §4) ─────────────────────────────────────
 const elements = [
-  { type: "module-api", pattern: "src/modules/*/{index,backoffice}.ts", mode: "file" },
+  { type: "module-api", pattern: "src/modules/*/{index,backoffice,ui,backoffice-ui}.ts", mode: "file" },
   { type: "domain", pattern: "src/modules/*/domain/**" },
   { type: "application", pattern: "src/modules/*/application/**" },
   { type: "infrastructure", pattern: "src/modules/*/infrastructure/**" },
@@ -40,12 +40,12 @@ const layerPolicies = [
 const purityPattern = { group: ["react", "react-dom", "next", "next/*"], message: "domain es puro: sin React ni Next — docs/01-arquitectura.md §4 regla 1" };
 const moduleRules = moduleOrder.flatMap((name, i) => {
   const patterns = [
-        { group: ["@/modules/*/*", "!@/modules/*/backoffice"], message: "Prohibido importar rutas internas de otro módulo: usa solo '@/modules/<m>' — ver docs/01-arquitectura.md §4 regla 2" },
+        { group: ["@/modules/*/*", "!@/modules/*/backoffice", "!@/modules/*/backoffice-ui", "!@/modules/*/ui"], message: "Prohibido importar rutas internas de otro módulo: usa solo '@/modules/<m>' o '@/modules/<m>/ui' — ver docs/01-arquitectura.md §4 regla 2" },
         ...(moduleOrder.slice(i).length
           ? [{ group: moduleOrder.slice(i).map((m) => `@/modules/${m}`), message: `Sin ciclos entre módulos: '${name}' solo importa de ${moduleOrder.slice(0, i).join(" · ") || "shared"} — ver docs/01-arquitectura.md §4 regla 3` }]
           : []),
   ];
-  const backofficePattern = { group: ["@/modules/*/backoffice"], message: "Las ruedas son internas — docs/01-arquitectura.md §8.3 (ADR-004)" };
+  const backofficePattern = { group: ["@/modules/*/backoffice", "@/modules/*/backoffice-ui"], message: "Las ruedas son internas — docs/01-arquitectura.md §8.3 (ADR-004)" };
   const cfg = (files, pats) => ({ files, rules: { "no-restricted-imports": ["error", { patterns: pats }] } });
   return [
     cfg([`src/modules/${name}/**/*.{ts,tsx}`], [...patterns, backofficePattern]),
@@ -97,7 +97,14 @@ export default defineConfig([
     files: ["src/app/**/*.{ts,tsx}", "src/shared/**/*.{ts,tsx}"],
     ignores: ["src/app/admin/**", "**/*.test.ts"],
     rules: {
-      "no-restricted-imports": ["error", { patterns: [{ group: ["@/modules/*/backoffice"], message: "Las ruedas son internas — docs/01-arquitectura.md §8.3 (ADR-004)" }] }],
+      "no-restricted-imports": ["error", { patterns: [{ group: ["@/modules/*/backoffice", "@/modules/*/backoffice-ui"], message: "Las ruedas son internas — docs/01-arquitectura.md §8.3 (ADR-004)" }] }],
+    },
+  },
+  // composition no importa pantallas (ADR-012): evita el ciclo ui → useContainer → composition
+  {
+    files: ["src/composition/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": ["error", { patterns: [{ group: ["@/modules/*/ui", "@/modules/*/backoffice-ui", "@/modules/*/ui/**"], message: "composition no importa pantallas de los módulos — docs/01-arquitectura.md §8.3 (ADR-012)" }] }],
     },
   },
   // Higiene general (docs/01 §8.1)

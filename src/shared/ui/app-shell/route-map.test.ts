@@ -9,14 +9,14 @@ const follow = (start: RouteId, n: number) => {
 };
 
 describe("route-map", () => {
-  it("tiene las 14 rutas", () => {
-    const expected = ["p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "b1", "b2", "b3", "b4", "b5", "b6"];
+  it("tiene las 16 rutas (14 del producto + ingresar y panel, ADR-012)", () => {
+    const expected = ["p1", "p2", "login", "panel", "p3", "p4", "p5", "p6", "p7", "p8", "b1", "b2", "b3", "b4", "b5", "b6"];
     expect([...ROUTE_IDS]).toEqual(expected);
     expect(Object.keys(ROUTES).sort()).toEqual([...expected].sort());
   });
   it("hrefs únicos, con zona admin coherente", () => {
     const hrefs = ROUTE_IDS.map((id) => ROUTES[id].href);
-    expect(new Set(hrefs).size).toBe(14);
+    expect(new Set(hrefs).size).toBe(16);
     for (const id of ROUTE_IDS) {
       const r = ROUTES[id];
       expect(r.href.startsWith("/")).toBe(true);
@@ -44,7 +44,7 @@ describe("route-map", () => {
     }
   });
   it("flujos", () => {
-    expect(follow("p1", 5)).toEqual(["p1", "p2", "p3", "p4", "p5", "p6"]);
+    expect(follow("p1", 6)).toEqual(["p1", "p2", "panel", "p3", "p4", "p5", "p6"]);
     expect(follow("b1", 5)).toEqual(["b1", "b2", "b3", "b4", "b5", "p6"]);
   });
   it("NAV_ITEMS por zona", () => {

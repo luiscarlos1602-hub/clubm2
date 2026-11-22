@@ -4,6 +4,8 @@ export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
   reporter: "list",
+  // El servidor de desarrollo compila cada ruta la primera vez que se visita (puede tardar >5 s con 4 workers).
+  expect: { timeout: 15_000 },
   use: { baseURL: "http://localhost:3000" },
   projects: [
     { name: "movil-390", use: { viewport: { width: 390, height: 844 } } },
