@@ -10,7 +10,7 @@ import {
   createPropertyMockRepository,
 } from "./projects.mock-repository";
 import { createProjectMockWriter, createPropertyMockWriter } from "./projects.mock-writer";
-import { buildProjectsSeed, projectsSliceSchema, type ProjectsSlice } from "./seed";
+import { buildProjectsSeed, type ProjectsSlice } from "./seed";
 
 const EMPTY: ProjectsSlice = { properties: [], projects: [], profiles: [], processes: [], updates: [], risks: [], images: [] };
 

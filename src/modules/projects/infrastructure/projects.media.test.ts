@@ -11,7 +11,8 @@ describe("imágenes del slice projects", () => {
   });
 
   it("un snapshot guardado antes de W-2 (sin `images`) se lee sin reiniciar", () => {
-    const { images: _omit, ...old } = buildProjectsSeed(fixedClock(isoDate("2026-11-22")));
+    const old: Record<string, unknown> = { ...buildProjectsSeed(fixedClock(isoDate("2026-11-22"))) };
+    delete old.images;
     const parsed = projectsSliceSchema.safeParse(old);
     expect(parsed.success).toBe(true);
     expect(parsed.success && parsed.data.images).toEqual([]);
