@@ -8,9 +8,10 @@ export type {
   ProjectTimeline,
   Project,
 } from "./domain/project";
-export type { ProjectStatus } from "./domain/project-status";
+export type { ProjectStatus, CreatableStatus } from "./domain/project-status";
 export { parseProjectCode } from "./domain/project";
 export {
+  CREATABLE_STATUSES,
   PROJECT_STATUSES,
   PROJECT_TRANSITIONS,
   canTransition,
@@ -22,8 +23,18 @@ export { checkProjectConsistency, checkProperty } from "./domain/project-consist
 export type { PublicStage } from "./domain/public-stage";
 export { PUBLIC_STAGES, toPublicStage, isPublishedStatus } from "./domain/public-stage";
 export { TARGET_TERM_MONTHS } from "./domain/target-term";
-export type { ProjectRepository, PropertyRepository, ProjectWriter, PropertyWriter } from "./application/ports";
-export type { SaveProject, SaveProjectErrorCode, SaveProperty, SavePropertyErrorCode } from "./application/save-project";
+export type {
+  ProjectRepository,
+  PropertyRepository,
+  ProjectWriter,
+  PropertyWriter,
+} from "./application/ports";
+export type {
+  SaveProject,
+  SaveProjectErrorCode,
+  SaveProperty,
+  SavePropertyErrorCode,
+} from "./application/save-project";
 // P4 · ficha: slug, perfil, proceso, actualizaciones y riesgos (plan 006 §3.2). Sin niveles ni ruedas.
 export { PROJECT_SLUG_PATTERN, isProjectSlug } from "./domain/project-slug";
 export type { PropertyProfile } from "./domain/property-profile";
@@ -47,3 +58,14 @@ export type { ProjectRiskKind, ProjectRisks } from "./domain/project-risk";
 export { PROJECT_RISK_KINDS, normalizeRiskKinds } from "./domain/project-risk";
 export type { ProjectContentRepository } from "./application/ports";
 export type { GetProjectProcess } from "./application/get-project-process";
+// W-2 · alta de inmueble (plan 011 §3): código, slug e imágenes.
+export { nextProjectCode, buildProjectSlug } from "./domain/project-code";
+export type { ProjectImageKind, ProjectImage } from "./domain/project-image";
+export {
+  PROJECT_IMAGE_KINDS,
+  referenceImageUrl,
+  referenceImageAlt,
+  imagesFromChoices,
+  referenceImagesFor,
+  resolveProjectImages,
+} from "./domain/project-image";

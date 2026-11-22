@@ -17,6 +17,13 @@ export const PROJECT_STATUSES = [
 
 export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
 
+/**
+ * W2-1 (22-nov): etapas en las que el backoffice da de alta un inmueble. No exigen obra, venta ni liquidación;
+ * "publicar" = crear en `funding`. Las demás etapas se alcanzan con transiciones (W-3).
+ */
+export const CREATABLE_STATUSES = ["opportunity", "due_diligence", "acquired", "funding"] as const;
+export type CreatableStatus = (typeof CREATABLE_STATUSES)[number];
+
 /** Tabla única de transiciones (docs/02 §2, plan 002 §3.9). stalled → on_sale | sold: [SUPUESTO L3]. */
 export const PROJECT_TRANSITIONS: Readonly<Record<ProjectStatus, readonly ProjectStatus[]>> =
   Object.freeze({

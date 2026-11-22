@@ -47,15 +47,28 @@ export type {
   SimulationOutcome,
   SimulationResult,
 } from "./domain/simulator";
-export { SIMULATION_RANGES, neutralControls, normalizeControls, simulateProjection } from "./domain/simulator";
+export {
+  SIMULATION_RANGES,
+  neutralControls,
+  normalizeControls,
+  simulateProjection,
+} from "./domain/simulator";
 export type { StressPresetId } from "./domain/stress-presets";
 export { STRESS_PRESET_IDS, STRESS_PRESETS, applyStressPreset } from "./domain/stress-presets";
 export type { ScenarioId, ScenarioRow } from "./domain/scenarios";
 export { SCENARIO_IDS, SCENARIO_ASSUMPTIONS, buildScenarios } from "./domain/scenarios";
-export { estimateReservation, reservationAmount, projectHoldingGain } from "./domain/holding-projection";
+export {
+  estimateReservation,
+  reservationAmount,
+  projectHoldingGain,
+} from "./domain/holding-projection";
 export type { DetailMode, ProjectDetail, ProjectDetailErrorCode } from "./domain/project-detail";
 export { buildProjectDetail } from "./domain/project-detail";
-export type { ProjectBudgetRepository, ProjectBudgetWriter, ProjectEconomicsWriter } from "./application/ports";
+export type {
+  ProjectBudgetRepository,
+  ProjectBudgetWriter,
+  ProjectEconomicsWriter,
+} from "./application/ports";
 export type {
   SaveProjectEconomics,
   SaveProjectEconomicsErrorCode,
@@ -67,3 +80,20 @@ export type {
   HoldingProjectionRequest,
   HoldingProjections,
 } from "./application/get-holding-projections";
+// W-2 · ficha de alta/edición de inmueble (plan 011 §3). Comando único: buildProjectSheet (regla 2b).
+export type {
+  ProjectSheetInput,
+  ProjectSheet,
+  ProjectSheetField,
+  ProjectSheetErrorCode,
+  ProjectSheetIssue,
+  ProjectSheetContext,
+} from "./domain/project-sheet";
+export { buildProjectSheet } from "./domain/build-project-sheet";
+export {
+  COMMON_RISK_KINDS,
+  PUBLISH_REQUIRED_IMAGE_KINDS,
+  MAX_HIGHLIGHTS,
+  LOCKED_SHEET_STATUSES,
+  expectedRecoveryBudget,
+} from "./domain/project-sheet-requirements";
