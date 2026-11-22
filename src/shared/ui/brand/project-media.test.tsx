@@ -15,6 +15,24 @@ describe("ProjectImage", () => {
   });
 });
 
+describe("ProjectImage con src explícito", () => {
+  it("usa la URL dada y mantiene el rótulo", () => {
+    render(<ProjectImage code="M2-008" variant="antes" alt="x" src="/images/proyectos/m2-001/antes.svg" />);
+    expect(screen.getByRole("img").getAttribute("src")).toBe("/images/proyectos/m2-001/antes.svg");
+    expect(screen.getByTestId("project-image-referencia").textContent).toBe("Imagen de referencia");
+  });
+});
+
+describe("ProjectGallery con images", () => {
+  it("oculta las pestañas sin imagen y abre en la primera disponible", () => {
+    render(<ProjectGallery code="M2-008" name="Apto" images={{ antes: "/a.svg", proyeccion: "/p.svg" }} />);
+    expect(screen.queryByTestId("project-gallery-tab-despues")).toBeNull();
+    expect(screen.getByTestId("project-gallery-tab-antes")).toBeTruthy();
+    expect(screen.getByTestId("project-gallery").getAttribute("data-active")).toBe("antes");
+    expect(screen.getByTestId("project-gallery-imagen-referencia").textContent).toBe("Imagen de referencia");
+  });
+});
+
 describe("ProjectGallery", () => {
   it("cambia de pestaña, marca la proyección y navega con flechas", () => {
     render(<ProjectGallery code="M2-006" name="Apto" />);

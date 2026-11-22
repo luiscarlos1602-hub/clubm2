@@ -41,6 +41,7 @@ function listing(
     unitPrice: usdUnits(100),
     targetTermMonths: historic ? null : 3,
     settledOn: phase === "finished" ? isoDate("2026-06-01") : null,
+    images: [],
   };
 }
 

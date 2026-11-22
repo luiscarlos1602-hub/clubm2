@@ -15,6 +15,9 @@ export type RouteId =
   | "b4"
   | "b5"
   | "b6"
+  | "b7"
+  | "b8"
+  | "b9"
   | "login"
   | "terminos"
   | "panel";
@@ -121,6 +124,27 @@ export const ROUTES: Readonly<Record<RouteId, RouteEntry>> = {
   },
   b5: { id: "b5", zone: "admin", pattern: "admin/finanzas", href: "/admin/finanzas", next: "p6" },
   b6: { id: "b6", zone: "admin", pattern: "admin/crm", href: "/admin/crm", next: "b1" },
+  b7: {
+    id: "b7",
+    zone: "admin",
+    pattern: "admin/proyectos",
+    href: "/admin/proyectos",
+    next: "b8",
+  },
+  b8: {
+    id: "b8",
+    zone: "admin",
+    pattern: "admin/proyectos/nuevo",
+    href: "/admin/proyectos/nuevo",
+    next: "b7",
+  },
+  b9: {
+    id: "b9",
+    zone: "admin",
+    pattern: "admin/proyectos/[id]/editar",
+    href: `/admin/proyectos/${SLUG}/editar`,
+    next: "b7",
+  },
 };
 
 export const ROUTE_IDS: readonly RouteId[] = [
@@ -141,12 +165,15 @@ export const ROUTE_IDS: readonly RouteId[] = [
   "b4",
   "b5",
   "b6",
+  "b7",
+  "b8",
+  "b9",
 ];
 
 export const NAV_ITEMS: Readonly<Record<Zone, readonly RouteId[]>> = {
   public: ["p1", "p3", "p7", "p2", "login"],
   investor: ["panel", "p3", "p6", "p7", "p8"],
-  admin: ["b1", "b2", "b3", "b4", "b5", "b6"],
+  admin: ["b1", "b2", "b7", "b3", "b4", "b5", "b6"],
 };
 
 /** CTA destacado de la navegación pública (botón Verde Profundo): "Ingresar". */
@@ -161,7 +188,12 @@ export function projectHref(slug: string): AppPath {
   return `/proyectos/${slug}`;
 }
 
-/** Ruta activa: coincidencia exacta o el prefijo más largo de NAV_ITEMS de la zona. */
+/** URL de edición de la ficha de un inmueble (B9): `/admin/proyectos/${slug}/editar`. Debe coincidir con ROUTES.b9.pattern. */
+export function projectEditHref(slug: string): AppPath {
+  return `/admin/proyectos/${slug}/editar`;
+}
+
+/** Ruta activa: coincidencia exacta o el prefijo más largo de NAV_ITEMS de la zona. `/editar` (B9) cuelga del listado (B7), no de B3. */
 export function activeRouteId(pathname: string, zone: Zone): RouteId | null {
   const items = NAV_ITEMS[zone];
   const exact = items.find((id) => ROUTES[id].href === pathname);
@@ -171,6 +203,7 @@ export function activeRouteId(pathname: string, zone: Zone): RouteId | null {
   for (const id of items) {
     const href = ROUTES[id].href;
     if (href === "/") continue;
+    if (id === "b3" && pathname.endsWith("/editar")) continue;
     if (pathname.startsWith(`${href}/`) && href.length > bestLen) {
       best = id;
       bestLen = href.length;

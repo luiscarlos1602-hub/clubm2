@@ -57,11 +57,12 @@ export function createContainer(options: ContainerOptions = {}): Container {
 
   const projects = registerProjects(store);
   const participations = registerParticipations(store, projects);
-  const finance = registerFinance(store, { projects, participations });
+  const ids = options.ids ?? randomIdGenerator();
+  const finance = registerFinance(store, { projects, participations, clock, ids });
 
   return {
     clock,
-    ids: options.ids ?? randomIdGenerator(),
+    ids,
     demo: {
       storageKey: store.key,
       holderId: DEMO_HOLDER_ID,

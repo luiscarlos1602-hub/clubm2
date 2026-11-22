@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Project, ProjectCode, Property } from "@/modules/projects";
+import { referenceImagesFor, type Project, type ProjectCode, type ProjectImage, type Property } from "@/modules/projects";
 import { isoDate } from "@/shared/domain/calendar-date";
 import { asId } from "@/shared/domain/id";
 import { usdUnits } from "@/shared/domain/money";
@@ -46,17 +46,20 @@ function fakeDeps(): ListMarketplaceDeps & {
     projects: ReturnType<typeof vi.fn>;
     properties: ReturnType<typeof vi.fn>;
     classes: ReturnType<typeof vi.fn>;
+    images: ReturnType<typeof vi.fn>;
   };
 } {
   const spies = {
     projects: vi.fn(async () => PROJECTS),
     properties: vi.fn(async () => PROPERTIES),
     classes: vi.fn(async () => CLASSES),
+    images: vi.fn(async () => [] as readonly ProjectImage[]),
   };
   return {
     projects: { list: spies.projects },
     properties: { list: spies.properties },
     classes: { list: spies.classes },
+    media: { imagesOf: spies.images },
     spies,
   };
 }
@@ -69,7 +72,7 @@ describe("createListMarketplace", () => {
     expect(deps.spies.properties).toHaveBeenCalledTimes(1);
     expect(deps.spies.classes).toHaveBeenCalledTimes(1);
     expect(result).toEqual(
-      buildMarketplaceListing({ projects: PROJECTS, properties: PROPERTIES, classes: CLASSES }),
+      buildMarketplaceListing({ projects: PROJECTS, properties: PROPERTIES, classes: CLASSES, images: [] }),
     );
     expect(result.map((l) => l.code)).toEqual(["M2-006"]);
   });
@@ -99,5 +102,22 @@ describe("createListMarketplace", () => {
       projects: { list: () => Promise.reject(new Error("sin datos")) },
     };
     await expect(createListMarketplace(failing)()).rejects.toThrow("sin datos");
+  });
+
+  it("sin imágenes guardadas usa las SVG por código; con guardadas, las suyas", async () => {
+    const deps = fakeDeps();
+    const [bare] = await createListMarketplace(deps)();
+    expect(bare?.images).toEqual(referenceImagesFor(PROJECTS[0]!));
+
+    const mine: ProjectImage = {
+      projectId: PROJECTS[0]!.id,
+      kind: "before",
+      url: "/images/proyectos/m2-003/antes.svg",
+      alt: "Imagen",
+      isReference: true,
+    };
+    deps.spies.images.mockImplementation(async (id: unknown) => (id === PROJECTS[0]!.id ? [mine] : []));
+    const [custom] = await createListMarketplace(deps)();
+    expect(custom?.images).toEqual([mine]);
   });
 });

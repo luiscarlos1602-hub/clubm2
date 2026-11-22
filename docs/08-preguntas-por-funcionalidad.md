@@ -215,3 +215,13 @@
 | S7 | ¿Fotos en bucket de lectura pública? | Sí, sin direcciones, placas ni rostros; JPG/PNG/WebP/AVIF ≤ 5 MB; galería ≤ 12 |
 | S8 | ¿Un editor puede borrar un proyecto? | No: solo admin y solo si no está publicado |
 | S9 | ¿El modo por defecto en Netlify pasa a `supabase`? | Sí en producción; `demo` en local y en los tests (ADR-017) |
+
+## Bloque W · Backoffice local (Etapa 2) (respondido)
+
+**Respuesta del usuario (22-nov):** W2-1, W2-2 y W2-3 aceptadas con la propuesta por defecto.
+
+| # | Pregunta | Propuesta por defecto |
+|---|---|---|
+| W2-1 | ¿En qué etapa se puede crear un inmueble y qué es "publicar"? | Crear en `opportunity`, `due_diligence`, `acquired` o `funding`; "publicar" = guardar en `funding` (única creable visible al público) y exige los campos S4 "para publicar". Las demás etapas llegan con W-3 |
+| W2-2 | ¿Se cambian total y precio de la clase con participaciones ya colocadas? | No: con colocadas > 0 quedan bloqueados (`CLASS_LOCKED_BY_PLACEMENTS`); el resto de la ficha sí se edita |
+| W2-3 | ¿Se edita la ficha de un proyecto vendido o liquidado? | No: `sold` y `settled` se abren en solo lectura (`SHEET_LOCKED`); su resultado se fija en W-5 |

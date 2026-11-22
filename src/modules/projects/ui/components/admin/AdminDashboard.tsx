@@ -100,7 +100,10 @@ export function AdminDashboard() {
       </Section>
 
       <Section tone="light" spacing="md" labelledBy="admin-tabla" innerClassName="flex flex-col gap-6">
-        <h2 id="admin-tabla" className="font-heading text-2xl font-semibold">{C.table.heading}</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 id="admin-tabla" className="font-heading text-2xl font-semibold">{C.table.heading}</h2>
+          <Link href="/admin/proyectos" data-testid="admin-ir-proyectos" className="rounded-sm text-sm font-medium underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-ring">{C.table.manage}</Link>
+        </div>
         <TableScroll label={C.table.heading} data-testid="admin-tabla-proyectos">
           <thead>
             <tr>

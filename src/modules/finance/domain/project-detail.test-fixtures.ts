@@ -73,6 +73,7 @@ export function source(phase: ListingPhase, placed = 63): ProjectDetailSource {
     projectId: PID,
     code: "M2-006" as ProjectCode,
     slug: "m2-006-chacao",
+    images: [],
     name: "Apartamento Chacao",
     city: "Caracas",
     zone: "Chacao",

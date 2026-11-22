@@ -102,13 +102,13 @@ Dentro de un tono, `bg-primary` / `text-foreground` / `text-muted-foreground` / 
 ### ProjectImage · projectImageSrc
 - Archivo: `ProjectImage.tsx`
 - Cuándo usarlo: toda imagen de un proyecto. Pinta la ilustración `public/images/proyectos/<código en minúsculas>/<variante>.svg` (16:10) con el rótulo fijo "Imagen de referencia".
-- Props clave: `code`, `variant` (`antes` · `despues` · `proyeccion`), `alt`, `priority?`, `sizes?`, `className?`.
+- Props clave: `code`, `variant` (`antes` · `despues` · `proyeccion`), `alt`, `src?` (URL explícita de la imagen elegida; por defecto `projectImageSrc(code, variant)`), `priority?`, `sizes?`, `className?`.
 - Reglas: después = obra terminada; mientras no, usa `proyeccion`. No usar para fotos reales sin rótulo. Los textos están en `project-media-copy.ts`.
 
 ### ProjectGallery
 - Archivo: `ProjectGallery.tsx` (cliente)
 - Cuándo usarlo: ficha del proyecto. Pestañas Antes · Después · Proyección (render) con teclado (flechas, Inicio, Fin); la pestaña Proyección lleva `ProjectionLabel`.
-- Props clave: `code`, `name`, `defaultVariant?` (por defecto `despues`).
+- Props clave: `code`, `name`, `defaultVariant?` (por defecto `despues`), `images?` (`Partial<Record<ProjectImageVariant, string>>`: URL por variante; con ella solo se muestran las pestañas que tienen imagen y, si falta `defaultVariant`, abre en la primera disponible; sin ella, las tres SVG por código). Todas son ilustraciones de referencia y llevan el rótulo.
 
 ### ProcessBoard
 - Archivo: `ProcessBoard.tsx` (presentacional)

@@ -16,6 +16,8 @@ export type ProjectImageProps = TestIdProp & {
   code: string;
   variant: ProjectImageVariant;
   alt: string;
+  /** URL explícita (imagen elegida del inmueble); por defecto, la SVG por código (`projectImageSrc`). */
+  src?: string;
   priority?: boolean;
   sizes?: string;
 };
@@ -25,6 +27,7 @@ export function ProjectImage({
   code,
   variant,
   alt,
+  src,
   className,
   priority,
   sizes = "(min-width: 1024px) 33vw, 100vw",
@@ -37,7 +40,7 @@ export function ProjectImage({
       className={cn("bg-muted relative aspect-[16/10] w-full overflow-hidden", className)}
     >
       <Image
-        src={projectImageSrc(code, variant)}
+        src={src ?? projectImageSrc(code, variant)}
         alt={alt}
         fill
         sizes={sizes}

@@ -12,7 +12,7 @@ describe("API pública de projects", () => {
     for (const name of WHEEL_EXPORTS) expect(backofficeKeys).toContain(name);
   });
 
-  it("index.ts expone el contrato de los planes 002 §3.11, 005 §3.1 y 006 §3.2", async () => {
+  it("index.ts expone el contrato de los planes 002 §3.11, 005 §3.1, 006 §3.2 y 011 §3", async () => {
     const publicKeys = Object.keys(await import("./index")).sort();
     expect(publicKeys).toEqual(
       [
@@ -38,6 +38,15 @@ describe("API pública de projects", () => {
         "parseProjectCode",
         "toPublicStage",
         "transitionStatus",
+        "CREATABLE_STATUSES",
+        "PROJECT_IMAGE_KINDS",
+        "nextProjectCode",
+        "buildProjectSlug",
+        "referenceImageUrl",
+        "referenceImageAlt",
+        "referenceImagesFor",
+        "resolveProjectImages",
+        "imagesFromChoices",
       ].sort(),
     );
   });

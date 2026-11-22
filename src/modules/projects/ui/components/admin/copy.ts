@@ -30,6 +30,7 @@ export const ADMIN_COMMON = {
   zone: "Zona",
   stage: "Etapa",
   wheel: "Rueda",
+  editSheet: "Editar ficha",
 } as const;
 
 export const DASHBOARD_COPY = {
@@ -58,7 +59,7 @@ export const DASHBOARD_COPY = {
     until: "hasta",
     none: "Sin compra todavía",
   },
-  table: { heading: "Proyectos", placement: "Colocación", detail: "Ver obra" },
+  table: { heading: "Proyectos", placement: "Colocación", detail: "Ver obra", manage: "Administrar inmuebles" },
   charts: {
     heading: "Vista gráfica",
     stageLabel: "Proyectos por etapa (cantidad)",
@@ -180,4 +181,15 @@ export const COMMERCIAL_COPY = {
     closeDone: "Maqueta: la venta quedaría firmada. No se guardó nada.",
   },
   stalledNote: "Estancado: más de 6 meses desde la compra sin firma de venta.",
+} as const;
+
+export const PROJECTS_LIST_COPY = {
+  eyebrow: "Backoffice · Proyectos",
+  title: "Proyectos",
+  description: "Todos los inmuebles dados de alta, también los internos. Crea uno nuevo o edita su ficha; el almacén es local y los datos son simulados.",
+  newProperty: "Nuevo inmueble",
+  table: { heading: "Inmuebles", edit: "Editar", view: "Ver ficha", detail: "Detalle de obra" },
+  internal: "Interno",
+  published: "Visible en Proyectos",
+  empty: { title: "Sin inmuebles dados de alta", description: "Los inmuebles que registres aparecerán aquí." },
 } as const;

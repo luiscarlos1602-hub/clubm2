@@ -4,6 +4,7 @@ import { isoDate, type IsoDate } from "@/shared/domain/calendar-date";
 import { asId } from "@/shared/domain/id";
 import type { Project, ProjectCode } from "./project";
 import {
+  CREATABLE_STATUSES,
   PROJECT_STATUSES,
   canTransition,
   changeProjectStatus,
@@ -182,5 +183,18 @@ describe("changeProjectStatus", () => {
     const project = makeProject("opportunity");
     const result = changeProjectStatus(project, "sold", d("2026-01-15"));
     expect(!result.ok && result.error.code).toBe("INVALID_TRANSITION");
+  });
+});
+
+describe("CREATABLE_STATUSES (W2-1)", () => {
+  it("se crea en oportunidad, due diligence, comprado o en colocación", () => {
+    expect(CREATABLE_STATUSES).toEqual(["opportunity", "due_diligence", "acquired", "funding"]);
+  });
+
+  it("todas son etapas existentes y ninguna es terminal", () => {
+    for (const s of CREATABLE_STATUSES) {
+      expect(PROJECT_STATUSES).toContain(s);
+      expect(isTerminalStatus(s)).toBe(false);
+    }
   });
 });

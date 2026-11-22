@@ -1,6 +1,6 @@
 import type { RouteCopy } from "./route-copy-types";
 
-export const ADMIN_ROUTES_COPY: Readonly<Record<"b1" | "b2" | "b3" | "b4" | "b5" | "b6", RouteCopy>> = {
+export const ADMIN_ROUTES_COPY: Readonly<Record<"b1" | "b2" | "b3" | "b4" | "b5" | "b6" | "b7" | "b8" | "b9", RouteCopy>> = {
   b1: {
     navLabel: "Panel",
     title: "Panel de operación",
@@ -50,5 +50,29 @@ export const ADMIN_ROUTES_COPY: Readonly<Record<"b1" | "b2" | "b3" | "b4" | "b5"
     emptyTitle: "Sin registros todavía",
     emptyDescription: "Los registros del formulario de registro aparecerán aquí.",
     nextLabel: "Volver al panel",
+  },
+  b7: {
+    navLabel: "Proyectos",
+    title: "Proyectos",
+    phrase: "Aquí verás todos los inmuebles dados de alta, su etapa y el acceso para crear uno nuevo o editar su ficha.",
+    emptyTitle: "Sin inmuebles dados de alta",
+    emptyDescription: "Los inmuebles que registres aparecerán aquí.",
+    nextLabel: "Dar de alta un inmueble",
+  },
+  b8: {
+    navLabel: "Nuevo inmueble",
+    title: "Nuevo inmueble",
+    phrase: "Aquí registrarás un inmueble paso a paso: datos, costos, estructura de participaciones e imágenes de referencia.",
+    emptyTitle: "Sin datos del inmueble",
+    emptyDescription: "Completa los pasos para crear la ficha.",
+    nextLabel: "Volver a proyectos",
+  },
+  b9: {
+    navLabel: "Editar inmueble",
+    title: "Editar inmueble",
+    phrase: "Aquí corregirás los datos, los costos y las imágenes de referencia de un inmueble ya registrado.",
+    emptyTitle: "Inmueble no encontrado",
+    emptyDescription: "Vuelve al listado y elige otro inmueble.",
+    nextLabel: "Volver a proyectos",
   },
 };
