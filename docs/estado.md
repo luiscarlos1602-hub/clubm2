@@ -16,7 +16,7 @@
 ## F1 · Fundación visual
 | ID | Descripción | Depende de | Tam. | Paralelo con | Estado | Plan | Revisión |
 |---|---|---|---|---|---|---|---|
-| F1-1 | Andamiaje Next + TS strict + Tailwind v4 + shadcn + pnpm; Vitest, Playwright, ESLint de capas, Prettier, lefthook, `verify:fast`/`verify`; primer commit | F0 | M | — | pendiente | | |
+| F1-1 | Andamiaje Next + TS strict + Tailwind v4 + shadcn + pnpm; Vitest, Playwright, ESLint de capas, Prettier, lefthook, `verify:fast`/`verify`; primer commit | F0 | M | — | hecho (rama `feat/app-andamiaje`, pendiente merge) | [ADR-008](decisiones/ADR-008-next-16.md) | verify ✅ |
 | F1-2 | Design system Club M² + `brand.ts` + `shared/ui/brand` + `legal-copy.ts` + página `/sistema` · **checkpoint visual del usuario** | F1-1 | M | F1-3 | pendiente | | |
 | F1-3 | `shared/domain` + motor de reparto C1–C6 + propiedades + ruedas K2–K4 (`projects/backoffice.ts`) | F1-1 | L | F1-2 | pendiente | | |
 | F1-4 | Composition root + demo-store + reiniciar + 7 semillas `M2-001…007` + `seed-consistency.test.ts` | F1-3 | M | F1-5 | pendiente | | |

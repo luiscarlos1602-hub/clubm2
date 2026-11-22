@@ -11,3 +11,10 @@ test-results/
 .DS_Store
 *.log
 .claude/settings.local.json
+
+# next / ts
+*.tsbuildinfo
+next-env.d.ts
+.pnpm-debug.log*
+*.pem
+scaffold-tmp/

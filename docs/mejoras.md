@@ -13,3 +13,5 @@
 | M-007 | 2026-11-22 | Revisión | Identidad de la demo vs `marketing/` (pregunta K5) | P2 | cerrado (ADR-005) |
 | M-008 | 2026-11-22 | ADR-003 | Comprar `clubm2.com` (+ `metroametroclub.com` defensivo), revisar `.com.ve`, handles `@clubm2` y registro de marca mixta en SAPI (36 y 41) | P1 | abierto (usuario) |
 | M-009 | 2026-11-22 | ADR-006 | Decidir si el registro (P2) guarda leads reales desde la v1 → adaptador Supabase + aviso de privacidad | P2 | abierto |
+
+- [M-001 · 22-nov · F1-1] `eslint-plugin-boundaries` imprime un aviso en stderr por el descriptor `module-api` (patrón de archivo). Migrar a `boundaries/files` cuando se verifique la API. `scaffold-tmp/` (residuo del scaffold, ignorado en git) debe borrarlo el usuario.
