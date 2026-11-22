@@ -28,6 +28,7 @@ describe("API pública de projects", () => {
         "changeProjectStatus",
         "checkProjectConsistency",
         "checkProjectProcess",
+        "checkProperty",
         "isProjectSlug",
         "normalizeRiskKinds",
         "sortUpdatesNewestFirst",
