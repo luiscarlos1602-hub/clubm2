@@ -33,23 +33,70 @@ test.describe("backoffice: menú y detalles", () => {
     await expect(page.getByTestId("zona-admin").getByTestId("pie-terminos")).toHaveAttribute("href", "/terminos");
   });
 
-  test("kanban → detalle de oportunidad", async ({ page }) => {
+  test("kanban → detalle de oportunidad → registrar la compra sobrevive a recargar", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(e.message));
     await entrarComoEquipo(page);
     await page.goto("/admin/adquisiciones");
-    await page.getByTestId("oportunidad-ver-OP-015").click();
-    await expect(page).toHaveURL(/\/admin\/adquisiciones\/OP-015$/);
-    await expect(page.getByTestId("pagina-b2-detalle")).toBeVisible();
-    await expect(page.getByTestId("adq-detalle-galeria")).toBeVisible();
-    await expect(page.getByTestId("adq-detalle-inmueble")).toBeVisible();
-    await expect(page.getByTestId("adq-detalle-checklist")).toBeVisible();
-    await expect(page.getByTestId("adq-detalle-cifras")).toBeVisible();
-    await page.getByTestId("adq-detalle-avanzar").click();
-    await expect(page.getByTestId("adq-detalle-avanzar-confirmacion")).toBeVisible();
+    await expect(page.getByTestId("columna-due-diligence").getByTestId("oportunidad-M2-007")).toBeVisible();
+    await page.getByTestId("oportunidad-ver-M2-007").click();
+    // Espera por el estado visible del detalle, no por la URL tras el clic.
+    const detalle = page.getByTestId("pagina-b2-detalle");
+    await expect(detalle.getByTestId("adq-detalle-inmueble")).toBeVisible();
+    await expect(detalle.getByTestId("adq-detalle-galeria")).toBeVisible();
+    await expect(detalle.getByTestId("adq-detalle-checklist")).toBeVisible();
+    await expect(detalle.getByTestId("adq-detalle-cifras")).toBeVisible();
+    const etapa = page.getByTestId("admin-adq-detalle-cabecera").getByTestId("admin-etapa");
+    await expect(etapa).toHaveText("Due diligence");
+
+    await page.getByTestId("adq-detalle-decision-acquired").click();
+    await expect(etapa).toHaveText("Comprado");
+    await expect(page.getByTestId("adq-detalle-abrir-proyecto")).toBeVisible();
+
+    await page.reload();
+    await expect(page.getByTestId("admin-adq-detalle-cabecera").getByTestId("admin-etapa")).toHaveText("Comprado");
+
     await page.getByTestId("adq-detalle-volver").click();
-    await expect(page).toHaveURL(/\/admin\/adquisiciones$/);
+    await expect(page.getByTestId("columna-comprado").getByTestId("oportunidad-M2-007")).toBeVisible();
+    await expect(page.getByTestId("columna-due-diligence")).toContainText("Sin oportunidades");
     expect(errors).toEqual([]);
+  });
+
+  test("descartar una oportunidad pide confirmación y la mueve a Descartado", async ({ page }) => {
+    await entrarComoEquipo(page);
+    await page.goto("/admin/adquisiciones/m2-007-palos-grandes");
+    await page.getByTestId("adq-detalle-decision-discarded").click();
+    await page.getByTestId("adq-detalle-decision-confirmar-descarte").click();
+    await expect(page.getByTestId("admin-adq-detalle-cabecera").getByTestId("admin-etapa")).toHaveText("Descartado");
+    await page.goto("/admin/adquisiciones");
+    await expect(page.getByTestId("columna-descartado").getByTestId("oportunidad-M2-007")).toBeVisible();
+  });
+
+  test("obra: poner en venta se guarda y la ficha pública lo refleja tras recargar", async ({ page }) => {
+    await entrarComoEquipo(page);
+    await page.goto("/admin/proyectos/m2-005-el-paraiso");
+    const resumen = page.getByTestId("admin-obra-resumen");
+    await expect(resumen.getByTestId("admin-etapa")).toHaveText("En obra");
+    await page.getByTestId("obra-etapa-on_sale").click();
+    await expect(page.getByTestId("obra-etapa-estado")).toContainText("En venta");
+    await page.reload();
+    await expect(page.getByTestId("admin-obra-resumen").getByTestId("admin-etapa")).toHaveText("En venta");
+    await expect(page.getByTestId("obra-etapa")).toContainText("Comercialización");
+    await page.goto("/proyectos");
+    const tarjeta = page.getByTestId("pagina-p3").locator('[data-testid="tarjeta-proyecto"][data-project-code="M2-005"]');
+    await expect(tarjeta.getByTestId("tarjeta-etapa")).toHaveText("En venta");
+  });
+
+  test("publicar una compra sin la ficha completa avisa y enlaza a la ficha", async ({ page }) => {
+    await entrarComoEquipo(page);
+    await page.goto("/admin/adquisiciones/m2-007-palos-grandes");
+    await page.getByTestId("adq-detalle-decision-acquired").click();
+    await expect(page.getByTestId("admin-adq-detalle-cabecera").getByTestId("admin-etapa")).toHaveText("Comprado");
+    await page.getByTestId("adq-detalle-abrir-proyecto").click();
+    await page.getByTestId("obra-etapa-funding").click();
+    await expect(page.getByTestId("obra-etapa-estado")).toContainText("Para publicar falta completar la ficha");
+    await expect(page.getByTestId("obra-etapa-completar")).toHaveAttribute("href", /m2-007-palos-grandes/);
+    await expect(page.getByTestId("admin-obra-resumen").getByTestId("admin-etapa")).toHaveText("Comprado");
   });
 
   test("detalle de proyecto con gráficas, proceso e inversionistas", async ({ page }) => {
