@@ -4,7 +4,7 @@
 
 | ID | Fecha | Origen | Descripción | Prioridad | Estado |
 |---|---|---|---|---|---|
-| M-001 | 2026-11-22 | F0 | Definir política de pérdidas y orden de cobro (maestro §6) para reemplazar "por definir" | P1 | abierto (22-nov: decidido solo que no se devuelve dinero hasta vender el inmueble; reparto de la pérdida y orden de cobro por definir, `docs/08` O1) |
+| M-001 | 2026-11-22 | F0 | Definir política de pérdidas y orden de cobro (maestro §6) para reemplazar "por definir" | P1 | decidido (ADR-019, 22-nov: se liquida solo al vender; pérdida en espejo 25/75 con tope en el aporte). Se implementa en W-5; falta confirmar que no hay prelación de cobro |
 | M-002 | 2026-11-22 | F0 | Nombre comercial e identidad definitiva | P2 | cerrado (ADR-003 · ADR-005) |
 | M-003 | 2026-11-22 | ADR-002 | Escribir `architecture.modules.mjs` y generar desde él las reglas de `eslint-plugin-boundaries` (F1-3) | P1 | cerrado (F1-1, `a62b216`: `eslint.config.mjs` importa `moduleOrder` de `architecture.modules.mjs`) |
 | M-004 | 2026-11-22 | ADR-002 | Reglas de lint de `01 §8.1` (domain puro, dinero solo en motor) con mensajes que citen el doc | P1 | cerrado (F1-1/F1-3: reglas `no-restricted-*` de `eslint.config.mjs` citan `docs/01 §8`) |

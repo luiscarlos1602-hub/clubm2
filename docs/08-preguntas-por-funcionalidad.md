@@ -19,7 +19,7 @@
 | K1–K4 Motor | Propuestas por defecto; **las ruedas son internas y no se muestran a inversionistas** | ADR-004 |
 | S1–S9 Supabase (Etapa 1, 22-nov) | Propuestas por defecto aceptadas (S9 en Netlify); **ADR-015 aceptado** | Bloque S · ADR-015 · ADR-017 |
 | Q5 · Q6 Simulador (Etapa 1, 22-nov) | Se mantiene lo actual: sobrecosto sobre todo el presupuesto integral F; costos de venta O fijos | Bloque Q (cont.) |
-| O1 / H2 Pérdidas (Etapa 1, 22-nov) | "Hasta que no se venda la propiedad no se devuelve dinero, queda abierto el proceso". Reparto de la pérdida y orden de cobro: **por definir** | Bloque O · M-001 |
+| O1 / H2 Pérdidas (Etapa 1, 22-nov) | "Hasta que no se venda la propiedad no se devuelve dinero, queda abierto el proceso". **Decidido (ADR-019):** se liquida solo al vender; la pérdida se reparte en espejo 25/75 (inversionistas 25 %, empresa 75 %) con tope en el aporte de cada titular | Bloque O · M-001 |
 
 ## Bloque A · Marca, alcance y hackathon 🔴 (respondido)
 
@@ -165,6 +165,8 @@
 | # | Pregunta | Propuesta por defecto |
 |---|---|---|
 | O1 | Si el proyecto se liquida sin excedente (o con pérdida), ¿qué parte del capital aportado se devuelve y cómo se informa? (H2 del maestro: pendiente) | Mostrar "por definir" en toda pantalla hasta decidirlo; nunca sugerir devolución del capital |
+
+**Respuesta final (22-nov, ADR-019):** no se devuelve dinero antes de la venta, haya ganancia o pérdida; si hay pérdida, los inversionistas absorben el 25 % y la empresa el 75 %, con tope en el aporte de cada titular (devolución mínima 0). Falta solo confirmar que no hay prelación de cobro (ADR-019 §4). W-5 ya puede liquidar con resultado negativo. Lo que sigue queda como historial.
 
 **Respuesta parcial del usuario (22-nov, Etapa 1):** no se devuelve dinero hasta que se venda el inmueble; mientras no se venda, el proceso del proyecto sigue abierto. **Por definir:** qué parte del capital se devuelve si hay pérdida, cómo se reparte la pérdida entre empresa e inversionistas y el orden de cobro (M-001). Consecuencia para W-5: no se puede liquidar con resultado negativo hasta decidirlo; la UI sigue diciendo "política de pérdidas por definir".
 

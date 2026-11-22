@@ -44,7 +44,7 @@ Patrón por fila: puerto de escritura en `application/ports.ts` → caso de uso 
 | W-1 | Puertos de escritura + suite de contrato base (`save` de proyecto, inmueble, economía, presupuesto, clase) | P4 | M | — | pendiente | | |
 | W-2 | Alta y edición de inmueble: `/admin/proyectos`, `/nuevo`, `/[id]/editar`; asistente por pasos (inmueble → economía → presupuesto → participaciones → riesgos/proceso → imágenes existentes → publicar). Campos obligatorios según S4 | W-1 | L | — | pendiente | | |
 | W-3 | Cambio de etapa real (`changeProjectStatus`) y oportunidades como entidades (`opportunity`/`due_diligence`) en B2 | W-2 | M | — | pendiente | | |
-| W-5 | Venta y liquidación: precio y costos reales → `sold` → "Liquidar" crea `Settlement` → `settled`; vista por titular. Sin liquidar con resultado negativo (O1 por definir) | W-3 | L | — | pendiente | | |
+| W-5 | Venta y liquidación: precio y costos reales → `sold` → "Liquidar" crea `Settlement` → `settled`; vista por titular. Incluye liquidar con pérdida según ADR-019 (espejo 25/75 con tope en el aporte): cambia el motor, `docs/02` y el copy "por definir" | W-3 | L | — | pendiente | | |
 | W-4 | Obra: gasto por rubro y avances publicados (B3; `ProjectBudgetPanel.tsx` huérfano) | W-5 | M | — | pendiente | | |
 | W-6 | Reserva → portafolio en el navegador del inversionista: `Participation` `pending_confirmation`, bandeja del equipo, cupos; panel/portafolio leen `listByHolder` y eliminan `EXAMPLE_*`/`PLACED_BY_CODE` | W-4 | L | — | pendiente | | |
 
