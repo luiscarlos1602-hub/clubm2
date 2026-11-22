@@ -25,8 +25,9 @@ const LINK = "rounded-sm text-sm font-medium underline underline-offset-4 outlin
 /**
  * W-3 · botones de cambio de etapa (siguientes etapas manuales de `PROJECT_TRANSITIONS`). Descartar pide confirmación.
  * El resultado se anuncia con role="status" y la etapa nueva llega releyendo el repositorio. `testId` prefija cada control.
+ * `onDone`: para pantallas que desmontan este componente al cambiar la etapa (B2); el padre anuncia el éxito y mueve el foco.
  */
-export function StageActions({ project, testId }: { project: Project; testId: string }) {
+export function StageActions({ project, testId, onDone }: { project: Project; testId: string; onDone?: (stage: ProjectStatus) => void }) {
   const { change, pending } = useChangeProjectStage();
   const [confirming, setConfirming] = useState(false);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
@@ -36,6 +37,11 @@ export function StageActions({ project, testId }: { project: Project; testId: st
   async function run(to: ProjectStatus) {
     setConfirming(false);
     const result = await change(project.id, to);
+    if (result.ok && onDone) {
+      setFeedback(null);
+      onDone(to);
+      return;
+    }
     setFeedback(result.ok ? { kind: "done", stage: to } : { kind: "error", code: result.error.code });
   }
 

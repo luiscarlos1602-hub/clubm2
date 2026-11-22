@@ -51,6 +51,8 @@ test.describe("backoffice: menú y detalles", () => {
 
     await page.getByTestId("adq-detalle-decision-acquired").click();
     await expect(etapa).toHaveText("Comprado");
+    await expect(page.getByTestId("adq-detalle-anuncio")).toHaveText("Etapa actualizada: Comprado.");
+    await expect(page.locator("#adq-decision-h")).toBeFocused();
     await expect(page.getByTestId("adq-detalle-abrir-proyecto")).toBeVisible();
 
     await page.reload();
@@ -94,7 +96,7 @@ test.describe("backoffice: menú y detalles", () => {
     await expect(page.getByTestId("admin-adq-detalle-cabecera").getByTestId("admin-etapa")).toHaveText("Comprado");
     await page.getByTestId("adq-detalle-abrir-proyecto").click();
     await page.getByTestId("obra-etapa-funding").click();
-    await expect(page.getByTestId("obra-etapa-estado")).toContainText("Para publicar falta completar la ficha");
+    await expect(page.getByTestId("obra-etapa-estado")).toContainText("Para publicar, la ficha debe tener");
     await expect(page.getByTestId("obra-etapa-completar")).toHaveAttribute("href", /m2-007-palos-grandes/);
     await expect(page.getByTestId("admin-obra-resumen").getByTestId("admin-etapa")).toHaveText("Comprado");
   });

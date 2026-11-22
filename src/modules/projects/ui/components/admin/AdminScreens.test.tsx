@@ -22,12 +22,20 @@ const property = (n: number) => ({ id: `prop_${n}`, city: "Caracas", zone: "Zona
 type StageResult = { ok: true; value: unknown } | { ok: false; error: { code: string } };
 
 function setup(ui: React.ReactElement, fail = false, stage: StageResult = { ok: true, value: {} }) {
-  const changeProjectStage = vi.fn(() => Promise.resolve(stage));
+  const rows = [project(2, "on_sale", "2026-03-01"), project(5, "renovation", "2026-10-01"), project(7, "due_diligence", null)];
+  // Como el repositorio real: un cambio guardado se ve en la siguiente lectura.
+  const changeProjectStage = vi.fn((id: string, to: string) => {
+    if (stage.ok) {
+      const i = rows.findIndex((r) => r.id === id);
+      if (i >= 0) rows[i] = { ...rows[i], status: to, timeline: { ...rows[i].timeline, acquiredOn: rows[i].timeline.acquiredOn ?? (to === "acquired" ? "2026-11-22" : null) } };
+    }
+    return Promise.resolve(stage);
+  });
   const container = {
     clock: fixedClock("2026-11-22" as IsoDate),
     projects: {
       changeProjectStage,
-      projectRepository: { list: () => (fail ? Promise.reject(new Error("x")) : Promise.resolve([project(2, "on_sale", "2026-03-01"), project(5, "renovation", "2026-10-01"), project(7, "due_diligence", null)])) },
+      projectRepository: { list: () => (fail ? Promise.reject(new Error("x")) : Promise.resolve([...rows])) },
       propertyRepository: { list: () => Promise.resolve([property(2), property(5), property(7)]) },
     },
   } as unknown as Container;
@@ -82,7 +90,12 @@ describe("backoffice de projects", () => {
     expect(screen.getByTestId("adq-detalle-checklist").querySelectorAll("li")).toHaveLength(7);
     fireEvent.click(screen.getByTestId("adq-detalle-decision-acquired"));
     await waitFor(() => expect(changeProjectStage).toHaveBeenCalledWith("prj_7", "acquired"));
-    expect((await screen.findByTestId("adq-detalle-decision-estado")).textContent).toContain("Etapa actualizada: Comprado");
+    // La relectura desmonta los botones: queda la insignia nueva, el enlace a la obra, el anuncio y el foco en el título.
+    expect(await screen.findByTestId("adq-detalle-abrir-proyecto")).toBeTruthy();
+    expect(screen.queryByTestId("adq-detalle-decision")).toBeNull();
+    expect(screen.getByTestId("admin-adq-detalle-cabecera").textContent).toContain("Comprado");
+    expect(screen.getByTestId("adq-detalle-anuncio").textContent).toBe("Etapa actualizada: Comprado.");
+    expect(document.activeElement?.id).toBe("adq-decision-h");
   });
 
   it("descartar pide confirmación antes de guardar", async () => {

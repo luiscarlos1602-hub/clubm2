@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import type { ProjectStatus } from "@/modules/projects";
 import { MoneyDisplay, TextSkeleton } from "@/shared/ui/brand";
 import { projectEditHref } from "@/shared/ui/app-shell";
 import { Section, Surface } from "@/shared/ui/layout";
 import { useProjectSheet } from "../../hooks/use-project-sheet";
 import { OPPORTUNITY_FIGURES_COPY as C } from "./copy";
 
-const PRE_PURCHASE = new Set(["opportunity", "due_diligence", "discarded"]);
+const PRE_PURCHASE: ReadonlySet<ProjectStatus> = new Set<ProjectStatus>(["opportunity", "due_diligence", "discarded"]);
 const LINK = "self-start rounded-sm text-sm font-medium underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 
 /** W-3 · C, F, P y O de la ficha guardada para el detalle de B2 (lo inyecta app/admin). P y O son proyección. */

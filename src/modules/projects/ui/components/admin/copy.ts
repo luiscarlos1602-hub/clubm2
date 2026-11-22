@@ -130,7 +130,7 @@ export const OPPORTUNITY_COPY = {
 /** W-3 · cambio de etapa real (B2 y B3). */
 export const STAGE_ACTIONS_COPY = {
   heading: "Etapa",
-  description: "Cambia la etapa cuando el proyecto avance. Cada cambio se guarda en este navegador y se refleja en la cara pública si el proyecto está publicado.",
+  description: "Cambia la etapa cuando el proyecto avance. Los datos son simulados: cada cambio se guarda en este navegador y se refleja en la cara pública si el proyecto está publicado.",
   actions: {
     due_diligence: "Pasar a due diligence",
     acquired: "Registrar la compra",
@@ -152,7 +152,7 @@ export const STAGE_ACTIONS_COPY = {
   saleNote: "La venta se registra en Comercialización, con el precio y los costos reales.",
   noMoves: "No hay cambios de etapa disponibles desde aquí.",
   errors: {
-    NOT_READY_TO_PUBLISH: "Para publicar falta completar la ficha: fecha de compra, descripción y destacados, proceso, clase de participación, riesgos comunes e imágenes.",
+    NOT_READY_TO_PUBLISH: "Para publicar, la ficha debe tener: fecha de compra, descripción y destacados, proceso, clase de participación, riesgos comunes e imágenes.",
     dates: "Las fechas del proyecto no permiten este cambio. Revisa la ficha.",
     INVALID_TRANSITION: "Ese cambio de etapa ya no es posible. Recarga la página.",
     generic: "No se pudo guardar el cambio. Inténtalo de nuevo.",

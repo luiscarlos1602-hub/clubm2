@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import type { ComponentType } from "react";
+import { useRef, useState, type ComponentType } from "react";
 import { ArrowLeft, Circle, SearchX } from "lucide-react";
 import { EmptyState, ProjectGallery } from "@/shared/ui/brand";
 import { AdminQueryState } from "@/shared/ui/admin";
 import { Eyebrow, PageHeader, Section, Surface } from "@/shared/ui/layout";
 import { Button } from "@/shared/ui/primitives/button";
-import { OPPORTUNITY_COPY as C, STAGE_ACTIONS_COPY } from "./copy";
+import { OPPORTUNITY_COPY as C, STAGE_ACTIONS_COPY, STAGE_LABEL } from "./copy";
+import type { ProjectStatus } from "../../../domain/project-status";
 import { StageBadge } from "./badges";
 import { StageActions } from "./StageActions";
 import { useAdminProjects, type ProjectRow } from "./use-admin-projects";
@@ -37,14 +38,24 @@ function BackLink() {
 function Decision({ row }: { row: ProjectRow }) {
   const { status, slug } = row.project;
   const open = status === "opportunity" || status === "due_diligence";
+  const heading = useRef<HTMLHeadingElement>(null);
+  const [changedTo, setChangedTo] = useState<ProjectStatus | null>(null);
+  // Comprar o descartar desmonta StageActions: el anuncio y el foco quedan aquí, que no se desmonta.
+  const onDone = (stage: ProjectStatus) => {
+    setChangedTo(stage);
+    heading.current?.focus();
+  };
   return (
     <Section tone="dark" spacing="md" labelledBy="adq-decision-h" innerClassName="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <Eyebrow>{STAGE_ACTIONS_COPY.heading}</Eyebrow>
-        <h2 id="adq-decision-h" className="font-heading text-3xl font-semibold">{C.decision.heading}</h2>
+        <h2 id="adq-decision-h" ref={heading} tabIndex={-1} className="font-heading text-3xl font-semibold outline-none">{C.decision.heading}</h2>
         <p className="max-w-[62ch] text-foreground/85">{open ? C.decision.description : status === "discarded" ? C.decision.discarded : C.decision.bought}</p>
       </div>
-      {open ? <StageActions project={row.project} testId="adq-detalle-decision" /> : null}
+      <div role="status" aria-live="polite" className="text-sm" data-testid="adq-detalle-anuncio">
+        {changedTo ? <p>{STAGE_ACTIONS_COPY.done(STAGE_LABEL[changedTo])}</p> : null}
+      </div>
+      {open ? <StageActions project={row.project} testId="adq-detalle-decision" onDone={onDone} /> : null}
       {!open && status !== "discarded" ? (
         <Button asChild className="self-start"><Link href={`/admin/proyectos/${slug}`} data-testid="adq-detalle-abrir-proyecto">{C.decision.openProject}</Link></Button>
       ) : null}

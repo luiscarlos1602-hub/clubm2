@@ -71,7 +71,7 @@ export const FINANCE_ADMIN_COPY = {
 /** W-3 · cifras de la ficha en el detalle de una oportunidad (B2). Datos simulados. */
 export const OPPORTUNITY_FIGURES_COPY = {
   heading: "Cifras de compra y presupuesto",
-  description: "Cifras de la ficha del inmueble: la compra la paga la empresa con capital propio y la reforma se financia con participaciones económicas.",
+  description: "Cifras de la ficha del inmueble: la compra la paga la empresa con capital propio y la reforma se financia con participaciones económicas. Datos simulados.",
   offer: "Oferta o precio de referencia (C)",
   bought: "Precio de compra (C)",
   reform: "Presupuesto de reforma (F)",
