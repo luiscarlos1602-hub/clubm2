@@ -18,6 +18,8 @@ export {
   transitionStatus,
   isTerminalStatus,
   changeProjectStatus,
+  manualNextStages,
+  SETTLEMENT_STAGES,
 } from "./domain/project-status";
 export { checkProjectConsistency, checkProperty } from "./domain/project-consistency";
 export type { PublicStage } from "./domain/public-stage";
@@ -75,3 +77,9 @@ export {
   referenceImagesFor,
   resolveProjectImages,
 } from "./domain/project-image";
+// W-3 · cambio de etapa real (B2 y B3).
+export type {
+  ChangeProjectStage,
+  ChangeProjectStageErrorCode,
+  PublishGuard,
+} from "./application/change-project-stage";

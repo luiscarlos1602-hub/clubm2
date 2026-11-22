@@ -9,6 +9,8 @@ import {
   canTransition,
   changeProjectStatus,
   isTerminalStatus,
+  manualNextStages,
+  SETTLEMENT_STAGES,
   transitionStatus,
   type ProjectStatus,
 } from "./project-status";
@@ -196,5 +198,28 @@ describe("CREATABLE_STATUSES (W2-1)", () => {
       expect(PROJECT_STATUSES).toContain(s);
       expect(isTerminalStatus(s)).toBe(false);
     }
+  });
+});
+
+describe("manualNextStages (W-3)", () => {
+  it("son las transiciones válidas sin venta ni liquidación", () => {
+    for (const from of PROJECT_STATUSES) {
+      const manual = manualNextStages(from);
+      for (const to of manual) expect(canTransition(from, to)).toBe(true);
+      expect(manual).not.toContain("sold");
+      expect(manual).not.toContain("settled");
+      const reserved = PROJECT_STATUSES.filter((to) => canTransition(from, to) && !manual.includes(to));
+      expect(reserved.every((to) => (SETTLEMENT_STAGES as readonly string[]).includes(to))).toBe(true);
+    }
+  });
+
+  it("casos del backoffice: B2 avanza o descarta; venta solo desde W-5", () => {
+    expect(manualNextStages("opportunity")).toEqual(["due_diligence"]);
+    expect(manualNextStages("due_diligence")).toEqual(["acquired", "discarded"]);
+    expect(manualNextStages("acquired")).toEqual(["funding"]);
+    expect(manualNextStages("on_sale")).toEqual(["stalled"]);
+    expect(manualNextStages("stalled")).toEqual(["on_sale"]);
+    expect(manualNextStages("sold")).toEqual([]);
+    expect(manualNextStages("settled")).toEqual([]);
   });
 });

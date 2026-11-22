@@ -39,6 +39,16 @@ export const PROJECT_TRANSITIONS: Readonly<Record<ProjectStatus, readonly Projec
     discarded: Object.freeze([] as const),
   });
 
+/** W-3: etapas que fija W-5 al registrar la venta y la liquidación (llevan precio y Settlement). */
+export const SETTLEMENT_STAGES = ["sold", "settled"] as const;
+
+/** W-3: siguientes etapas que el backoffice cambia con un clic (PROJECT_TRANSITIONS sin las de W-5). */
+export function manualNextStages(from: ProjectStatus): readonly ProjectStatus[] {
+  return PROJECT_TRANSITIONS[from].filter(
+    (to) => !(SETTLEMENT_STAGES as readonly ProjectStatus[]).includes(to),
+  );
+}
+
 export function canTransition(from: ProjectStatus, to: ProjectStatus): boolean {
   return PROJECT_TRANSITIONS[from].includes(to);
 }
