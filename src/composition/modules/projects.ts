@@ -44,7 +44,7 @@ export function registerProjects(store: DemoStore<DemoSnapshot>): ProjectsModule
     propertyRepository: createPropertyMockRepository(source),
     contentRepository,
     getProjectProcess: createGetProjectProcess({ projects: projectRepository, content: contentRepository }),
-    saveProject: createSaveProject({ projects: createProjectMockWriter(source) }),
+    saveProject: createSaveProject({ projects: { ...projectRepository, ...createProjectMockWriter(source) } }),
     saveProperty: createSaveProperty({ properties: createPropertyMockWriter(source) }),
   };
 }

@@ -6,7 +6,10 @@ import { contractProject, contractProperty } from "./projects-repository.contrac
 import { createSaveProject, createSaveProperty } from "./save-project";
 
 describe("saveProject (W-1)", () => {
-  const writer = () => ({ save: vi.fn((p: Project) => Promise.resolve(ok(p))) });
+  const writer = (stored: Project | null = null) => ({
+    save: vi.fn((p: Project) => Promise.resolve(ok(p))),
+    findById: vi.fn(() => Promise.resolve(stored)),
+  });
 
   it("guarda un proyecto coherente", async () => {
     const projects = writer();
@@ -26,9 +29,18 @@ describe("saveProject (W-1)", () => {
     expect(projects.save).not.toHaveBeenCalled();
   });
 
+  it("editar sin cambiar la etapa se guarda; cambiarla → STATUS_CHANGE_NOT_ALLOWED", async () => {
+    const projects = writer(contractProject);
+    const save = createSaveProject({ projects });
+    expect((await save({ ...contractProject, name: "Otro nombre" })).ok).toBe(true);
+    const r = await save({ ...contractProject, status: "renovation" });
+    expect(!r.ok && r.error.code).toBe("STATUS_CHANGE_NOT_ALLOWED");
+    expect(projects.save).toHaveBeenCalledOnce();
+  });
+
   it("pasa tal cual el error del repositorio", async () => {
     const save = vi.fn(() => Promise.resolve({ ok: false as const, error: { code: "DUPLICATE" as const } }));
-    const r = await createSaveProject({ projects: { save } })({
+    const r = await createSaveProject({ projects: { save, findById: () => Promise.resolve(null) } })({
       ...contractProject,
       timeline: { ...contractProject.timeline, acquiredOn: isoDate("2026-10-02") },
     });

@@ -38,7 +38,7 @@ export interface ProjectWriter {
   save(project: Project): SaveResult<Project>;
 }
 
-/** Puerto de escritura de inmuebles (W-1). `save` inserta o reemplaza por `id`; INVALID_RECORD si no pasa el esquema. */
+/** Puerto de escritura de inmuebles (W-1). `save` inserta o reemplaza por `id`; INVALID_RECORD si no pasa el esquema. Si rechaza, no cambia nada. */
 export interface PropertyWriter {
   save(property: Property): SaveResult<Property>;
 }

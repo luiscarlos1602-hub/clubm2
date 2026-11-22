@@ -21,7 +21,11 @@ export interface ProjectBudgetRepository {
   findByProject(projectId: ProjectId): Promise<ProjectBudget | null>;
 }
 
-/** Escritura de la economía base (W-1): una por proyecto; `save` inserta o reemplaza por `projectId`. INVALID_RECORD si no pasa el esquema. */
+/**
+ * Escritura de la economía base (W-1): una por proyecto; `save` inserta o reemplaza por `projectId`.
+ * INVALID_RECORD si no pasa el esquema; REFERENCE_NOT_FOUND si el proyecto no existe (FK en Supabase; el mock
+ * no lo comprueba porque es otro slice: lo cubre el caso de uso). Si rechaza, no cambia nada.
+ */
 export interface ProjectEconomicsWriter {
   save(economics: ProjectEconomics): SaveResult<ProjectEconomics>;
 }
@@ -29,6 +33,7 @@ export interface ProjectEconomicsWriter {
 /**
  * Escritura del presupuesto por líneas (W-1): uno por proyecto; `save` inserta o reemplaza por `projectId`.
  * INVALID_RECORD si no pasa el esquema; REFERENCE_NOT_FOUND si el proyecto no tiene economía guardada.
+ * Si rechaza, no cambia nada: el presupuesto anterior queda entero (en Supabase, reemplazo en una transacción).
  */
 export interface ProjectBudgetWriter {
   save(budget: ProjectBudget): SaveResult<ProjectBudget>;

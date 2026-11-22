@@ -70,7 +70,7 @@ export function registerFinance(
     }),
     saveProjectEconomics: createSaveProjectEconomics({
       projects: deps.projects.projectRepository,
-      economics: createProjectEconomicsMockWriter(source),
+      economics: { ...economicsRepository, ...createProjectEconomicsMockWriter(source) },
       budgets: createProjectBudgetMockWriter(source),
     }),
   };

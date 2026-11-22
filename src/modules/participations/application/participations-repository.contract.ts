@@ -50,6 +50,13 @@ export function describeParticipationsRepositoryContract(
       expect((await repo.classes.findByProject(contractClass.projectId))?.id).toBe(contractClass.id);
     });
 
+    it("clase: un reemplazo rechazado deja intacta la versión guardada", async () => {
+      await repo.classes.save(contractClass);
+      const r = await repo.classes.save({ ...contractClass, total: 99.5 });
+      expect(!r.ok && r.error.code).toBe("INVALID_RECORD");
+      expect(await repo.classes.findByProject(contractClass.projectId)).toEqual(contractClass);
+    });
+
     it("clase: un total no entero se rechaza con INVALID_RECORD", async () => {
       const r = await repo.classes.save({ ...contractClass, total: 99.5 });
       expect(!r.ok && r.error.code).toBe("INVALID_RECORD");

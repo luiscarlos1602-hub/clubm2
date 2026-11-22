@@ -74,6 +74,16 @@ export function describeFinanceRepositoryContract(
       expect(await repo.economics.findByProject(CONTRACT_PROJECT_ID)).toBeNull();
     });
 
+    it("economía: un reemplazo rechazado deja intacta la versión guardada", async () => {
+      await repo.economics.save(contractEconomics);
+      const r = await repo.economics.save({
+        ...contractEconomics,
+        acquisitionCost: { cents: 10.5, currency: "USD" } as ProjectEconomics["acquisitionCost"],
+      });
+      expect(!r.ok && r.error.code).toBe("INVALID_RECORD");
+      expect(await repo.economics.findByProject(CONTRACT_PROJECT_ID)).toEqual(contractEconomics);
+    });
+
     it("presupuesto: save conserva las líneas y su orden", async () => {
       await repo.economics.save(contractEconomics);
       expect(await repo.budgets.save(contractBudget)).toEqual({ ok: true, value: contractBudget });
@@ -100,6 +110,20 @@ export function describeFinanceRepositoryContract(
       const r = await repo.budgets.save(contractBudget);
       expect(!r.ok && r.error.code).toBe("REFERENCE_NOT_FOUND");
       expect(await repo.budgets.findByProject(CONTRACT_PROJECT_ID)).toBeNull();
+    });
+
+    it("presupuesto: un reemplazo rechazado deja todas las líneas anteriores", async () => {
+      await repo.economics.save(contractEconomics);
+      await repo.budgets.save(contractBudget);
+      const r = await repo.budgets.save({
+        projectId: CONTRACT_PROJECT_ID,
+        lines: [
+          { item: "kitchen", amount: usdUnits(5_000) },
+          { item: "pool", amount: usdUnits(5_000) },
+        ],
+      } as unknown as ProjectBudget);
+      expect(!r.ok && r.error.code).toBe("INVALID_RECORD");
+      expect(await repo.budgets.findByProject(CONTRACT_PROJECT_ID)).toEqual(contractBudget);
     });
 
     it("presupuesto: un rubro desconocido se rechaza con INVALID_RECORD", async () => {

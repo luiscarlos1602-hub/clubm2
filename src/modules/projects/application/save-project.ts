@@ -4,17 +4,24 @@ import type { RepositoryWriteErrorCode } from "@/shared/domain/repository-write"
 import type { Project, Property } from "../domain/project";
 import { checkProjectConsistency, checkProperty } from "../domain/project-consistency";
 import { isProjectSlug } from "../domain/project-slug";
-import type { ProjectWriter, PropertyWriter } from "./ports";
+import type { ProjectRepository, ProjectWriter, PropertyWriter } from "./ports";
 
 export type SaveProjectErrorCode =
   | "INCONSISTENT_TIMELINE"
   | "INVALID_PROJECT_SLUG"
   | "INVALID_PROJECT_NAME"
+  | "STATUS_CHANGE_NOT_ALLOWED"
   | RepositoryWriteErrorCode;
 export type SaveProject = (project: Project) => Promise<Result<Project, DomainError<SaveProjectErrorCode>>>;
 
-/** W-1. Valida con el dominio (fechas según estado, slug, nombre) y guarda. Nunca lanza. */
-export function createSaveProject(deps: { readonly projects: ProjectWriter }): SaveProject {
+/**
+ * W-1. Alta o edición de los datos del proyecto: valida con el dominio (fechas según estado, slug, nombre) y guarda.
+ * Editar no cambia la etapa: si el proyecto ya existe con otro `status` → STATUS_CHANGE_NOT_ALLOWED; los cambios
+ * de etapa pasan por `changeProjectStatus` (W-3). Nunca lanza.
+ */
+export function createSaveProject(deps: {
+  readonly projects: ProjectWriter & Pick<ProjectRepository, "findById">;
+}): SaveProject {
   return async (project) => {
     if (project.name.trim() === "") return err("INVALID_PROJECT_NAME", "el nombre es obligatorio");
     if (!isProjectSlug(project.slug)) {
@@ -22,6 +29,10 @@ export function createSaveProject(deps: { readonly projects: ProjectWriter }): S
     }
     const consistent = checkProjectConsistency(project);
     if (!consistent.ok) return consistent;
+    const stored = await deps.projects.findById(project.id);
+    if (stored !== null && stored.status !== project.status) {
+      return err("STATUS_CHANGE_NOT_ALLOWED", "la etapa se cambia desde su propio paso, no al editar");
+    }
     return deps.projects.save(project);
   };
 }

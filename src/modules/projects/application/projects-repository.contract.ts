@@ -67,6 +67,13 @@ export function describeProjectsRepositoryContract(
       expect(await repo.properties.findById(contractProperty.id)).toBeNull();
     });
 
+    it("inmueble: un reemplazo rechazado deja intacta la versión guardada", async () => {
+      await repo.properties.save(contractProperty);
+      const r = await repo.properties.save({ ...contractProperty, areaM2: 0 });
+      expect(!r.ok && r.error.code).toBe("INVALID_RECORD");
+      expect(await repo.properties.findById(contractProperty.id)).toEqual(contractProperty);
+    });
+
     it("proyecto: save lo devuelve y queda legible por id, slug y en list ordenado por código", async () => {
       await repo.properties.save(contractProperty);
       const saved = await repo.projects.save(contractProject);
@@ -103,6 +110,14 @@ export function describeProjectsRepositoryContract(
       expect(!sameSlug.ok && sameSlug.error.code).toBe("DUPLICATE");
       expect(await repo.projects.findById(other.id)).toBeNull();
       expect(await repo.projects.list()).toEqual(before);
+    });
+
+    it("proyecto: un reemplazo rechazado deja intacta la versión guardada", async () => {
+      await repo.properties.save(contractProperty);
+      await repo.projects.save(contractProject);
+      const r = await repo.projects.save({ ...contractProject, slug: "Con Espacios" });
+      expect(!r.ok && r.error.code).toBe("INVALID_RECORD");
+      expect(await repo.projects.findById(contractProject.id)).toEqual(contractProject);
     });
 
     it("proyecto: un inmueble inexistente se rechaza con REFERENCE_NOT_FOUND", async () => {

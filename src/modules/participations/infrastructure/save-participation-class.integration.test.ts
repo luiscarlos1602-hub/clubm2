@@ -22,6 +22,11 @@ describe("saveParticipationClass (W-1)", () => {
     expect(s.slice.read().classes).toEqual([contractClass]);
   });
 
+  it("acepta una clase totalmente colocada (placed = total)", async () => {
+    const s = setup();
+    expect((await s.save({ ...contractClass, placed: 100 })).ok).toBe(true);
+  });
+
   it.each([{ placed: 101 }, { total: 0 }, { placed: -1 }])("rechaza %o con INVALID_PARTICIPATION_CLASS", async (change) => {
     const s = setup();
     const r = await s.save({ ...contractClass, ...change });

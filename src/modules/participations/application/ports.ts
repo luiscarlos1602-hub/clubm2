@@ -16,7 +16,8 @@ export interface ParticipationRepository {
 
 /**
  * Escritura de la clase de participación (W-1): una por proyecto; `save` inserta o reemplaza por `id`.
- * INVALID_RECORD si no pasa el esquema; DUPLICATE si otra clase ya es de ese proyecto. Si rechaza, no cambia nada.
+ * INVALID_RECORD si no pasa el esquema; DUPLICATE si otra clase ya es de ese proyecto; REFERENCE_NOT_FOUND si el
+ * proyecto no existe (FK en Supabase; el mock no lo comprueba: lo cubre el caso de uso). Si rechaza, no cambia nada.
  */
 export interface ParticipationClassWriter {
   save(cls: ParticipationClass): SaveResult<ParticipationClass>;

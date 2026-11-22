@@ -3,7 +3,7 @@ import type { RepositoryWriteErrorCode } from "@/shared/domain/repository-write"
 import { err, ok, type DomainError, type Result } from "@/shared/domain/result";
 import { checkProjectBudget, type BudgetErrorCode, type ProjectBudget } from "../domain/budget";
 import { checkProjectEconomics, type ProjectEconomics } from "../domain/project-economics";
-import type { ProjectBudgetWriter, ProjectEconomicsWriter } from "./ports";
+import type { ProjectBudgetWriter, ProjectEconomicsRepository, ProjectEconomicsWriter } from "./ports";
 
 export type SaveProjectEconomicsInput = {
   readonly economics: ProjectEconomics;
@@ -20,13 +20,15 @@ export type SaveProjectEconomics = (
 
 export type SaveProjectEconomicsDeps = {
   readonly projects: Pick<ProjectRepository, "findById">;
-  readonly economics: ProjectEconomicsWriter;
+  readonly economics: ProjectEconomicsWriter & Pick<ProjectEconomicsRepository, "findByProject">;
   readonly budgets: ProjectBudgetWriter;
 };
 
 /**
  * W-1. Economía y presupuesto se guardan juntos: así cambiar F nunca deja un presupuesto que no la suma.
- * Valida todo antes de escribir. En local no es atómico; en Supabase lo será la RPC `save_project_sheet` (DB-4).
+ * Valida todo antes de escribir. Si el presupuesto se rechaza tras guardar la economía, restaura la economía
+ * anterior (si no había, la economía nueva queda sin presupuesto y el error se devuelve). En Supabase será
+ * atómico con la RPC `save_project_sheet` (DB-4).
  */
 export function createSaveProjectEconomics(deps: SaveProjectEconomicsDeps): SaveProjectEconomics {
   return async (input) => {
@@ -39,10 +41,14 @@ export function createSaveProjectEconomics(deps: SaveProjectEconomicsDeps): Save
     const checkedBudget = checkProjectBudget(budget, economics);
     if (!checkedBudget.ok) return checkedBudget;
 
+    const previous = await deps.economics.findByProject(economics.projectId);
     const savedEconomics = await deps.economics.save(economics);
     if (!savedEconomics.ok) return savedEconomics;
     const savedBudget = await deps.budgets.save(budget);
-    if (!savedBudget.ok) return savedBudget;
+    if (!savedBudget.ok) {
+      if (previous !== null) await deps.economics.save(previous);
+      return savedBudget;
+    }
     return ok({ economics: savedEconomics.value, budget: savedBudget.value });
   };
 }

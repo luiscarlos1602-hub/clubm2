@@ -35,10 +35,10 @@ describe("Escrituras W-1 a través del contenedor", () => {
     const storage = memoryStorage();
     const c = createContainer({ clock, storage });
     await c.projects.projectRepository.list();
-    const before = storage.getItem("club-demo:v2");
+    const before = storage.getItem(c.demo.storageKey);
     const r = await c.projects.saveProject({ ...contractProject, status: "settled" });
     expect(!r.ok && r.error.code).toBe("INCONSISTENT_TIMELINE");
-    expect(storage.getItem("club-demo:v2")).toBe(before);
+    expect(storage.getItem(c.demo.storageKey)).toBe(before);
   });
 
   it("reiniciar los datos simulados borra lo escrito", async () => {
