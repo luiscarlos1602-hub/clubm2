@@ -1,7 +1,8 @@
 import type { ProjectId } from "@/modules/projects";
+import type { SaveResult } from "@/shared/domain/repository-write";
 import type { HolderId, Participation, ParticipationClass } from "../domain/participation";
 
-/** Puerto de lectura de clases de participación. En F1-4 no hay escrituras (P5). */
+/** Puerto de lectura de clases de participación. Las escrituras van por `ParticipationClassWriter` (W-1). */
 export interface ParticipationClassRepository {
   list(): Promise<readonly ParticipationClass[]>;
   findByProject(projectId: ProjectId): Promise<ParticipationClass | null>;
@@ -11,4 +12,13 @@ export interface ParticipationClassRepository {
 export interface ParticipationRepository {
   /** Orden por `subscribedOn` ascendente. */
   listByHolder(holderId: HolderId): Promise<readonly Participation[]>;
+}
+
+/**
+ * Escritura de la clase de participación (W-1): una por proyecto; `save` inserta o reemplaza por `id`.
+ * INVALID_RECORD si no pasa el esquema; DUPLICATE si otra clase ya es de ese proyecto; REFERENCE_NOT_FOUND si el
+ * proyecto no existe (FK en Supabase; el mock no lo comprueba: lo cubre el caso de uso). Si rechaza, no cambia nada.
+ */
+export interface ParticipationClassWriter {
+  save(cls: ParticipationClass): SaveResult<ParticipationClass>;
 }

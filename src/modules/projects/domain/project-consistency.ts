@@ -1,6 +1,6 @@
 import { compareIsoDate, type IsoDate } from "@/shared/domain/calendar-date";
 import { err, ok, type DomainError, type Result } from "@/shared/domain/result";
-import type { Project, ProjectTimeline } from "./project";
+import type { Project, ProjectTimeline, Property } from "./project";
 import type { ProjectStatus } from "./project-status";
 
 type Presence = "absent" | "present";
@@ -60,4 +60,16 @@ export function checkProjectConsistency(
     }
   }
   return ok(project);
+}
+
+/** Inmueble válido: ciudad y zona con texto, superficie entera > 0. Nunca lanza. */
+export function checkProperty(
+  property: Property,
+): Result<Property, DomainError<"INVALID_PROPERTY">> {
+  if (property.city.trim() === "") return err("INVALID_PROPERTY", "la ciudad es obligatoria");
+  if (property.zone.trim() === "") return err("INVALID_PROPERTY", "la zona es obligatoria");
+  if (!Number.isSafeInteger(property.areaM2) || property.areaM2 <= 0) {
+    return err("INVALID_PROPERTY", "la superficie debe ser un entero de m² mayor que 0");
+  }
+  return ok(property);
 }

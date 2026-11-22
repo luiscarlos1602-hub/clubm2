@@ -18,11 +18,12 @@ export {
   isTerminalStatus,
   changeProjectStatus,
 } from "./domain/project-status";
-export { checkProjectConsistency } from "./domain/project-consistency";
+export { checkProjectConsistency, checkProperty } from "./domain/project-consistency";
 export type { PublicStage } from "./domain/public-stage";
 export { PUBLIC_STAGES, toPublicStage, isPublishedStatus } from "./domain/public-stage";
 export { TARGET_TERM_MONTHS } from "./domain/target-term";
-export type { ProjectRepository, PropertyRepository } from "./application/ports";
+export type { ProjectRepository, PropertyRepository, ProjectWriter, PropertyWriter } from "./application/ports";
+export type { SaveProject, SaveProjectErrorCode, SaveProperty, SavePropertyErrorCode } from "./application/save-project";
 // P4 · ficha: slug, perfil, proceso, actualizaciones y riesgos (plan 006 §3.2). Sin niveles ni ruedas.
 export { PROJECT_SLUG_PATTERN, isProjectSlug } from "./domain/project-slug";
 export type { PropertyProfile } from "./domain/property-profile";

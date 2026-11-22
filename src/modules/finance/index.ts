@@ -14,6 +14,7 @@ export { validateDistributionInput } from "./domain/validate-distribution-input"
 export type { HolderPayout } from "./domain/holder-payout";
 export { calculateHolderPayout } from "./domain/holder-payout";
 export type { ProjectEconomics } from "./domain/project-economics";
+export { checkProjectEconomics } from "./domain/project-economics";
 export type {
   SettlementId,
   RealizedDistributionInput,
@@ -54,7 +55,12 @@ export { SCENARIO_IDS, SCENARIO_ASSUMPTIONS, buildScenarios } from "./domain/sce
 export { estimateReservation, reservationAmount, projectHoldingGain } from "./domain/holding-projection";
 export type { DetailMode, ProjectDetail, ProjectDetailErrorCode } from "./domain/project-detail";
 export { buildProjectDetail } from "./domain/project-detail";
-export type { ProjectBudgetRepository } from "./application/ports";
+export type { ProjectBudgetRepository, ProjectBudgetWriter, ProjectEconomicsWriter } from "./application/ports";
+export type {
+  SaveProjectEconomics,
+  SaveProjectEconomicsErrorCode,
+  SaveProjectEconomicsInput,
+} from "./application/save-project-economics";
 export type { GetProjectDetail } from "./application/get-project-detail";
 export type {
   GetHoldingProjections,

@@ -1,4 +1,4 @@
-import type { DemoStore } from "@/shared/infrastructure/demo-store";
+import { sliceOf, type DemoStore } from "@/shared/infrastructure/demo-store";
 import type {
   ProjectContentRepository,
   ProjectRepository,
@@ -13,6 +13,16 @@ import {
   createProjectMockRepository,
   createPropertyMockRepository,
 } from "@/modules/projects/infrastructure/projects.mock-repository";
+import {
+  createProjectMockWriter,
+  createPropertyMockWriter,
+} from "@/modules/projects/infrastructure/projects.mock-writer";
+import {
+  createSaveProject,
+  createSaveProperty,
+  type SaveProject,
+  type SaveProperty,
+} from "@/modules/projects/application/save-project";
 import type { DemoSnapshot } from "../demo-snapshot";
 
 export type ProjectsModule = {
@@ -20,10 +30,13 @@ export type ProjectsModule = {
   readonly propertyRepository: PropertyRepository;
   readonly contentRepository: ProjectContentRepository;
   readonly getProjectProcess: GetProjectProcess;
+  /** W-1: escrituras validadas por el dominio. */
+  readonly saveProject: SaveProject;
+  readonly saveProperty: SaveProperty;
 };
 
 export function registerProjects(store: DemoStore<DemoSnapshot>): ProjectsModule {
-  const source = { read: () => store.read().projects };
+  const source = sliceOf(store, "projects");
   const projectRepository = createProjectMockRepository(source);
   const contentRepository = createProjectContentMockRepository(source);
   return {
@@ -31,5 +44,7 @@ export function registerProjects(store: DemoStore<DemoSnapshot>): ProjectsModule
     propertyRepository: createPropertyMockRepository(source),
     contentRepository,
     getProjectProcess: createGetProjectProcess({ projects: projectRepository, content: contentRepository }),
+    saveProject: createSaveProject({ projects: { ...projectRepository, ...createProjectMockWriter(source) } }),
+    saveProperty: createSaveProperty({ properties: createPropertyMockWriter(source) }),
   };
 }

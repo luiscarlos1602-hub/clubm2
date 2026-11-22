@@ -48,21 +48,21 @@ const distributionSchema: z.ZodType<Distribution> = z.object({
   capital: z.object({ external: moneySchema, company: moneySchema }),
 });
 
-const budgetSchema = z.object({
+export const budgetSchema = z.object({
   projectId: idSchema<"Project">(),
   lines: z.array(z.object({ item: z.enum(BUDGET_ITEMS), amount: moneySchema })),
 });
 
+export const economicsSchema = z.object({
+  projectId: idSchema<"Project">(),
+  acquisitionCost: moneySchema,
+  recoveryBudget: moneySchema,
+  targetSalePrice: moneySchema,
+  estimatedSaleCosts: moneySchema,
+});
+
 export const financeSliceSchema: z.ZodType<FinanceSlice> = z.object({
-  economics: z.array(
-    z.object({
-      projectId: idSchema<"Project">(),
-      acquisitionCost: moneySchema,
-      recoveryBudget: moneySchema,
-      targetSalePrice: moneySchema,
-      estimatedSaleCosts: moneySchema,
-    }),
-  ),
+  economics: z.array(economicsSchema),
   settlements: z.array(
     z.object({
       id: idSchema<"Settlement">(),

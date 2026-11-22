@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { isoDate, type IsoDate } from "@/shared/domain/calendar-date";
 import { asId } from "@/shared/domain/id";
-import type { Project, ProjectCode, ProjectTimeline } from "./project";
-import { checkProjectConsistency } from "./project-consistency";
+import type { Project, ProjectCode, ProjectTimeline, Property } from "./project";
+import { checkProjectConsistency, checkProperty } from "./project-consistency";
 import type { ProjectStatus } from "./project-status";
 
 const d = (raw: string): IsoDate => isoDate(raw);
@@ -95,5 +95,31 @@ describe("checkProjectConsistency", () => {
     it("liquidación antes de la venta es inválida", () => {
       expectInconsistent(project("settled", { ...SOLD, settledOn: d("2026-04-09") }));
     });
+  });
+});
+
+describe("checkProperty (W-1)", () => {
+  const base: Property = {
+    id: asId<"Property">("prop_prueba_01"),
+    city: "Caracas",
+    zone: "Chacao",
+    kind: "apartment",
+    areaM2: 80,
+  };
+
+  it("acepta un inmueble completo", () => {
+    expect(checkProperty(base).ok).toBe(true);
+  });
+
+  it.each([
+    [{ city: "  " }],
+    [{ zone: "" }],
+    [{ areaM2: 0 }],
+    [{ areaM2: 12.5 }],
+    [{ areaM2: -3 }],
+  ])("rechaza %o", (change) => {
+    const r = checkProperty({ ...base, ...change });
+    expect(r.ok).toBe(false);
+    expect(!r.ok && r.error.code).toBe("INVALID_PROPERTY");
   });
 });

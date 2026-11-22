@@ -3,6 +3,9 @@ import type { KeyValueStorage } from "./browser-storage";
 
 export type SliceReader<T> = { read(): T };
 
+/** Lectura y escritura de una parte del snapshot (W-1): lo usan los `save` de los repos mock. */
+export type SliceStore<T> = SliceReader<T> & { update(change: (current: T) => T): T };
+
 export type DemoStore<S> = {
   readonly key: string;
   /** Caché en memoria. Si falta la clave o no pasa `parse`: buildSeed(), persiste y lo devuelve. */
@@ -87,4 +90,31 @@ export function createDemoStore<S>(options: DemoStoreOptions<S>): DemoStore<S> {
       return seed();
     },
   };
+}
+
+/** La parte `key` del snapshot como SliceStore: escribir en ella persiste el snapshot entero. */
+export function sliceOf<S, K extends keyof S>(store: DemoStore<S>, key: K): SliceStore<S[K]> {
+  return {
+    read: () => store.read()[key],
+    update: (change) => store.update((current) => ({ ...current, [key]: change(current[key]) }))[key],
+  };
+}
+
+/** Slice solo en memoria, para tests y suites de contrato. */
+export function memorySlice<T>(initial: T): SliceStore<T> {
+  let current = initial;
+  return {
+    read: () => current,
+    update(change) {
+      current = change(current);
+      return current;
+    },
+  };
+}
+
+/** Reemplaza en su sitio el elemento con la misma clave o lo añade al final. No muta `list`. */
+export function upsertBy<T>(list: readonly T[], item: T, sameKey: (a: T, b: T) => boolean): readonly T[] {
+  const index = list.findIndex((x) => sameKey(x, item));
+  if (index === -1) return [...list, item];
+  return list.map((x, i) => (i === index ? item : x));
 }
