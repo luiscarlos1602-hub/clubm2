@@ -54,3 +54,11 @@ Reglas que no cambian: dinero en centavos (`Money`), porcentajes en puntos bási
 - `docs/estado.md` actualizado: fila hecha con su commit y cuál es la siguiente.
 
 Termina con un resumen corto: qué funciona ahora, qué quedó fuera y qué espera mi aprobación. No empieces la fila siguiente.
+
+## Notas vigentes (verificación del 22-nov tras W-3)
+
+Estado comprobado en `main` (`a9f95cd`): W-1, W-2 y W-3 hechas; siguiente fila **W-5** (L). El E2E intermitente y las capturas de P3 que ensuciaban el árbol quedaron resueltos en W-3.
+
+1. **W-5 toca el motor de pérdidas (ADR-019).** Antes de escribir código, confírmame el punto 4 del ADR (sin prelación de cobro). `src/modules/finance/CLAUDE.md` aún dice que en pérdida no hay reparto (`LOSS_POLICY_UNDEFINED`): se corrige en el mismo cambio.
+2. **Rama ya integrada sin borrar:** `feat/projects-cambio-etapa`. Bórrala con mi aprobación.
+3. Al cerrar la fila, pregúntame si hago `git push` de `main`.
