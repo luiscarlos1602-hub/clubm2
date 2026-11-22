@@ -18,16 +18,16 @@ export type ParticipationsSlice = {
   readonly participations: readonly Participation[];
 };
 
+export const classSchema = z.object({
+  id: idSchema<"ParticipationClass">(),
+  projectId: idSchema<"Project">(),
+  total: z.number().int().min(1),
+  placed: z.number().int().min(0),
+  unitPrice: moneySchema,
+});
+
 export const participationsSliceSchema: z.ZodType<ParticipationsSlice> = z.object({
-  classes: z.array(
-    z.object({
-      id: idSchema<"ParticipationClass">(),
-      projectId: idSchema<"Project">(),
-      total: z.number().int().min(1),
-      placed: z.number().int().min(0),
-      unitPrice: moneySchema,
-    }),
-  ),
+  classes: z.array(classSchema),
   participations: z.array(
     z.object({
       id: idSchema<"Participation">(),

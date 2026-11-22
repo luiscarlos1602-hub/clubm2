@@ -22,6 +22,11 @@ export {
   resolveLocation,
 } from "./domain/marketplace-filters";
 export type { ListMarketplace, ListMarketplaceDeps } from "./application/list-marketplace";
-export type { ParticipationClassRepository, ParticipationRepository } from "./application/ports";
+export type {
+  ParticipationClassRepository,
+  ParticipationClassWriter,
+  ParticipationRepository,
+} from "./application/ports";
+export type { SaveParticipationClass, SaveParticipationClassErrorCode } from "./application/save-participation-class";
 export { ProjectMarketplace, type ProjectMarketplaceProps } from "./ui/components/investor/ProjectMarketplace";
 export { MARKETPLACE_QUERY_KEY } from "./ui/hooks/use-marketplace";
