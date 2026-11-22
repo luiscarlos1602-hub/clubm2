@@ -1,6 +1,17 @@
 # Plan 000 · Hoja de ruta Club M² (visual y flujo de negocio primero)
 
-Estado: aprobado · Fecha: 2026-11-22 · ADR-007
+Estado: aprobado · Fecha: 2026-11-22 · ADR-007, **modificado por ADR-014 y ADR-018** (ver §Orden vigente)
+
+## Orden vigente (22-nov-2026 · ADR-014, ADR-016, ADR-017, ADR-018 · plan 010)
+F1 está cerrada y de F2 están hechos P1, P3 y P4, más la maqueta completa (V-1, V-2). Desde aquí el trabajo sigue por **etapas** del [plan 010](010-revision-y-plan-de-ejecucion.md), que mandan sobre el orden de fases de abajo:
+
+| Etapa | Filas | Puerta de salida |
+|---|---|---|
+| 2 · Backoffice operable en local | W-1 → W-2 → W-3 → W-5 → W-4 → W-6 (sobre `createDemoStore`; suite de contrato por repositorio) | `ciclo-completo.spec.ts`: crear un inmueble, llevarlo hasta liquidar y verlo en ficha y portafolio tras recargar |
+| 3 · Supabase y login del equipo | DB-1 → DB-2 → DB-3 → DB-4 (ADR-014, ADR-015, S1–S9) | La misma suite de contrato contra Supabase; `/admin` redirige sin sesión; `anon` no ve ruedas ni proyectos internos |
+| 4 · Despliegue y cierre | Netlify (ADR-017) + CI mínimo; luego P2, P5, P6, P8, B6, F4, F5 | URL pública; `verify:fast` + vitest en CI |
+
+Qué cambia respecto de ADR-007: Supabase y el login del equipo ya no esperan a F5 (ADR-014); las escrituras del backoffice (F3: B2–B5) van antes que el resto de F2 y se hacen primero en local (ADR-018); el despliegue es en Netlify (ADR-017). ADR-007 está aceptado y no se edita: la constancia es esta sección y ADR-018. El principio de abajo sigue vigente.
 
 ## Principio
 Cada fase entrega un **recorrido de negocio completo y visible** (desplegado en Netlify, ADR-017) antes de profundizar. La lógica sigue en el motor y en los módulos; lo visual se construye sobre datos semilla coherentes desde el primer día.
@@ -44,4 +55,4 @@ P7 El club · fotografía documental (Unsplash con créditos) · microinteraccio
 Dominio `clubm2.com` · Netlify producción (ADR-017) · recorrido de 5 minutos (`docs/09-guion-demo.md`) · decisión M-009 (leads reales con Supabase) · analítica.
 
 ## Lo que NO se hace hasta F5 o después
-Auth real, KYC, pagos, correos reales, Supabase, analítica de producto, IA en vivo.
+Auth real del inversionista, KYC, pagos, correos reales, datos personales en servidor, analítica de producto, IA en vivo. (Supabase y el login del equipo se adelantan a la Etapa 3: ADR-014, ADR-018.)

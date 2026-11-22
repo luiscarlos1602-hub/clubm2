@@ -59,10 +59,11 @@ El objetivo de la v1 es que un visitante (futuro miembro, aliado o inversionista
 
 ## 4. Fuera de alcance
 
-- Autenticación real, KYC real, pagos reales, contratos legales reales.
-- Backend o base de datos en producción (todo vive en el navegador; ver arquitectura).
+- Autenticación real del inversionista, KYC real, pagos reales, contratos legales reales. (El login del **equipo** sí entra: ADR-014, Etapa 3.)
+- Datos personales en servidor (reservas, leads, visitas) hasta tener aviso de privacidad y base legal (ADR-014, M-009).
+- ~~Backend o base de datos en producción~~ → modificado por ADR-014 y ADR-018: primero las escrituras viven en el navegador (demo-store, Etapa 2) y después pasan a Supabase detrás de los mismos puertos (Etapa 3), solo para el equipo y los proyectos.
 - App nativa, multi-idioma, multi-moneda (solo USD, español).
-- Cálculos fiscales y política de pérdidas definitiva (en el documento maestro está "pendiente"; la demo lo muestra como "por definir").
+- Cálculos fiscales y política de pérdidas definitiva (en el documento maestro está "pendiente"; la demo lo muestra como "por definir"). Decidido el 22-nov solo esto: no se devuelve dinero hasta vender el inmueble (`docs/08` O1).
 
 ## 5. Criterio de éxito de la v1
 
