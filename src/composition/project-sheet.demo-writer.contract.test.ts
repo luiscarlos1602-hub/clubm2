@@ -25,7 +25,7 @@ function newStore() {
 }
 
 function wire(store: ReturnType<typeof newStore>) {
-  const projects = registerProjects(store);
+  const projects = registerProjects(store, { clock, publishGuard: () => Promise.resolve([]) });
   const participations = registerParticipations(store, projects);
   const finance = registerFinance(store, { projects, participations, clock, ids: randomIdGenerator() });
   return { projects, participations, finance };
