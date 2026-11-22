@@ -22,6 +22,8 @@ const RULES = [
   { id: 'R3-dueno', level: 'error', re: /\bduen[oa]s?\b/g, negatable: true, fix: 'La empresa es la titular legal: "participación económica".' },
   { id: 'R3-acciones', level: 'aviso', re: /\bacci(on|ones)\s+(de|del|en)\s+(el\s+|la\s+)?(proyecto|inmueble|club|empresa)\b/g, fix: 'Si significa "títulos": "participaciones económicas".' },
   { id: 'R8-urgencia', level: 'error', re: /\b(ultimos?\s+cupos|solo\s+hoy|por\s+tiempo\s+limitado|quedan\s+pocos|no\s+te\s+lo\s+pierdas)\b/g, fix: 'Sin escasez falsa: "Participaciones disponibles: 37 de 100".' },
+  { id: 'R10-real', level: 'error', audience: 'app', re: /\b(proyectos?|inmuebles?|casos?|propiedades|negocios?)\s+reales?\b/g, fix: 'La demo es de ejemplo: no llames "reales" a proyectos, inmuebles o casos (retro F1).' },
+  { id: 'R10-registro', level: 'error', audience: 'app', re: /\bregistrate\s+(gratis|ya|ahora)\b/g, fix: 'Mientras el registro sea vista previa: "Ver cómo será el registro" (docs/06).' },
   { id: 'R9-rueda', level: 'error', re: /\bruedas?\b/g, audience: 'investor', fix: 'Las ruedas son internas (ADR-004): usa etapa, cronograma o "plazo objetivo · proyección".' },
   { id: 'R8-exclusivo', level: 'aviso', re: /\b(acceso\s+(exclusivo|restringido)|club\s+privado)\b/g, fix: 'El registro es gratuito y abierto.' },
 ];
@@ -63,6 +65,7 @@ for (const file of files) {
     const text = norm(line);
     for (const r of RULES) {
       if (r.audience === 'investor' && !isInvestorFacing(file)) continue;
+      if (r.audience === 'app' && !/(^|\/)src\//.test(file.replace(/\\/g, '/'))) continue;
       for (const m of text.matchAll(r.re)) {
         if (r.negatable && NEGATION.test(text.slice(Math.max(0, m.index - 25), m.index))) continue;
         const tag = r.level === 'error' ? '🔴 ERROR' : '🟡 AVISO';

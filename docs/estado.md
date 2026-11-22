@@ -3,7 +3,7 @@
 > Fuente única del avance. La actualiza el agente principal (skills `ciclo-funcionalidad` §8 y `cerrar-fase`). Cualquier sesión nueva empieza leyendo esto: así se retoma el trabajo sin depender de la memoria de la conversación.
 > Estados: `pendiente` · `en curso` · `bloqueado` · `revisión` · `hecho`. Tamaño: S (directo) · M · L (arquitecto + revisores).
 
-**Fase activa:** F1 · Fundación visual (F0 cerrada el 22-nov · orden de fases según ADR-007 y `docs/planes/000-hoja-de-ruta.md`). Trabajo de una sola persona: el usuario aprueba planes L, decisiones de producto y merges.
+**Fase activa:** F2 · Flujo del inversionista (F1 cerrada el 22-nov-2026, tag `f1-fundacion-visual`; F0 cerrada el 22-nov · orden de fases según ADR-007 y `docs/planes/000-hoja-de-ruta.md`). Trabajo de una sola persona: el usuario aprueba planes L, decisiones de producto y merges.
 
 ## F0 · Fundamentos
 | ID | Descripción | Estado |
@@ -21,7 +21,7 @@
 | F1-3 | `shared/domain` + motor de reparto C1–C6 + propiedades + ruedas K2–K4 (`projects/backoffice.ts`) | F1-1 | L | F1-2 | hecho | [plan 002](planes/002-F1-3-motor.md) | código: 🟠 corregido (lint `module-api`) |
 | F1-4 | Composition root + demo-store + reiniciar + 7 semillas `M2-001…007` + `seed-consistency.test.ts` | F1-3 | M | F1-5 | hecho | [plan 003](planes/003-F1-4-datos-simulados.md) | cumplimiento ✅ · código: 🟠 corregido |
 | F1-5 | Layouts de 3 zonas + navegación + selector de rol + banner + las 14 rutas navegables | F1-2 | M | F1-4 | hecho | [plan 004](planes/004-F1-5-app-navegable.md) · capturas `docs/qa/F1/app-*` | ronda 1 corregida (3 🟠 copy, 1 🟠 E2E) |
-| F1-6 | Repo GitHub privado `clubm2` + Vercel con preview por rama | F1-1 | S | todas | pendiente | | |
+| F1-6 | Repo GitHub privado `clubm2` + Vercel con preview por rama | F1-1 | S | todas | repo GitHub hecho · Vercel pendiente del usuario (movido a F5-1 con motivo: el CLI no está instalado y el usuario eligió cerrar F1 sin desplegar) | https://github.com/luiscarlos1602-hub/clubm2 | |
 
 ## F2 · Flujo del inversionista
 | ID | Descripción | Depende de | Tam. | Paralelo con | Estado | Plan | Revisión |
