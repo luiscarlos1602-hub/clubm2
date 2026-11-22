@@ -15,3 +15,8 @@
 | M-009 | 2026-11-22 | ADR-006 | Decidir si el registro (P2) guarda leads reales desde la v1 → adaptador Supabase + aviso de privacidad | P2 | abierto |
 
 - [M-001 · 22-nov · F1-1] `eslint-plugin-boundaries` imprime un aviso en stderr por el descriptor `module-api` (patrón de archivo). Migrar a `boundaries/files` cuando se verifique la API. `scaffold-tmp/` (residuo del scaffold, ignorado en git) debe borrarlo el usuario.
+- [F1-3] Regla de lint: prohibir `Math.floor/ceil/round/trunc` en `src/modules/**` fuera de `shared/domain/money.ts`.
+- [F1-3] L7 sin responder: instalar `@vitest/coverage-v8` para exigir 100 % de cobertura del motor (CA10 del plan 002).
+- [F1-3] `module-api` usa `mode: "file"` (obsoleto, solo imprime aviso). Migrar a `boundaries/files` cuando se verifique la API; dejar prueba de regresión del lint.
+- [F1-2] `MoneyLike` → `Money` de `shared/domain` ahora que F1-3 existe. Ampliar la regla de dinero a identificadores `cents` sueltos. Modo oscuro (P3).
+- [F1-2] Cumplimiento: regla para `docs/06` — `destructive` solo para acciones irreversibles; tarjeta con cupos lleva aviso de riesgo cercano.

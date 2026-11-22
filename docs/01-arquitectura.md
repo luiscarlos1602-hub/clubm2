@@ -145,7 +145,8 @@ Proyecto Inmobiliario/
 │   │   ├── ui/                    # Design system: primitivas shadcn + componentes de marca
 │   │   │   ├── primitives/        # button, card, dialog… (generadas por shadcn)
 │   │   │   ├── README.md          # catálogo de componentes (lo leen los agentes antes de crear uno)
-│   │   │   └── brand/             # MoneyDisplay, StatusBadge, ProjectionLabel, DemoBanner, legal-copy.ts
+│   │   │   ├── brand/             # MoneyDisplay, StatusBadge, ProjectionLabel, DemoBanner, legal-copy.ts
+│   │   │   └── showcase/          # Secciones de la página interna /sistema
 │   │   ├── infrastructure/        # demo-store (localStorage), clock, reset
 │   │   ├── lib/                   # formateadores es-VE, cn(), utilidades
 │   │   └── config/

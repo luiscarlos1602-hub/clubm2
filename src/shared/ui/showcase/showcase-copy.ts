@@ -1,0 +1,111 @@
+import type { BrandColorToken } from "@/shared/config/brand";
+
+/** Textos de /sistema (página interna, no enlazada). */
+export const SHOWCASE_COPY = {
+  intro: {
+    eyebrow: "Sistema de diseño · uso interno",
+    title: "Una sola fuente visual y legal",
+    description:
+      "Paleta, tipografía y componentes con los que se construye todo lo demás. Cada bloque muestra una idea; los ejemplos son ilustrativos.",
+  },
+  paleta: {
+    eyebrow: "01 · Color",
+    title: "Siete colores, ningún rojo de bolsa",
+    description:
+      "Cal es el papel, Grafito la tinta, Verde Ávila la calma y Arcilla la acción. El Latón solo dibuja líneas, bordes y sellos: nunca texto pequeño.",
+    roles: {
+      cal: "Fondo",
+      grafito: "Texto",
+      "verde-avila": "Secundario",
+      arcilla: "Acción principal",
+      "arcilla-clara": "Apoyo",
+      laton: "Líneas y sellos",
+      piedra: "Texto secundario",
+    } satisfies Record<BrandColorToken, string>,
+  },
+  tipografia: {
+    eyebrow: "02 · Tipografía",
+    title: "Tres voces con un propósito cada una",
+    description: "Fraunces para titular, Inter para leer y para las cifras, IBM Plex Mono para códigos y fechas.",
+    families: [
+      { id: "heading", name: "Fraunces", role: "Títulos", sample: "Juntos sumamos metros", className: "font-heading text-4xl font-medium md:text-5xl" },
+      { id: "sans", name: "Inter", role: "Texto y cifras", sample: "Cada proyecto se explica con calma, paso a paso.", className: "font-sans text-xl" },
+      { id: "mono", name: "IBM Plex Mono", role: "Códigos y fechas", sample: "M2-001 · 03.11.2026", className: "font-mono text-xl" },
+    ],
+    figuresLabel: "Cifras tabulares",
+    figuresSample: "1.234.567,89",
+  },
+  botones: {
+    eyebrow: "03 · Acciones",
+    title: "Un botón principal por pantalla",
+    description: "Arcilla para la acción que importa, Verde Ávila para la alternativa. El objetivo táctil mide al menos 40 px, y 48 px en el tamaño grande.",
+    variants: [
+      { id: "default", label: "Principal" },
+      { id: "secondary", label: "Secundario" },
+      { id: "outline", label: "Contorno" },
+      { id: "ghost", label: "Discreto" },
+      { id: "link", label: "Enlace" },
+      { id: "destructive", label: "Atención" },
+    ],
+    sizesLabel: "Tamaños",
+    sizes: [
+      { id: "sm", label: "Pequeño" },
+      { id: "default", label: "Estándar" },
+      { id: "lg", label: "Grande" },
+    ],
+    disabled: "Deshabilitado",
+  },
+  badges: {
+    eyebrow: "04 · Estados",
+    title: "El estado se lee antes de leer el texto",
+    description: "Cuatro tonos. El módulo que los usa decide la etiqueta; el componente no conoce las etapas.",
+    items: [
+      { tone: "positive", label: "Completado" },
+      { tone: "in-progress", label: "En obra" },
+      { tone: "attention", label: "Requiere atención" },
+      { tone: "neutral", label: "Borrador" },
+    ],
+  },
+  tarjeta: {
+    eyebrow: "05 · Composición",
+    title: "Un proyecto, de un vistazo",
+    description: "Muestra de cómo se combinan sello, estado, cifra y plazo. No es el componente del listado.",
+    example: "Ejemplo ilustrativo",
+    projectTitle: "Apartamento en El Paraíso",
+    zone: "El Paraíso, Caracas",
+    statusLabel: "En obra",
+    available: "Participaciones disponibles: 37 de 100",
+    priceLead: "Desde",
+    priceLabel: "por participación",
+    termLead: "Plazo objetivo: 3 meses",
+    action: "Ver el proyecto",
+  },
+  cifras: {
+    eyebrow: "06 · Cifras",
+    title: "Capital, ganancia realizada y proyección nunca se mezclan",
+    description: "Tres cifras, tres rótulos. La proyección siempre lleva su aviso y no hay manera de quitarlo.",
+    example: "Ejemplo ilustrativo",
+    bigLabel: "Cifra protagonista",
+  },
+  avisos: {
+    eyebrow: "07 · Avisos",
+    title: "Los avisos son textos fijos",
+    description: "Se importan de un solo archivo y una prueba fija su redacción. Nadie los reescribe a mano.",
+    barLabel: "Franja de demostración",
+    inlineLabel: "Recuadro",
+    textLabel: "Avisos en texto",
+  },
+  estados: {
+    eyebrow: "08 · Estados de la vista",
+    title: "Vacío, cargando y error, siempre resueltos",
+    description: "Toda vista con datos prevé los tres. El error usa Arcilla, nunca rojo.",
+    emptyLabel: "Vacío",
+    loadingLabel: "Cargando",
+    errorLabel: "Error",
+    emptyTitle: "Aún no hay proyectos",
+    emptyDescription: "Cuando se publique el primero, aparecerá aquí.",
+    emptyAction: "Crear aviso",
+    errorDescription: "Revisa tu conexión e inténtalo de nuevo.",
+    errorAction: "Reintentar",
+  },
+} as const;

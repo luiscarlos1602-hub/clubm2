@@ -11,6 +11,7 @@
     "format": "prettier --write src tests",
     "test": "vitest run",
     "e2e": "playwright test --trace off",
+    "capturas": "CAPTURAS=1 playwright test capturas --trace off",
     "check-copy": "node scripts/check-copy.mjs",
     "verify:fast": "pnpm typecheck && pnpm lint && node scripts/check-copy.mjs",
     "verify": "pnpm verify:fast && pnpm test && pnpm e2e"
