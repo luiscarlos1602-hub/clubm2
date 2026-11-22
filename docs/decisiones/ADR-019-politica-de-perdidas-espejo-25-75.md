@@ -20,7 +20,8 @@ El maestro deja pendiente qué pasa si un proyecto se vende sin excedente. El mo
    - **Tope:** ningún titular pierde más que su aporte; su devolución mínima es 0. Lo que exceda el tope lo absorbe la empresa.
    - Devolución por titular = aporte − su parte de la pérdida.
 3. **Excedente exactamente cero:** cada titular recupera su aporte, sin ganancia.
-4. **Orden de cobro** (interpretación del orquestador, no dicha literalmente por el usuario; confirmar en W-5): no hay prelación entre empresa e inversionistas; ambos cobran en la misma liquidación según la fórmula.
+4. **Orden de cobro** (confirmado por el usuario el 22-nov-2026 al abrir W-5): no hay prelación entre empresa e inversionistas; ambos cobran en la misma liquidación según la fórmula.
+5. **Borde: la venta no alcanza** (adenda del 22-nov-2026 al abrir W-5, `docs/08` W5-1, decisión del usuario): si `P − O` es menor que lo que el espejo devolvería a los inversionistas, estos reciben todo `P − O` repartido por participación (redondeo hacia abajo, residuo a la empresa) y la empresa recibe 0. Nadie pone dinero que no salió de la venta; no es una protección del capital.
 
 ## Consecuencias
 - **W-5** implementa la regla en `modules/finance/domain` (test primero): elimina `LOSS_POLICY_UNDEFINED`, añade casos canónicos y de propiedades (la suma de devoluciones más la parte de la empresa cuadra con lo recibido en la venta; ningún pago negativo), y permite liquidar con resultado negativo.
@@ -28,4 +29,4 @@ El maestro deja pendiente qué pasa si un proyecto se vende sin excedente. El mo
 - **Copy:** se informa que el aporte puede recuperarse solo en parte y que no se devuelve antes de la venta. Sigue prohibido prometer seguridad o describir la inversión como de "bajo riesgo" (regla 1 de `CLAUDE.md`).
 - El simulador y los escenarios pueden mostrar resultados negativos con esta regla, rotulados como "escenario".
 - Pendiente antes de abrir al público (Etapa 4): revisión legal de esta política junto con `/terminos` (ADR-013).
-- Cierra `docs/08` O1/H2 y `docs/mejoras.md` M-001 (salvo la confirmación del punto 4).
+- Cierra `docs/08` O1/H2 y `docs/mejoras.md` M-001 (el punto 4 se confirmó al abrir W-5).
