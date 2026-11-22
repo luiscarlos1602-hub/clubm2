@@ -187,3 +187,10 @@
 | # | Pregunta | Propuesta por defecto (aplicada como [SUPUESTO]) |
 |---|---|---|
 | P5-1 | En la estimación de una reserva (P5), ¿la reserva se suma a lo ya colocado o se estima sobre la colocación actual? | Se suma a lo ya colocado (tope: el total de la clase): el resumen muestra el reparto que resultaría si la reserva se concreta. `estimateReservation` lo cubre con tests (1, hasta llenar disponibles, sin reparto) |
+
+## Bloque Q (cont.) · Simulador de P4 (22-nov)
+
+| # | Pregunta | Estado |
+|---|---|---|
+| Q5 | ¿El sobrecosto de obra se aplica solo a la obra o a todo el presupuesto integral, y lo absorbe primero la contingencia? | Abierta. Por ahora, a todo el presupuesto (como la maqueta). Los presets de estrés de sobrecosto se quitaron por decisión del usuario. |
+| Q6 | ¿Los costos de venta son fijos o un % del precio cuando se mueve el precio? | Abierta. Por ahora fijos (estimado O). |
