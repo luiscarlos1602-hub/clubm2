@@ -63,7 +63,7 @@ export const LANDING_COPY = {
     notes: [
       "Tu parte del fondo depende de cuántas participaciones tengas del total del proyecto.",
       "En una liquidación con excedente, el resultado se muestra en dos cifras separadas: tu capital aportado y tu parte del fondo. No se garantiza ninguna de las dos.",
-      "Si no hay excedente, no hay reparto del fondo. Qué pasa con el capital en ese caso está por definir.",
+      "Si el inmueble se vende con pérdida, no hay reparto del fondo: los participantes absorben el 25 % de la pérdida y la empresa el 75 %, sin perder más de lo aportado. El aporte puede recuperarse solo en parte; no se devuelve dinero antes de la venta.",
     ],
     simulatorHint: "En cada ficha de proyecto podrás simular tu participación con distintos escenarios.",
   },

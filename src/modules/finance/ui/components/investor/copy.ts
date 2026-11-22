@@ -68,7 +68,16 @@ export const PROJECT_DETAIL_COPY = {
     gain: "Ganancia proyectada por participación",
     payout: "Cobro proyectado por participación",
     noDistribution: "No hay reparto del fondo",
-    capitalTbd: "Capital: por definir",
+    lossName: "Escenario con pérdida",
+  },
+  /** Pérdida (ADR-019): siempre como monto y % de recuperación, sin signo negativo. */
+  loss: {
+    capital: "Capital aportado",
+    lossProjected: "Pérdida proyectada",
+    lossRealized: "Pérdida realizada",
+    returnedProjected: "Capital devuelto proyectado",
+    returnedRealized: "Capital devuelto",
+    note: "En una venta con pérdida los participantes absorben el 25 % y la empresa el 75 %, sin perder más de lo aportado. El aporte puede recuperarse solo en parte. No se devuelve dinero antes de la venta.",
   },
   termsLink: "Términos y condiciones",
   gallery: {
@@ -87,7 +96,7 @@ export const PROJECT_DETAIL_COPY = {
   risks: {
     title: "Riesgos de este proyecto",
     description: "Léelos antes de decidir. Ningún resultado de esta página es seguro ni está prometido.",
-    capitalNote: "La política sobre el capital aportado cuando no hay excedente está por definir.",
+    capitalNote: "Si el inmueble se vende con pérdida, los participantes absorben el 25 % y la empresa el 75 %, sin perder más de lo aportado; tu aporte puede recuperarse solo en parte. No se devuelve dinero antes de la venta.",
     termsLink: "Leer los términos y condiciones",
     /** Texto de cada riesgo (clave = ProjectRiskKind). */
     kinds: {
@@ -109,6 +118,8 @@ export const PROJECT_DETAIL_COPY = {
     capitalPerPart: "Capital aportado por participación",
     gainPerPart: "Ganancia realizada por participación",
     note: "Capital y ganancia se muestran por separado.",
+    lossNote: "La venta cerró con pérdida: capital devuelto y pérdida se muestran por separado.",
+    lossAmount: "Pérdida de la venta",
     noSimulator: "Los proyectos finalizados no tienen simulador de proyección.",
   },
   cta: {
@@ -139,7 +150,8 @@ export const PROJECT_DETAIL_COPY = {
     amount: "Capital a aportar",
     gain: "Ganancia proyectada",
     payout: "Cobro proyectado",
-    noEstimate: "Con estos supuestos no habría reparto del fondo. Tu capital aportado quedaría sujeto a la política por definir.",
+    noEstimate: "Con estos supuestos no habría reparto del fondo.",
+    lossNote: "Con estos supuestos la venta tendría pérdida: tu aporte se recuperaría solo en parte. Es una estimación, no una promesa.",
     risksTitle: "Antes de reservar",
     acceptPrefix: "Acepto los ",
     acceptLink: "términos y condiciones",
