@@ -7,3 +7,4 @@ export { BudgetBar, type BudgetBarProps } from "./BudgetBar";
 export { StageBadge } from "./badges";
 export { AdminOpportunityRoute } from "./AdminOpportunityRoute";
 export { OpportunityDetailScreen } from "./OpportunityDetailScreen";
+export { ProjectsListScreen } from "./ProjectsListScreen";

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Hammer } from "lucide-react";
 import { EmptyState, ProjectSeal } from "@/shared/ui/brand";
 import { AdminQueryState } from "@/shared/ui/admin";
+import { projectEditHref } from "@/shared/ui/app-shell";
 import { PageHeader, Section } from "@/shared/ui/layout";
 import { Button } from "@/shared/ui/primitives/button";
 import type { ProjectStatus } from "../../../domain/project-status";
@@ -60,6 +61,7 @@ export function ProjectWorksScreen({ idOrSlug, ProcessView }: { idOrSlug: string
               <span className="text-sm text-muted-foreground">{ADMIN_COMMON.wheel}</span>
               <WheelBadge wheel={row.wheel?.wheel ?? null} />
               <span className="text-sm text-muted-foreground">{row.property?.city} · {row.property?.zone}</span>
+              <Link href={projectEditHref(row.project.slug)} data-testid="admin-obra-editar-ficha" className="rounded-sm text-sm font-medium underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-ring">{ADMIN_COMMON.editSheet}</Link>
             </div>
           )}
         </AdminQueryState>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ROLE_HOME } from "./demo-role";
-import { EXAMPLE_PROJECT_SLUG, NAV_ITEMS, projectHref, ROUTES, ROUTE_IDS, activeRouteId, type RouteId } from "./route-map";
+import { EXAMPLE_PROJECT_SLUG, NAV_ITEMS, projectHref, projectEditHref, ROUTES, ROUTE_IDS, activeRouteId, type RouteId } from "./route-map";
 
 const follow = (start: RouteId, n: number) => {
   const out: RouteId[] = [start];
@@ -68,6 +68,12 @@ describe("route-map", () => {
     expect(ROUTES.b7.href).toBe("/admin/proyectos");
     expect(activeRouteId("/admin/proyectos", "admin")).toBe("b7");
     expect(activeRouteId("/admin/proyectos/nuevo", "admin")).toBe("b7");
+  });
+  it("editar un inmueble resalta el listado (b7), no el detalle (b3)", () => {
+    expect(activeRouteId(projectEditHref(EXAMPLE_PROJECT_SLUG), "admin")).toBe("b7");
+    expect(activeRouteId(projectEditHref("m2-008-los-palos-grandes"), "admin")).toBe("b7");
+    expect(activeRouteId(`/admin/proyectos/${EXAMPLE_PROJECT_SLUG}`, "admin")).toBe("b3");
+    expect(projectEditHref(EXAMPLE_PROJECT_SLUG)).toBe(ROUTES.b9.href);
   });
   it("activeRouteId", () => {
     expect(activeRouteId("/proyectos/m2-001/participar", "investor")).toBe("p3");

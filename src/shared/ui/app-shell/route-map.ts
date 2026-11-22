@@ -188,7 +188,12 @@ export function projectHref(slug: string): AppPath {
   return `/proyectos/${slug}`;
 }
 
-/** Ruta activa: coincidencia exacta o el prefijo más largo de NAV_ITEMS de la zona. */
+/** URL de edición de la ficha de un inmueble (B9): `/admin/proyectos/${slug}/editar`. Debe coincidir con ROUTES.b9.pattern. */
+export function projectEditHref(slug: string): AppPath {
+  return `/admin/proyectos/${slug}/editar`;
+}
+
+/** Ruta activa: coincidencia exacta o el prefijo más largo de NAV_ITEMS de la zona. `/editar` (B9) cuelga del listado (B7), no de B3. */
 export function activeRouteId(pathname: string, zone: Zone): RouteId | null {
   const items = NAV_ITEMS[zone];
   const exact = items.find((id) => ROUTES[id].href === pathname);
@@ -198,6 +203,7 @@ export function activeRouteId(pathname: string, zone: Zone): RouteId | null {
   for (const id of items) {
     const href = ROUTES[id].href;
     if (href === "/") continue;
+    if (id === "b3" && pathname.endsWith("/editar")) continue;
     if (pathname.startsWith(`${href}/`) && href.length > bestLen) {
       best = id;
       bestLen = href.length;
