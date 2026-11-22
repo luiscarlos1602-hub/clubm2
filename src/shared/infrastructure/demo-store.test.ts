@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { err, ok } from "@/shared/domain/result";
 import { memoryStorage, type KeyValueStorage } from "./browser-storage";
-import { createDemoStore } from "./demo-store";
+import { createDemoStore, sliceOf, upsertBy } from "./demo-store";
 
 type S = { readonly n: number };
 const KEY = "club-demo:v1";
@@ -83,5 +83,28 @@ describe("Demo-store", () => {
     expect(store.read()).toEqual({ n: 2 });
     expect(warn).toHaveBeenCalled();
     warn.mockRestore();
+  });
+});
+
+describe("sliceOf y upsertBy (W-1)", () => {
+  type T = { readonly a: readonly number[]; readonly b: string };
+  const tparse = (raw: unknown) => ok(raw as T);
+
+  it("escribir una parte persiste el snapshot entero y no toca las demás", () => {
+    const storage = memoryStorage();
+    const store = createDemoStore<T>({ key: KEY, storage, buildSeed: () => ({ a: [1], b: "x" }), parse: tparse });
+    const slice = sliceOf(store, "a");
+    expect(slice.update((a) => [...a, 2])).toEqual([1, 2]);
+    expect(JSON.parse(storage.getItem(KEY) ?? "null")).toEqual({ a: [1, 2], b: "x" });
+    const again = createDemoStore<T>({ key: KEY, storage, buildSeed: () => ({ a: [], b: "" }), parse: tparse });
+    expect(sliceOf(again, "a").read()).toEqual([1, 2]);
+  });
+
+  it("upsertBy reemplaza en su sitio o añade al final sin mutar", () => {
+    const list = [{ id: 1, v: "a" }, { id: 2, v: "b" }] as const;
+    const same = (x: { id: number }, y: { id: number }) => x.id === y.id;
+    expect(upsertBy(list, { id: 1, v: "z" }, same)).toEqual([{ id: 1, v: "z" }, { id: 2, v: "b" }]);
+    expect(upsertBy(list, { id: 3, v: "c" }, same)).toHaveLength(3);
+    expect(list[0].v).toBe("a");
   });
 });

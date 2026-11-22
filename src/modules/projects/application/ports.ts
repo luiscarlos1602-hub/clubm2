@@ -3,8 +3,9 @@ import type { Project, ProjectId, Property, PropertyId } from "../domain/project
 import type { ProjectRisks } from "../domain/project-risk";
 import type { ProjectUpdate } from "../domain/project-update";
 import type { PropertyProfile } from "../domain/property-profile";
+import type { SaveResult } from "@/shared/domain/repository-write";
 
-/** Puerto de lectura de proyectos. En F1-4 no hay escrituras (las añaden B3/B4). */
+/** Puerto de lectura de proyectos. Las escrituras van por `ProjectWriter` (W-1). */
 export interface ProjectRepository {
   /** Orden por `code` ascendente. */
   list(): Promise<readonly Project[]>;
@@ -25,4 +26,19 @@ export interface ProjectContentRepository {
   /** Sin orden garantizado: ordena el dominio. */
   updatesOf(projectId: ProjectId): Promise<readonly ProjectUpdate[]>;
   risksOf(projectId: ProjectId): Promise<ProjectRisks | null>;
+}
+
+/**
+ * Puerto de escritura de proyectos (W-1). `save` inserta o reemplaza por `id`.
+ * Rechaza con INVALID_RECORD si no pasa el esquema, DUPLICATE si otro proyecto ya usa el código o el slug,
+ * REFERENCE_NOT_FOUND si `propertyId` no existe. Si rechaza, no cambia nada.
+ * No valida reglas de negocio: eso lo hace el caso de uso (`saveProject`).
+ */
+export interface ProjectWriter {
+  save(project: Project): SaveResult<Project>;
+}
+
+/** Puerto de escritura de inmuebles (W-1). `save` inserta o reemplaza por `id`; INVALID_RECORD si no pasa el esquema. */
+export interface PropertyWriter {
+  save(property: Property): SaveResult<Property>;
 }

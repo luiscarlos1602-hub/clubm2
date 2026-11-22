@@ -41,7 +41,7 @@ const codeSchema = z.unknown().transform((raw, ctx): ProjectCode => {
 
 const nullableDate = isoDateSchema.nullable();
 
-const propertySchema = z.object({
+export const propertySchema = z.object({
   id: idSchema<"Property">(),
   city: z.string().min(1),
   zone: z.string().min(1),
@@ -49,7 +49,7 @@ const propertySchema = z.object({
   areaM2: z.number().int().positive(),
 });
 
-const projectSchema = z.object({
+export const projectSchema = z.object({
   id: idSchema<"Project">(),
   code: codeSchema,
   slug: z.string().regex(PROJECT_SLUG_PATTERN),
