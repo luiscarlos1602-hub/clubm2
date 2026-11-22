@@ -1,5 +1,5 @@
 # ADR-015 · Cómo se conecta Supabase: escrituras bajo RLS, módulo `team` y `proxy`
-Estado: propuesto
+Estado: **aceptado** (decisión del usuario, 22-nov-2026, Etapa 1; `docs/08` bloque S)
 Fecha: 2026-11-22
 Relacionado: ADR-001, ADR-004, ADR-012, ADR-014; plan `docs/planes/009-supabase.md`
 

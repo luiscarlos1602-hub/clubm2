@@ -17,6 +17,9 @@
 | D1–D7 Simulador | Propuestas por defecto aceptadas | `02 §4` |
 | H1–H4 Liquidación | Propuestas por defecto aceptadas | `02` |
 | K1–K4 Motor | Propuestas por defecto; **las ruedas son internas y no se muestran a inversionistas** | ADR-004 |
+| S1–S9 Supabase (Etapa 1, 22-nov) | Propuestas por defecto aceptadas (S9 en Netlify); **ADR-015 aceptado** | Bloque S · ADR-015 · ADR-017 |
+| Q5 · Q6 Simulador (Etapa 1, 22-nov) | Se mantiene lo actual: sobrecosto sobre todo el presupuesto integral F; costos de venta O fijos | Bloque Q (cont.) |
+| O1 / H2 Pérdidas (Etapa 1, 22-nov) | "Hasta que no se venda la propiedad no se devuelve dinero, queda abierto el proceso". Reparto de la pérdida y orden de cobro: **por definir** | Bloque O · M-001 |
 
 ## Bloque A · Marca, alcance y hackathon 🔴 (respondido)
 
@@ -163,6 +166,8 @@
 |---|---|---|
 | O1 | Si el proyecto se liquida sin excedente (o con pérdida), ¿qué parte del capital aportado se devuelve y cómo se informa? (H2 del maestro: pendiente) | Mostrar "por definir" en toda pantalla hasta decidirlo; nunca sugerir devolución del capital |
 
+**Respuesta parcial del usuario (22-nov, Etapa 1):** no se devuelve dinero hasta que se venda el inmueble; mientras no se venda, el proceso del proyecto sigue abierto. **Por definir:** qué parte del capital se devuelve si hay pérdida, cómo se reparte la pérdida entre empresa e inversionistas y el orden de cobro (M-001). Consecuencia para W-5: no se puede liquidar con resultado negativo hasta decidirlo; la UI sigue diciendo "política de pérdidas por definir".
+
 ## Bloque P · Marketplace (P3, 22-nov) 🟠
 
 | # | Pregunta | Propuesta por defecto (aplicada como [SUPUESTO]) |
@@ -192,5 +197,19 @@
 
 | # | Pregunta | Estado |
 |---|---|---|
-| Q5 | ¿El sobrecosto de obra se aplica solo a la obra o a todo el presupuesto integral, y lo absorbe primero la contingencia? | Abierta. Por ahora, a todo el presupuesto (como la maqueta). Los presets de estrés de sobrecosto se quitaron por decisión del usuario. |
-| Q6 | ¿Los costos de venta son fijos o un % del precio cuando se mueve el precio? | Abierta. Por ahora fijos (estimado O). |
+| Q5 | ¿El sobrecosto de obra se aplica solo a la obra o a todo el presupuesto integral, y lo absorbe primero la contingencia? | **Respondida (22-nov):** se mantiene lo actual, sobre todo el presupuesto integral F (más conservador). Que lo absorba primero la contingencia: no aplica con esta regla. Los presets de estrés de sobrecosto siguen quitados. |
+| Q6 | ¿Los costos de venta son fijos o un % del precio cuando se mueve el precio? | **Respondida (22-nov):** fijos al valor estimado O. |
+
+## Bloque S · Supabase y equipo (plan 009 §6) 🟠 (respondido el 22-nov, Etapa 1)
+
+| # | Pregunta | Respuesta (propuesta por defecto aceptada) |
+|---|---|---|
+| S1 | ¿Qué roles tiene el equipo? | `admin` (todo, incluido gestionar el equipo y borrar proyectos) y `editor` (crear/editar proyectos e imágenes). Sin roles por área (G3) hasta que haya más personas |
+| S2 | ¿Quién crea las cuentas del equipo y cómo se entra? | Solo el usuario (admin) invita desde el panel de Supabase; sin registro abierto; email + contraseña. El orquestador inserta la fila de `team_members` |
+| S3 | ¿Recuperar contraseña desde la app? | No en v1: se reinicia desde el panel de Supabase (DB-2 no la incluye) |
+| S4 | ¿Campos obligatorios al subir un inmueble? | **Siempre:** nombre, ciudad, zona (sin dirección exacta, D6), tipo, m², estado, compra C (u oferta en due diligence), venta objetivo P, costos de venta O, presupuesto por rubros que sume F. **Para publicar:** además fecha de compra, descripción + 1–5 destacados, proceso de 6 etapas, clase de participación, los 3 riesgos comunes e imagen "antes" y "proyección" |
+| S5 | ¿F es siempre total × precio de la participación? | Sí; se valida al guardar |
+| S6 | ¿Se cargan los 7 proyectos de ejemplo en la base? | Sí, marcados como simulados y borrables de una vez |
+| S7 | ¿Fotos en bucket de lectura pública? | Sí, sin direcciones, placas ni rostros; JPG/PNG/WebP/AVIF ≤ 5 MB; galería ≤ 12 |
+| S8 | ¿Un editor puede borrar un proyecto? | No: solo admin y solo si no está publicado |
+| S9 | ¿El modo por defecto en Netlify pasa a `supabase`? | Sí en producción; `demo` en local y en los tests (ADR-017) |
