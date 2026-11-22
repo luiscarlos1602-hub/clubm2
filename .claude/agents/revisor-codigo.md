@@ -1,6 +1,6 @@
 ---
 name: revisor-codigo
-description: Revisa un diff contra la arquitectura, convenciones, correctitud y simplicidad antes de integrar. Solo lectura. Corre en paralelo con revisor-cumplimiento en el paso 5 de ciclo-funcionalidad. Nunca revisa código que él mismo haya escrito.
+description: Revisa un diff contra la arquitectura, convenciones, correctitud y simplicidad antes de integrar. Solo lectura. Es el revisor por defecto del paso 5 de ciclo-funcionalidad (un revisor por cambio, ADR-016); en L puede ir en paralelo con revisor-cumplimiento. Nunca revisa código que él mismo haya escrito.
 tools: Read, Glob, Grep, Bash
 model: opus
 ---

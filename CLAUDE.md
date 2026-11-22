@@ -35,9 +35,9 @@ Nombre comercial: **Club M²** · eslogan *"Juntos sumamos metros."* (ADR-003) �
 8. **Las ruedas (buena/media/mala) son internas**: solo existen en el backoffice. Nunca aparecen en la cara pública, del inversionista ni en marketing (ADR-004).
 
 ## Cómo trabajar
-- Ciclo (skill `ciclo-funcionalidad`): Definir → Planificar (`arquitecto`) → Construir por paquetes (dominio → datos → UI, en paralelo si el plan fija contratos) → `verificar` (lo reejecuta el orquestador) → Revisar (`revisor-codigo` ∥ `revisor-cumplimiento`) → Corregir (máx. 2 rondas) → Integrar → Registrar en `docs/estado.md`.
+- Ciclo (skill `ciclo-funcionalidad`, aligerado por ADR-016): Definir → Planificar (plan ≤ 150 líneas; `arquitecto` solo en L) → Construir por paquetes (dominio → datos → UI; `verify:fast` + vitest del módulo al cerrar cada uno) → `verificar` completo una vez por funcionalidad (lo ejecuta el orquestador) → Revisar (**un revisor**: `revisor-codigo`, o `revisor-cumplimiento` si hay copy nuevo) → Corregir (máx. 2 rondas) → Integrar → Registrar en `docs/estado.md`.
+- Tamaños: S y M los hace el agente principal directo; **subagentes solo en L**. Una rama y un commit por fila del tablero; **una sola sesión escribiendo por carpeta**; toda sesión termina actualizando `docs/estado.md`.
 - El agente principal es el **único orquestador** y el único que hace commits/merge. Los subagentes entregan con `docs/plantillas/entrega.md` o `informe-revision.md` y terminan en `ESTADO:` / `VEREDICTO:`.
-- Tareas S (1–2 archivos, sin dinero ni copy de riesgo): hazlas directo, sin subagentes.
 - **Diseño:** toda pantalla usa el lenguaje de la portada (ADR-010): `PageHeader` + `Section`s con tono de `@/shared/ui/layout`. Referencia: `modules/club/ui/components/landing/`; catálogo: `src/shared/ui/README.md`.
 - Textos visibles en `src/modules/<m>/ui/copy.ts`; antes de entregar copy: `node scripts/check-copy.mjs <rutas>`.
 - Al trabajar dentro de un módulo, su `src/modules/<m>/CLAUDE.md` manda sobre lo general en detalles locales.

@@ -37,6 +37,8 @@
   Siempre activos (deterministas, sin tokens):  hooks · permisos · lint · check-copy · tests
 ```
 
+> **ADR-016 (proceso aligerado):** el diagrama muestra el caso **L**. En S y M el agente principal construye sin subagentes; hay **un solo revisor** por cambio (`revisor-codigo`, o `revisor-cumplimiento` si hay copy nuevo; los dos en paralelo solo en L); planes de máximo 150 líneas; `verificar` completo una vez por funcionalidad. Los tests corren al cerrar cada paquete, no en el hook.
+
 Reglas de oro:
 1. **Los que revisan no escriben; los que escriben no se aprueban.**
 2. **Lo comprobable se comprueba con código** (hooks, lint, tests, `check-copy`); el prompt es la última línea de defensa, no la primera.
@@ -80,7 +82,7 @@ Las skills de referencia **apuntan** a la fuente (`docs/02`, `docs/06`) y solo r
 | Evento | Script | Qué hace | Desde |
 |---|---|---|---|
 | Antes de Edit/Write | `hooks/proteger-fuentes.sh` | Bloquea `docs/referencia/**`, `.env*` y ADR aceptados, explicando cómo proceder | F0 |
-| Después de Edit/Write en `src/**/*.ts(x)` o `marketing/*.md` | `hooks/post-edicion.sh` | `check-copy` del archivo | F0 |
+| Después de Edit/Write en `src/**/*.ts(x)` o `marketing/*.md` | `hooks/post-edicion.sh` | `check-copy` del archivo; desde F1 prettier + eslint. Sin tests (ADR-016) | F0 |
 | ídem, `*.ts(x)/css/json/md` | ídem | `prettier --write` + `eslint --fix`; errores vuelven al agente | F1 (con `node_modules`) |
 | ídem, `finance/`, `projects/`, `shared/domain/` | ídem | `vitest run` del módulo; si se rompe C1–C6 el agente lo ve al instante | F1 |
 | `git commit` (humanos y agentes) | pre-commit (lefthook) | `pnpm verify:fast` | F1-3 |

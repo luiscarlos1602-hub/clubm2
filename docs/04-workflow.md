@@ -1,6 +1,6 @@
 # 04 · Workflow de desarrollo
 
-> Estado: **propuesta v0.2** (ADR-002). El ciclo de §2 lo ejecuta la skill `ciclo-funcionalidad`; el cierre de fase, `cerrar-fase`. El avance vive en `docs/estado.md`.
+> Estado: **v0.3** (ADR-002, aligerado por ADR-016). El ciclo de §2 lo ejecuta la skill `ciclo-funcionalidad`; el cierre de fase, `cerrar-fase`. El avance vive en `docs/estado.md`.
 
 ## 1. Fases del proyecto
 
@@ -26,15 +26,20 @@ Orden de valor (si hay que recortar alcance de una fase): F2 ficha + simulador >
 | Paso | Quién | Qué | Salida |
 |---|---|---|---|
 | 1. Definir | Tú + agente principal | Historia: "Como inversionista quiero… para…" + criterios de aceptación. Preguntas abiertas de `08-preguntas-por-funcionalidad.md` resueltas | Entrada en el plan de fase |
-| 2. Planificar | `arquitecto` | Módulos, archivos, puertos, casos de uso, riesgos | `docs/planes/NNN-*.md`. Si cambia arquitectura → ADR |
-| 3. Construir | Orden **obligatorio**: `dominio-financiero` (domain + tests) → `datos-demo` (semillas) → `constructor-ui` (hooks + componentes + ruta) | Código | |
-| 4. Verificar | Quien construyó, con skill `verificar` | tsc, lint de capas, vitest, e2e afectado | Todo verde o no se pasa al 5 |
-| 5. Revisar | `revisor-codigo` ∥ `revisor-cumplimiento` (en paralelo) | Informe con severidades | Ver `05-revision-y-mejora.md` |
-| 6. Corregir | Constructor original | Resolver bloqueantes e importantes | Re-verificar solo lo que falló |
-| 7. Integrar | Agente principal | Commit en rama, merge a `main` | |
-| 8. Registrar | Agente principal | Actualizar `docs/mejoras.md`, checklist de fase, y si se aprendió algo, la skill o `CLAUDE.md` | |
+| 2. Planificar | `arquitecto` (solo L); en M el agente principal si hace falta | Módulos, archivos, puertos, casos de uso, riesgos | `docs/planes/NNN-*.md`, **máximo 150 líneas**. Si cambia arquitectura → ADR |
+| 3. Construir | Orden **obligatorio**: dominio (domain + tests) → datos (semillas) → UI (hooks + componentes + ruta). En S/M lo hace el agente principal; en L, `dominio-financiero` → `datos-demo` → `constructor-ui` | Código | Al cerrar cada paquete: `verify:fast` + vitest del módulo |
+| 4. Verificar | **Agente principal** (orquestador), con skill `verificar` en modo completo, **una vez por funcionalidad**; nunca se acepta el autorreporte del constructor | tsc, lint de capas, vitest, e2e | Todo verde o no se pasa al 5 |
+| 5. Revisar | **Un revisor por cambio**: `revisor-codigo`; `revisor-cumplimiento` solo si hay copy nuevo (en L pueden ir los dos en paralelo) | Informe con severidades | Ver `05-revision-y-mejora.md` |
+| 6. Corregir | Quien construyó (agente principal o constructor original en L) | Resolver bloqueantes e importantes | Re-verificar solo lo que falló |
+| 7. Integrar | Agente principal | **Una rama y un commit por fila** del tablero, merge a `main` con aprobación del usuario | |
+| 8. Registrar | Agente principal | Actualizar `docs/estado.md` (toda sesión termina así), `docs/mejoras.md` y, si se aprendió algo, la skill o `CLAUDE.md` | |
 
-Funcionalidades pequeñas (S: 1–2 archivos, sin dinero): se salta el paso 2 y el paso 5 lo hace el agente principal con el checklist y `check-copy`.
+Tamaños (ADR-016):
+- **S** (1–2 archivos, sin dinero ni copy de riesgo): sin paso 2; el paso 5 lo hace el agente principal con el checklist y `check-copy`.
+- **M**: el agente principal construye sin subagentes; un revisor.
+- **L**: subagentes constructores y `arquitecto`; los únicos casos con trabajo en paralelo.
+
+El hook `post-edicion.sh` solo corre `check-copy`, prettier y eslint; los tests no se ejecutan en cada edición.
 
 Puertas (las aplica el orquestador leyendo la última línea de cada entrega):
 
@@ -42,12 +47,12 @@ Puertas (las aplica el orquestador leyendo la última línea de cada entrega):
 |---|---|---|
 | 2 · Planificar | `ESTADO: HECHO` y sin ADR/decisión de producto pendiente | Pregunta al usuario |
 | 3 · Construir | Todos los paquetes `ESTADO: HECHO` | `BLOQUEADO` técnico → lo resuelve; de producto → pregunta |
-| 4 · Verificar | `verificar` en verde, reejecutado por el orquestador | Vuelve al constructor con la salida real (máx. 3 intentos) |
-| 5 · Revisar | Ambos `VEREDICTO: APROBADO` | Paso 6; máx. 2 rondas, luego replantear con el usuario |
+| 4 · Verificar | `verificar` en verde, ejecutado por el orquestador | Se corrige con la salida real (máx. 3 intentos) |
+| 5 · Revisar | El revisor (o ambos en L) `VEREDICTO: APROBADO` | Paso 6; máx. 2 rondas, luego replantear con el usuario |
 
 ## 2.1 Mapa de paralelismo
 
-Construir en paralelo solo es seguro si los contratos (tipos y puertos) están fijados y cada paquete tiene **archivos exclusivos**. El tablero (`docs/estado.md`, columna "Paralelo con") marca qué puede ir a la vez:
+Solo aplica a funcionalidades **L**. Construir en paralelo solo es seguro si los contratos (tipos y puertos) están fijados y cada paquete tiene **archivos exclusivos**. El tablero (`docs/estado.md`, columna "Paralelo con") marca qué puede ir a la vez:
 
 | Fase | En paralelo | En serie |
 |---|---|---|
@@ -63,14 +68,15 @@ Mecánica: el orquestador lanza los subagentes en el mismo mensaje con aislamien
 - Tú eres dueño de producto **y** único revisor humano: los agentes revisores hacen la revisión técnica; tú apruebas el plan de las funcionalidades L, las decisiones de producto y el merge a `main`.
 - Máximo 3 paquetes en paralelo: más no acelera porque tu atención es el cuello de botella.
 - Ramas cortas (`feat/<modulo>-<desc>`), una por funcionalidad, merge en cuanto pasa la revisión. `main` siempre desplegable en Vercel.
-- Ritmo de producto, no de hackathon: no se salta la revisión de código ni de cumplimiento para ir más rápido.
+- Ritmo de producto, no de hackathon: no se salta la revisión para ir más rápido, pero basta un revisor por cambio (ADR-016).
+- **Una sola sesión escribiendo por carpeta**: dos sesiones en el mismo árbol ya rompieron el tablero (retro F1, plan 010).
 
 ## 3. Git
 
 - Ramas: `main` (siempre demostrable) · `feat/<modulo>-<descripcion>` · `fix/<descripcion>` · `docs/<tema>`.
 - Commits en español, estilo Conventional Commits: `feat(finance): motor de reparto 25/75 con casos canónicos`.
-- Un commit = un cambio coherente que pasa `verificar`.
-- Tag al cerrar cada fase: `f1-esqueleto`, `f2-publico`…
+- Un commit por fila del tablero, que pasa `verificar`. Los docs y la configuración pueden ir en commits propios (uno por ADR con sus documentos).
+- Tag al cerrar cada fase con el nombre de la fase: `f1-fundacion-visual` (hecho), `f2-flujo-inversionista`, `f3-flujo-operativo`…
 
 ## 4. Comunicación contigo
 

@@ -1,6 +1,6 @@
 ---
 name: revisor-cumplimiento
-description: Revisa textos y cifras visibles (UI, correos simulados, marketing/) para que nunca prometan rentabilidad, separen capital, ganancia y proyección, y marquen todo como simulado. Solo lectura. Corre en paralelo con revisor-codigo en cada cambio que toque UI o copy.
+description: Revisa textos y cifras visibles (UI, correos simulados, marketing/) para que nunca prometan rentabilidad, separen capital, ganancia y proyección, y marquen todo como simulado. Solo lectura. Se usa en el paso 5 de ciclo-funcionalidad solo cuando el cambio trae copy nuevo visible (ADR-016); en L puede ir en paralelo con revisor-codigo.
 tools: Read, Glob, Grep, Bash
 model: sonnet
 ---

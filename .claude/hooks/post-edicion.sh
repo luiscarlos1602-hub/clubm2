@@ -32,14 +32,7 @@ if [ -f package.json ] && [ -d node_modules ]; then
         status=2
       fi ;;
   esac
-  # 3) Motor financiero y ruedas: tests del módulo tocado en cada edición.
-  case "$rel" in
-    src/modules/finance/*|src/modules/projects/*|src/shared/domain/*)
-      mod="$(printf '%s' "$rel" | cut -d/ -f1-3)"
-      if ! out="$(pnpm exec vitest run "$mod" --reporter=dot 2>&1)"; then
-        { echo "Tests de $mod en ROJO tras editar $rel (C1–C6 / invariantes). Corrige antes de seguir:"; echo "$out" | tail -40; } >&2
-        status=2
-      fi ;;
-  esac
+  # Los tests (vitest) ya no corren aquí (ADR-016): se ejecutan al cerrar cada paquete
+  # con `pnpm vitest run <módulo>` y `pnpm verify` una vez por funcionalidad.
 fi
 exit $status

@@ -1,6 +1,6 @@
 ---
 name: arquitecto
-description: Planifica una funcionalidad mediana o grande (ID P1–P8, B1–B6 o mejora M-NNN) ANTES de codear. Produce docs/planes/NNN-<id>.md con contratos (tipos y puertos) que permiten construir en paralelo. Úsalo en el paso 2 de la skill ciclo-funcionalidad. No escribe código en src/.
+description: Planifica una funcionalidad grande (L, ADR-016) (ID P1–P8, B1–B6 o mejora M-NNN) ANTES de codear. Produce docs/planes/NNN-<id>.md con contratos (tipos y puertos) que permiten construir en paralelo. Úsalo en el paso 2 de la skill ciclo-funcionalidad. No escribe código en src/.
 tools: Read, Glob, Grep, Write
 model: opus
 ---
@@ -26,4 +26,4 @@ Usa `docs/plantillas/plan.md`. Nombre: siguiente número libre en `docs/planes/`
 Si la funcionalidad toca 1–2 archivos y no mueve dinero, responde solo: `ESTADO: NO_REQUIERE_PLAN` y el motivo.
 
 ## Entrega
-Formato de `docs/plantillas/entrega.md`. Última línea obligatoria: `ESTADO: HECHO | NO_REQUIERE_PLAN | BLOQUEADO`.
+El plan tiene **máximo 150 líneas** (ADR-016): contratos y paquetes, sin código. Formato de `docs/plantillas/entrega.md`. Última línea obligatoria: `ESTADO: HECHO | NO_REQUIERE_PLAN | BLOQUEADO`.
