@@ -4,11 +4,11 @@
 
 | ID | Fecha | Origen | Descripción | Prioridad | Estado |
 |---|---|---|---|---|---|
-| M-001 | 2026-11-22 | F0 | Definir política de pérdidas y orden de cobro (maestro §6) para reemplazar "por definir" | P1 | abierto |
+| M-001 | 2026-11-22 | F0 | Definir política de pérdidas y orden de cobro (maestro §6) para reemplazar "por definir" | P1 | abierto (22-nov: decidido solo que no se devuelve dinero hasta vender el inmueble; reparto de la pérdida y orden de cobro por definir, `docs/08` O1) |
 | M-002 | 2026-11-22 | F0 | Nombre comercial e identidad definitiva | P2 | cerrado (ADR-003 · ADR-005) |
-| M-003 | 2026-11-22 | ADR-002 | Escribir `architecture.modules.mjs` y generar desde él las reglas de `eslint-plugin-boundaries` (F1-3) | P1 | abierto |
-| M-004 | 2026-11-22 | ADR-002 | Reglas de lint de `01 §8.1` (domain puro, dinero solo en motor) con mensajes que citen el doc | P1 | abierto |
-| M-005 | 2026-11-22 | ADR-002 | Pre-commit con lefthook → `pnpm verify:fast` | P2 | abierto |
+| M-003 | 2026-11-22 | ADR-002 | Escribir `architecture.modules.mjs` y generar desde él las reglas de `eslint-plugin-boundaries` (F1-3) | P1 | cerrado (F1-1, `a62b216`: `eslint.config.mjs` importa `moduleOrder` de `architecture.modules.mjs`) |
+| M-004 | 2026-11-22 | ADR-002 | Reglas de lint de `01 §8.1` (domain puro, dinero solo en motor) con mensajes que citen el doc | P1 | cerrado (F1-1/F1-3: reglas `no-restricted-*` de `eslint.config.mjs` citan `docs/01 §8`) |
+| M-005 | 2026-11-22 | ADR-002 | Pre-commit con lefthook → `pnpm verify:fast` | P2 | cerrado (F1-1: `lefthook.yml` corre `verify:fast` en pre-commit) |
 | M-006 | 2026-11-22 | Revisión | Bordes de ruedas y redondeo sin definir (preguntas K1–K4) | P1 | cerrado (02 §4–§5) |
 | M-007 | 2026-11-22 | Revisión | Identidad de la demo vs `marketing/` (pregunta K5) | P2 | cerrado (ADR-005) |
 | M-008 | 2026-11-22 | ADR-003 | Comprar `clubm2.com` (+ `metroametroclub.com` defensivo), revisar `.com.ve`, handles `@clubm2` y registro de marca mixta en SAPI (36 y 41) | P1 | abierto (usuario) |

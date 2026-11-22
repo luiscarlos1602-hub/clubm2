@@ -3,7 +3,7 @@
 Lee este archivo completo antes de cualquier tarea. Es corto a propósito; el detalle está en `docs/`.
 
 ## Arranque de cada sesión
-1. Lee `docs/estado.md` (fase activa y siguiente fila pendiente).
+1. Lee `docs/estado.md` (etapa activa y siguiente fila pendiente) y el plan vigente `docs/planes/010-revision-y-plan-de-ejecucion.md` (etapas y filas W/DB).
 2. Si vas a construir un ID del tablero → skill `ciclo-funcionalidad <ID>`. Si cierras fase → `cerrar-fase`.
 3. Lee solo las secciones de `docs/` que cite el brief o la skill; no todo.
 
@@ -63,4 +63,4 @@ node scripts/check-copy.mjs [rutas]   # disponible ya en F0
 ```
 
 ## Estado actual
-**F1 cerrada (tag `f1-fundacion-visual`) → F2 · Flujo del inversionista** (P1 landing ya hecha; sigue P2/P3 → P4 → P5 → P6 + P8) (orden de fases: ADR-007, `docs/planes/000-hoja-de-ruta.md`; prompt de arranque: `docs/prompts/F1-fundacion-visual.md`). Decisiones 🔴 respondidas el 22-nov (`docs/08` §Decisiones). Capa agéntica activa en `.claude/` (ADR-002, aceptado). El usuario trabaja **solo**: él aprueba merges y decisiones de producto. Siguiente fila: `docs/estado.md`.
+**Etapas 0 y 1 del plan 010 hechas (22-nov-2026) → Etapa 2 · Backoffice operable en local, siguiente fila W-1** (orden W-1 → W-2 → W-3 → W-5 → W-4 → W-6; luego Etapa 3 Supabase DB-1…DB-4 y Etapa 4 despliegue en Netlify). F1 cerrada (tag `f1-fundacion-visual`); de F2 están hechos P1, P3, P4 (`4b72ce3`) y la maqueta V-1/V-2. Orden: ADR-018 (modifica ADR-007 junto con ADR-014), `docs/planes/000-hoja-de-ruta.md` §Orden vigente. Proceso aligerado: ADR-016. Decisiones S1–S9, Q5, Q6 y ADR-015 respondidas el 22-nov (`docs/08`); política de pérdidas parcialmente abierta (O1). El usuario trabaja **solo**: él aprueba merges y decisiones de producto. Siguiente fila: `docs/estado.md`.
