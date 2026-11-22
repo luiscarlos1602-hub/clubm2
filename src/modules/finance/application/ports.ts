@@ -1,5 +1,6 @@
 import type { ProjectId } from "@/modules/projects";
 import type { ProjectBudget } from "../domain/budget";
+import type { ProjectSheet } from "../domain/project-sheet";
 import type { ProjectEconomics } from "../domain/project-economics";
 import type { Settlement } from "../domain/settlement";
 import type { SaveResult } from "@/shared/domain/repository-write";
@@ -24,7 +25,7 @@ export interface ProjectBudgetRepository {
 /**
  * Escritura de la economía base (W-1): una por proyecto; `save` inserta o reemplaza por `projectId`.
  * INVALID_RECORD si no pasa el esquema; REFERENCE_NOT_FOUND si el proyecto no existe (FK en Supabase; el mock
- * no lo comprueba porque es otro slice: lo cubre el caso de uso). Si rechaza, no cambia nada.
+ * no lo comprueba porque es otro slice: lo cubre el caso de uso). Si rechaza, el almacén queda igual.
  */
 export interface ProjectEconomicsWriter {
   save(economics: ProjectEconomics): SaveResult<ProjectEconomics>;
@@ -33,8 +34,18 @@ export interface ProjectEconomicsWriter {
 /**
  * Escritura del presupuesto por líneas (W-1): uno por proyecto; `save` inserta o reemplaza por `projectId`.
  * INVALID_RECORD si no pasa el esquema; REFERENCE_NOT_FOUND si el proyecto no tiene economía guardada.
- * Si rechaza, no cambia nada: el presupuesto anterior queda entero (en Supabase, reemplazo en una transacción).
+ * Si rechaza, el almacén queda igual: el presupuesto anterior queda entero (en Supabase, reemplazo en una transacción).
  */
 export interface ProjectBudgetWriter {
   save(budget: ProjectBudget): SaveResult<ProjectBudget>;
+}
+
+/**
+ * Escritura de la ficha completa (W-2): inmueble, proyecto, perfil, proceso, riesgos, clase, economía,
+ * presupuesto e imágenes, todo o nada. Alta o edición según exista el proyecto por id.
+ * DUPLICATE si el código o el slug ya los usa otro proyecto; INVALID_RECORD si una parte no pasa el esquema.
+ * Si rechaza, el almacén queda igual (en local, el escritor de composition; en Supabase, una RPC transaccional, DB-4).
+ */
+export interface ProjectSheetWriter {
+  save(sheet: ProjectSheet): SaveResult<ProjectSheet>;
 }
