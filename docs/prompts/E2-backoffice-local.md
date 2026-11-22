@@ -55,10 +55,10 @@ Reglas que no cambian: dinero en centavos (`Money`), porcentajes en puntos bási
 
 Termina con un resumen corto: qué funciona ahora, qué quedó fuera y qué espera mi aprobación. No empieces la fila siguiente.
 
-## Notas vigentes (verificación del 22-nov tras W-3)
+## Notas vigentes (22-nov tras W-5)
 
-Estado comprobado en `main` (`a9f95cd`): W-1, W-2 y W-3 hechas; siguiente fila **W-5** (L). El E2E intermitente y las capturas de P3 que ensuciaban el árbol quedaron resueltos en W-3.
+Estado: W-1, W-2, W-3 y W-5 hechas; siguiente fila **W-4** (M).
 
-1. **W-5 toca el motor de pérdidas (ADR-019).** Antes de escribir código, confírmame el punto 4 del ADR (sin prelación de cobro). `src/modules/finance/CLAUDE.md` aún dice que en pérdida no hay reparto (`LOSS_POLICY_UNDEFINED`): se corrige en el mismo cambio.
-2. **Rama ya integrada sin borrar:** `feat/projects-cambio-etapa`. Bórrala con mi aprobación.
-3. Al cerrar la fila, pregúntame si hago `git push` de `main`.
+1. W-4 (obra): el gasto real por rubro aún no entra en la liquidación (W-5 usa F = presupuesto, `docs/08` W5-3). Si W-4 cambia eso, es decisión de producto: pregúntalo.
+2. W-6: el portafolio con pérdida (`projectHoldingGain` devuelve `null` en pérdida) se resuelve al leer `listByHolder`; ver `mejoras.md` [W-5].
+3. Ramas integradas sin borrar: `feat/projects-cambio-etapa` (el usuario pidió dejarla) y `feat/finance-venta-liquidacion` tras su merge.
