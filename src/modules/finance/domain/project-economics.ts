@@ -1,5 +1,6 @@
 import type { ProjectId } from "@/modules/projects";
 import type { Money } from "@/shared/domain/money";
+import { err, ok, type DomainError, type Result } from "@/shared/domain/result";
 
 /**
  * Supuestos base del proyecto. Todo es proyección salvo lo que diga `Settlement`.
@@ -16,3 +17,18 @@ export type ProjectEconomics = {
   /** O estimado, siempre proyección. */
   readonly estimatedSaleCosts: Money;
 };
+
+/**
+ * W-1. C, F y P objetivo > 0; O estimado ≥ 0. No exige excedente positivo: una oportunidad puede
+ * proyectar pérdida (lo muestra la ficha como escenario). Nunca lanza.
+ */
+export function checkProjectEconomics(
+  economics: ProjectEconomics,
+): Result<ProjectEconomics, DomainError<"INVALID_ECONOMICS">> {
+  const { acquisitionCost, recoveryBudget, targetSalePrice, estimatedSaleCosts } = economics;
+  if (acquisitionCost.cents <= 0) return err("INVALID_ECONOMICS", "el costo de compra debe ser mayor que 0");
+  if (recoveryBudget.cents <= 0) return err("INVALID_ECONOMICS", "el presupuesto de recuperación debe ser mayor que 0");
+  if (targetSalePrice.cents <= 0) return err("INVALID_ECONOMICS", "el precio objetivo de venta debe ser mayor que 0");
+  if (estimatedSaleCosts.cents < 0) return err("INVALID_ECONOMICS", "los costos de venta no pueden ser negativos");
+  return ok(economics);
+}
