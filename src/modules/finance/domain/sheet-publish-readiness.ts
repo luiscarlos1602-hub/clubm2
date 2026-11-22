@@ -4,7 +4,7 @@ import { checkPublishRequirements } from "./project-sheet-requirements";
 /** La ficha guardada vista como lo que enviaría el asistente (para reaplicar sus reglas). Pura. */
 export function sheetToInput(sheet: ProjectSheet): ProjectSheetInput {
   const { property, project, profile, process, risks, participationClass: cls } = sheet;
-  const { projectId: _projectId, ...economics } = sheet.economics;
+  const { acquisitionCost, recoveryBudget, targetSalePrice, estimatedSaleCosts } = sheet.economics;
   return {
     projectId: project.id,
     property: { city: property.city, zone: property.zone, kind: property.kind, areaM2: property.areaM2 },
@@ -13,7 +13,7 @@ export function sheetToInput(sheet: ProjectSheet): ProjectSheetInput {
     processSteps: process?.steps ?? null,
     riskKinds: risks?.kinds ?? [],
     participationClass: cls === null ? null : { total: cls.total, unitPrice: cls.unitPrice },
-    economics,
+    economics: { acquisitionCost, recoveryBudget, targetSalePrice, estimatedSaleCosts },
     budgetLines: sheet.budget.lines,
     images: sheet.images.map((i) => ({ kind: i.kind, url: i.url })),
   };
