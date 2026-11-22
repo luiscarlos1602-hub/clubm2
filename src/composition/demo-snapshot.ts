@@ -12,7 +12,7 @@ import {
 import { buildProjectsSeed, projectsSliceSchema, type ProjectsSlice } from "@/modules/projects/infrastructure/seed";
 
 export type DemoSnapshot = {
-  readonly version: 1;
+  readonly version: 2;
   readonly seededOn: IsoDate;
   readonly projects: ProjectsSlice;
   readonly participations: ParticipationsSlice;
@@ -20,7 +20,7 @@ export type DemoSnapshot = {
 };
 
 export const demoSnapshotSchema: z.ZodType<DemoSnapshot> = z.object({
-  version: z.literal(1),
+  version: z.literal(2),
   seededOn: isoDateSchema,
   projects: projectsSliceSchema,
   participations: participationsSliceSchema,
@@ -58,5 +58,5 @@ export function buildDemoSnapshot(clock: Clock): DemoSnapshot {
   });
   const finance = buildFinanceSeed({ settled });
 
-  return { version: 1, seededOn: clock.today(), projects, participations, finance };
+  return { version: 2, seededOn: clock.today(), projects, participations, finance };
 }

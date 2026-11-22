@@ -1,17 +1,15 @@
 import { formatIsoDate } from "@/shared/lib/format-date";
 import { EmptyState, ProcessBoard } from "@/shared/ui/brand";
 import { Section, Surface } from "@/shared/ui/layout";
-import { dateAfterPurchase } from "../../hooks/project-figures";
-import { toProcessStages } from "../../hooks/process-stages";
-import type { ProjectDetailData } from "../../hooks/use-project-detail";
+import type { ProjectDetail } from "../../../domain/project-detail";
+import { toProcessStageViews } from "../../hooks/process-stage-view";
 import { PROJECT_DETAIL_COPY } from "./copy";
 
 const C = PROJECT_DETAIL_COPY;
 
 /** Tablero de proceso (fechas estimadas = proyección) y actualizaciones fechadas. Sin indicadores de velocidad de venta (ADR-004). */
-export function TimelineSection({ data }: { data: ProjectDetailData }) {
-  const { example, listing } = data;
-  const updates = example.updates;
+export function TimelineSection({ data }: { data: ProjectDetail }) {
+  const { updates } = data;
   return (
     <Section tone="light" spacing="md" ruled labelledBy="titulo-cronograma" innerClassName="flex flex-col gap-10" data-testid="seccion-cronograma">
       <div className="flex max-w-[60ch] flex-col gap-3">
@@ -20,7 +18,7 @@ export function TimelineSection({ data }: { data: ProjectDetailData }) {
         </h2>
         <p className="text-muted-foreground">{C.timeline.description}</p>
       </div>
-      <ProcessBoard stages={toProcessStages(listing.acquiredOn, example.process)} data-testid="ficha-proceso" />
+      <ProcessBoard stages={toProcessStageViews(data.process ?? [])} data-testid="ficha-proceso" />
       <div className="flex flex-col gap-5" data-testid="actualizaciones">
         <h2 id="titulo-actualizaciones" className="font-heading text-3xl font-medium">
           {C.updates.title}
@@ -30,12 +28,12 @@ export function TimelineSection({ data }: { data: ProjectDetailData }) {
         ) : (
           <ul className="grid gap-4 lg:grid-cols-3">
             {updates.map((u) => (
-              <Surface as="li" key={u.title} padding="sm" data-testid="actualizacion">
+              <Surface as="li" key={u.id} padding="sm" data-testid="actualizacion">
                 <span className="font-mono text-sm text-muted-foreground">
-                  {formatIsoDate(dateAfterPurchase(listing.acquiredOn, u.offsetDays), "numeric")}
+                  {formatIsoDate(u.publishedOn, "numeric")}
                 </span>
                 <h3 className="font-medium">{u.title}</h3>
-                <p className="text-sm text-muted-foreground">{u.text}</p>
+                <p className="text-sm text-muted-foreground">{u.body}</p>
               </Surface>
             ))}
           </ul>

@@ -38,6 +38,16 @@ export type ContainerOptions = {
 export function createContainer(options: ContainerOptions = {}): Container {
   const clock = options.clock ?? demoClock();
   const storage = options.storage === undefined ? browserStorage() : options.storage;
+  // La v1 se reinicia sin migración (D6): se borran las claves antiguas.
+  if (storage !== null) {
+    for (const legacyKey of demoConfig.legacyStorageKeys) {
+      try {
+        storage.removeItem(legacyKey);
+      } catch {
+        // sin acceso al almacenamiento: se sigue en memoria
+      }
+    }
+  }
   const store = createDemoStore({
     key: demoConfig.storageKey,
     storage,
@@ -46,6 +56,8 @@ export function createContainer(options: ContainerOptions = {}): Container {
   });
 
   const projects = registerProjects(store);
+  const participations = registerParticipations(store, projects);
+  const finance = registerFinance(store, { projects, participations });
 
   return {
     clock,
@@ -59,7 +71,7 @@ export function createContainer(options: ContainerOptions = {}): Container {
       },
     },
     projects,
-    participations: registerParticipations(store, projects),
-    finance: registerFinance(store),
+    participations,
+    finance,
   };
 }

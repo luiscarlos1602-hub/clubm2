@@ -1,4 +1,5 @@
 import type { ProjectId } from "@/modules/projects";
+import type { ProjectBudget } from "../domain/budget";
 import type { ProjectEconomics } from "../domain/project-economics";
 import type { Settlement } from "../domain/settlement";
 
@@ -12,4 +13,9 @@ export interface ProjectEconomicsRepository {
 export interface SettlementRepository {
   list(): Promise<readonly Settlement[]>;
   findByProject(projectId: ProjectId): Promise<Settlement | null>;
+}
+
+/** Puerto de lectura del presupuesto integral F por líneas (lo presupuestado; B3/B5 añaden lo devengado). */
+export interface ProjectBudgetRepository {
+  findByProject(projectId: ProjectId): Promise<ProjectBudget | null>;
 }

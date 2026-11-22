@@ -1,12 +1,13 @@
 import { routeHref } from "@/shared/ui/app-shell";
 import Link from "next/link";
+import type { ProjectRiskKind } from "@/modules/projects";
 import { BulletList, Section } from "@/shared/ui/layout";
 import { PROJECT_DETAIL_COPY } from "./copy";
 
 const C = PROJECT_DETAIL_COPY.risks;
 
 /** Riesgos del proyecto, en banda oscura; los riesgos completos están en /terminos. El aviso fijo va en los puntos clave, no aquí. */
-export function RisksSection({ risks }: { risks: readonly string[] }) {
+export function RisksSection({ risks }: { risks: readonly ProjectRiskKind[] }) {
   return (
     <Section tone="dark" spacing="md" labelledBy="titulo-riesgos" innerClassName="grid gap-8 lg:grid-cols-2" data-testid="seccion-riesgos">
       <div className="flex flex-col gap-4">
@@ -22,7 +23,7 @@ export function RisksSection({ risks }: { risks: readonly string[] }) {
           {C.termsLink}
         </Link>
       </div>
-      <BulletList items={[...risks, C.capitalNote]} marker="dash" />
+      <BulletList items={[...risks.map((kind) => C.kinds[kind]), C.capitalNote]} marker="dash" />
     </Section>
   );
 }

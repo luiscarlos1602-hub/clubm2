@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 
-const KEY = "club-demo:v1";
+const KEY = "club-demo:v2";
+const LEGACY_KEY = "club-demo:v1";
 const ROLE_KEY = "club-ui:v1";
 const ROLE_VALUE = JSON.stringify({ state: { role: "investor" }, version: 0 });
 
@@ -16,7 +17,7 @@ test.describe("reiniciar datos simulados", () => {
     await expect(page.getByTestId("demo-reset-button")).toBeVisible();
 
     await page.evaluate((key) => {
-      localStorage.setItem(key, JSON.stringify({ version: 1, seededOn: "1999-01-01", projects: "alterado" }));
+      localStorage.setItem(key, JSON.stringify({ version: 2, seededOn: "1999-01-01", projects: "alterado" }));
     }, KEY);
     await page.evaluate(([k, v]) => localStorage.setItem(k, v), [ROLE_KEY, ROLE_VALUE]);
 
@@ -31,7 +32,7 @@ test.describe("reiniciar datos simulados", () => {
     await expect(page.getByTestId("demo-reset-done")).toBeVisible();
 
     const snap = await page.evaluate((k) => JSON.parse(localStorage.getItem(k) ?? "null"), KEY);
-    expect(snap.version).toBe(1);
+    expect(snap.version).toBe(2);
     expect(snap.seededOn).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(snap.seededOn).not.toBe("1999-01-01");
     expect(snap.projects.projects).toHaveLength(7);
@@ -40,6 +41,14 @@ test.describe("reiniciar datos simulados", () => {
     expect(await page.evaluate((k) => localStorage.getItem(k), ROLE_KEY)).toBe(ROLE_VALUE);
 
     expect(errors).toEqual([]);
+  });
+
+  test("una clave v1 sembrada a mano desaparece al recargar", async ({ page }) => {
+    await page.goto("/");
+    await page.evaluate((key) => localStorage.setItem(key, JSON.stringify({ version: 1, projects: "viejo" })), LEGACY_KEY);
+    await page.reload();
+    await expect(page.getByTestId("demo-reset-button")).toBeVisible();
+    await expect.poll(() => page.evaluate((k) => localStorage.getItem(k), LEGACY_KEY)).toBeNull();
   });
 
   test("el botón existe en las tres zonas", async ({ page }) => {

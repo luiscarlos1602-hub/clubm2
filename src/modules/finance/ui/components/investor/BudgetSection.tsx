@@ -1,18 +1,16 @@
 import { MoneyDisplay } from "@/shared/ui/brand";
 import { Section, Surface } from "@/shared/ui/layout";
-import type { BudgetView } from "../../hooks/project-figures";
+import type { BudgetBreakdown, BudgetLine } from "../../../domain/budget";
 import { PROJECT_DETAIL_COPY } from "./copy";
 
 const C = PROJECT_DETAIL_COPY.budget;
 
-type Line = { label: string; amount: BudgetView["acquisition"] };
-
-function Lines({ lines, testId }: { lines: readonly Line[]; testId: string }) {
+function Lines({ lines, testId }: { lines: readonly BudgetLine[]; testId: string }) {
   return (
     <ul className="flex flex-col divide-y divide-border" data-testid={testId}>
       {lines.map((line) => (
-        <li key={line.label} className="flex items-baseline justify-between gap-4 py-2 text-sm">
-          <span>{line.label}</span>
+        <li key={line.item} className="flex items-baseline justify-between gap-4 py-2 text-sm">
+          <span>{C.items[line.item]}</span>
           <MoneyDisplay value={line.amount} kind="amount" size="sm" />
         </li>
       ))}
@@ -21,7 +19,7 @@ function Lines({ lines, testId }: { lines: readonly Line[]; testId: string }) {
 }
 
 /** Presupuesto desglosado (D7): compra, reforma por rubros, honorarios y costos de venta. Cifras de ejemplo. */
-export function BudgetSection({ budget }: { budget: BudgetView }) {
+export function BudgetSection({ budget }: { budget: BudgetBreakdown }) {
   return (
     <Section tone="paper" spacing="md" ruled labelledBy="titulo-presupuesto" innerClassName="flex flex-col gap-8" data-testid="seccion-presupuesto">
       <div className="flex max-w-[60ch] flex-col gap-3">

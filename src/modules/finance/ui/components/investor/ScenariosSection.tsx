@@ -2,16 +2,14 @@ import { routeHref } from "@/shared/ui/app-shell";
 import Link from "next/link";
 import { LegalNotice, MoneyDisplay, ProjectionLabel } from "@/shared/ui/brand";
 import { Section, Surface } from "@/shared/ui/layout";
-import { buildScenarioRows } from "../../hooks/scenarios";
-import type { SimulatorBase } from "../../hooks/simulate";
+import type { ScenarioRow } from "../../../domain/scenarios";
 import { PROJECT_DETAIL_COPY } from "./copy";
 import { GainFigure } from "./GainFigure";
 
 const C = PROJECT_DETAIL_COPY.scenarios;
 
 /** Tres escenarios, siempre rotulados como proyección. Cifras del motor para 1 participación. */
-export function ScenariosSection({ base }: { base: SimulatorBase }) {
-  const rows = buildScenarioRows(base);
+export function ScenariosSection({ rows }: { rows: readonly ScenarioRow[] }) {
   return (
     <Section tone="light" spacing="md" ruled labelledBy="titulo-escenarios" innerClassName="flex flex-col gap-8" data-testid="seccion-escenarios">
       <div className="flex max-w-[60ch] flex-col gap-3">

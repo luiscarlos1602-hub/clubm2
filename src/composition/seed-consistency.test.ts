@@ -4,10 +4,22 @@ import { brand } from "@/shared/config/brand";
 import { compareIsoDate, isoDate, type IsoDate } from "@/shared/domain/calendar-date";
 import { fixedClock } from "@/shared/domain/clock";
 import { usd, usdUnits } from "@/shared/domain/money";
-import { calculateDistribution, calculateHolderPayout, createSettlement } from "@/modules/finance";
+import {
+  calculateDistribution,
+  calculateHolderPayout,
+  checkProjectBudget,
+  createSettlement,
+  worksSubtotal,
+} from "@/modules/finance";
 import { checkHoldings, checkParticipationClass } from "@/modules/participations/domain/participation-consistency";
 import { DEMO_HOLDER_ID } from "@/modules/participations/infrastructure/seed";
-import { checkProjectConsistency, parseProjectCode } from "@/modules/projects";
+import {
+  PROJECT_RISK_KINDS,
+  checkProjectConsistency,
+  checkProjectProcess,
+  parseProjectCode,
+  toProcessTimeline,
+} from "@/modules/projects";
 import { classifyProjectWheel } from "@/modules/projects/backoffice";
 import { buildDemoSnapshot, parseDemoSnapshot, type DemoSnapshot } from "./demo-snapshot";
 
@@ -234,10 +246,21 @@ describe("Semillas", () => {
   });
 
   it("los seed.ts no contienen fechas literales", () => {
-    for (const m of ["projects", "participations", "finance"]) {
-      const source = readFileSync(`src/modules/${m}/infrastructure/seed.ts`, "utf8");
+    const files = [
+      "projects/infrastructure/seed.ts",
+      "projects/infrastructure/seed-content.ts",
+      "participations/infrastructure/seed.ts",
+      "finance/infrastructure/seed.ts",
+      "finance/infrastructure/seed-budget.ts",
+    ];
+    for (const f of files) {
+      const source = readFileSync(`src/modules/${f}`, "utf8");
       expect(source).not.toMatch(/\d{4}-\d{2}-\d{2}/);
     }
+  });
+
+  it("ADR-004 · el texto del snapshot no menciona ruedas ni estancados", () => {
+    expect(JSON.stringify(snapshot())).not.toMatch(/rueda|estancad|días sin vender|wheel|stalled/i);
   });
 
   it("ADR-004 · el snapshot no contiene ruedas ni proyectos estancados", () => {
@@ -261,6 +284,100 @@ describe("Semillas", () => {
     const s = snapshot();
     const parsed = parseDemoSnapshot(JSON.parse(JSON.stringify(s)));
     expect(parsed.ok && parsed.value).toEqual(s);
-    expect(parseDemoSnapshot({ version: 2 }).ok).toBe(false);
+    expect(parseDemoSnapshot({ ...JSON.parse(JSON.stringify(s)), version: 1 }).ok).toBe(false);
+    expect(parseDemoSnapshot({ version: 1 }).ok).toBe(false);
+    expect(s.version).toBe(2);
+  });
+
+  describe("contenido de la ficha (v2)", () => {
+    const published = (s: DemoSnapshot) => s.projects.projects.filter((p) => p.code !== `${brand.shortName}-007`);
+
+    it("7 presupuestos válidos: obra 5.000 y bolsa 5.000", () => {
+      const s = snapshot();
+      expect(s.finance.budgets).toHaveLength(7);
+      for (const b of s.finance.budgets) {
+        const econ = s.finance.economics.find((e) => e.projectId === b.projectId);
+        if (!econ) throw new Error("sin economía");
+        expect(checkProjectBudget(b, econ).ok).toBe(true);
+        expect(worksSubtotal(b)).toEqual(usdUnits(5_000));
+        const fees = b.lines.filter((l) => !["kitchen", "bathrooms", "floors_paint", "electrical_plumbing", "garden_exterior", "carpentry"].includes(l.item));
+        expect(fees.map((l) => l.item)).toEqual(["management_fee", "contingency", "reserve"]);
+        expect(fees.map((l) => l.amount)).toEqual([usdUnits(2_500), usdUnits(1_500), usdUnits(1_000)]);
+      }
+    });
+
+    it("6 procesos válidos y coherentes con la fase", () => {
+      const s = snapshot();
+      expect(s.projects.processes).toHaveLength(6);
+      for (const p of published(s)) {
+        const process = s.projects.processes.find((x) => x.projectId === p.id);
+        if (!process) throw new Error(`sin proceso ${p.code}`);
+        expect(checkProjectProcess(process).ok).toBe(true);
+        const st = process.steps;
+        if (p.status === "settled") {
+          expect(Object.values(st).every((x) => x.status === "done")).toBe(true);
+          const acquired = p.timeline.acquiredOn as IsoDate;
+          const signed = p.timeline.saleSignedOn as IsoDate;
+          const days = (Date.parse(signed) - Date.parse(acquired)) / 86_400_000;
+          expect(st.sold.offsetDays).toBe(days);
+        }
+        if (p.status === "on_sale") expect(st.on_sale.status).toBe("current");
+        if (p.status === "renovation") {
+          expect(["current", "upcoming"]).toContain(st.works_50.status);
+          expect(st.sale_start.status).not.toBe("done");
+          expect(st.sold.status).not.toBe("done");
+        }
+        if (p.status === "funding") expect(st.works_start.status).not.toBe("done");
+      }
+    });
+
+    it("fechas del proceso: hechas ≤ hoy y estimadas ≥ hoy", () => {
+      const s = snapshot();
+      for (const process of s.projects.processes) {
+        const project = s.projects.projects.find((p) => p.id === process.projectId);
+        const timeline = toProcessTimeline(project?.timeline.acquiredOn as IsoDate, process);
+        for (const t of timeline) {
+          if (t.estimated) expect(compareIsoDate(t.date, TODAY)).toBeGreaterThanOrEqual(0);
+          else expect(compareIsoDate(t.date, TODAY)).toBeLessThanOrEqual(0);
+        }
+      }
+    });
+
+    it("17 actualizaciones únicas, entre la compra y hoy (y la liquidación)", () => {
+      const s = snapshot();
+      expect(s.projects.updates).toHaveLength(17);
+      expect(new Set(s.projects.updates.map((u) => u.id)).size).toBe(17);
+      for (const u of s.projects.updates) {
+        const p = s.projects.projects.find((x) => x.id === u.projectId);
+        expect(compareIsoDate(p?.timeline.acquiredOn as IsoDate, u.publishedOn)).toBeLessThanOrEqual(0);
+        expect(compareIsoDate(u.publishedOn, TODAY)).toBeLessThanOrEqual(0);
+        if (p?.timeline.settledOn) expect(compareIsoDate(u.publishedOn, p.timeline.settledOn)).toBeLessThanOrEqual(0);
+      }
+    });
+
+    it("los 6 publicados llevan los 3 riesgos comunes; M2-007 no lleva contenido", () => {
+      const s = snapshot();
+      expect(s.projects.risks).toHaveLength(6);
+      for (const r of s.projects.risks) {
+        expect(r.kinds.slice(0, 3)).toEqual(["sale_below_target", "works_overrun", "slow_sale"]);
+        r.kinds.forEach((k) => expect(PROJECT_RISK_KINDS).toContain(k));
+      }
+      const m7 = byCode(s, 7);
+      expect(s.projects.profiles).toHaveLength(6);
+      expect(s.projects.profiles.some((p) => p.propertyId === m7.propertyId)).toBe(false);
+      expect(s.projects.processes.some((p) => p.projectId === m7.id)).toBe(false);
+      expect(s.projects.updates.some((u) => u.projectId === m7.id)).toBe(false);
+      expect(s.projects.risks.some((r) => r.projectId === m7.id)).toBe(false);
+    });
+
+    it("desplazar hoy desplaza las actualizaciones", () => {
+      const later = isoDate("2027-03-10");
+      const day = (d: string) => Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)) / 86_400_000;
+      const shift = day(later) - day(TODAY);
+      const a = snapshot(TODAY).projects.updates;
+      const b = snapshot(later).projects.updates;
+      expect(b).toHaveLength(a.length);
+      a.forEach((u, i) => expect(day(b[i].publishedOn) - day(u.publishedOn)).toBe(shift));
+    });
   });
 });

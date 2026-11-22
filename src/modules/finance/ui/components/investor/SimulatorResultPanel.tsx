@@ -1,13 +1,13 @@
 import { LegalNotice, MoneyDisplay, ProjectionLabel } from "@/shared/ui/brand";
 import { Surface } from "@/shared/ui/layout";
-import type { SimulatorResult } from "../../hooks/simulate";
+import type { SimulationResult } from "../../../domain/simulator";
 import { PROJECT_DETAIL_COPY } from "./copy";
 import { GainFigure } from "./GainFigure";
 
 const C = PROJECT_DETAIL_COPY.simulator;
 
 /** Tres bloques separados: capital aportado · ganancia proyectada · cobro proyectado. El capital manda en jerarquía. */
-export function SimulatorResultPanel({ result, requestedHeld }: { result: SimulatorResult; requestedHeld: number }) {
+export function SimulatorResultPanel({ result, requestedHeld }: { result: SimulationResult; requestedHeld: number }) {
   const { outcome } = result;
   return (
     <Surface variant="dark" padding="lg" className="gap-6" data-testid="simulador-resultado">

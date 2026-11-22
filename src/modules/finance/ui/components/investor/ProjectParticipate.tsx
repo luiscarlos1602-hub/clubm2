@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useMemo, useState } from "react";
+import { useId, useState } from "react";
 import { projectHref, routeHref } from "@/shared/ui/app-shell";
 import { LegalNotice, MoneyDisplay, StatusBadge } from "@/shared/ui/brand";
 import { BulletList, PageHeader, Section, Surface } from "@/shared/ui/layout";
 import { Button } from "@/shared/ui/primitives/button";
-import { estimateReservation, maxHeldFor, reservationAmount } from "../../hooks/project-figures";
-import { useProjectDetail, type ProjectDetailData } from "../../hooks/use-project-detail";
+import type { ProjectDetail as ProjectDetailData } from "../../../domain/project-detail";
+import { useProjectDetail } from "../../hooks/use-project-detail";
+import { useReservationEstimate } from "../../hooks/use-reservation-estimate";
 import { PROJECT_DETAIL_COPY } from "./copy";
 import { GainFigure } from "./GainFigure";
 import { ProjectDetailError, ProjectDetailLoading, ProjectDetailMissing } from "./ProjectDetailStates";
@@ -17,13 +18,14 @@ const C = PROJECT_DETAIL_COPY.participate;
 
 function Confirmation({ data, quantity }: { data: ProjectDetailData; quantity: number }) {
   const K = C.confirmation;
+  const { amount } = useReservationEstimate(data, quantity);
   return (
     <div role="status">
       <Surface variant="dark" padding="lg" data-testid="participar-confirmacion">
         <StatusBadge tone="in-progress" label={K.status} data-testid="participar-estado" />
         <h2 className="font-heading text-3xl font-medium" data-testid="participar-asesor">{K.title}</h2>
         <p className="max-w-[60ch]">{K.description}</p>
-        <MoneyDisplay value={reservationAmount(data.listing.unitPrice, quantity)} kind="capital" label={C.amount} size="lg" />
+        <MoneyDisplay value={amount} kind="capital" label={C.amount} size="lg" />
         <Button asChild className="w-fit">
           <Link href={routeHref("p3")} data-testid="participar-proyectos">{K.projects}</Link>
         </Button>
@@ -33,7 +35,7 @@ function Confirmation({ data, quantity }: { data: ProjectDetailData; quantity: n
 }
 
 function Estimate({ data, quantity }: { data: ProjectDetailData; quantity: number }) {
-  const outcome = useMemo(() => estimateReservation(data, quantity).outcome, [data, quantity]);
+  const { amount, outcome } = useReservationEstimate(data, quantity);
   return (
     <div className="flex flex-col gap-3 border-t border-border pt-5" data-testid="participar-resumen" aria-live="polite">
       <h2 className="font-heading text-xl font-medium">{C.summaryTitle}</h2>
@@ -47,7 +49,7 @@ function Estimate({ data, quantity }: { data: ProjectDetailData; quantity: numbe
         </>
       ) : (
         <>
-          <MoneyDisplay value={reservationAmount(data.listing.unitPrice, quantity)} kind="capital" label={C.amount} size="lg" data-testid="participar-monto" />
+          <MoneyDisplay value={amount} kind="capital" label={C.amount} size="lg" data-testid="participar-monto" />
           <p className="text-sm" data-testid="participar-sin-estimacion">{C.noEstimate}</p>
         </>
       )}
@@ -57,7 +59,7 @@ function Estimate({ data, quantity }: { data: ProjectDetailData; quantity: numbe
 }
 
 function ReservationForm({ data }: { data: ProjectDetailData }) {
-  const max = maxHeldFor(data);
+  const max = data.simulation.heldRange.max;
   const [quantity, setQuantity] = useState(1);
   const [accepted, setAccepted] = useState(false);
   const [reserved, setReserved] = useState(false);
@@ -80,7 +82,7 @@ function ReservationForm({ data }: { data: ProjectDetailData }) {
       </Surface>
       <Surface variant="dark" padding="lg">
         <h2 className="font-heading text-xl font-medium">{C.risksTitle}</h2>
-        <BulletList items={data.example.risks} marker="dash" />
+        <BulletList items={data.risks.map((kind) => PROJECT_DETAIL_COPY.risks.kinds[kind])} marker="dash" />
         <LegalNotice notice="riskNotice" className="text-foreground" />
         <div className="flex items-start gap-3">
           <input
@@ -122,7 +124,7 @@ export function ProjectParticipate({ slug }: { slug: string }) {
   if (data === null) return <ProjectDetailMissing />;
   const { listing } = data;
   const open = listing.phase === "open";
-  const soldOut = open && maxHeldFor(data) < 1;
+  const soldOut = open && data.simulation.maxHeld < 1;
   return (
     <div data-testid="pagina-p5" data-route-id="p5" className="flex flex-col">
       <PageHeader

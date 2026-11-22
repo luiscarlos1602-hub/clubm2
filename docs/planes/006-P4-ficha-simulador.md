@@ -1,989 +1,778 @@
-> **Borrador interrumpido** (22-nov): la planificación se detuvo por ADR-012 (maqueta visual primero). Se retoma al interconectar P4.
+> **Plan final (22-nov, interconexión de P4): sustituye al borrador interrumpido.** El borrador se escribió antes de la maqueta (ADR-012) y de los ajustes de ADR-013. Este plan parte del código real (`src/modules/finance/ui/**`, consumido por `investors/ui` y `app/admin`). Del borrador se conservan los criterios CA1–CA9, D3 (not-found en el cliente), la regla "infraestructura no importa otros módulos", la guardia de dinero en la UI y los nombres de prueba con lenguaje de negocio. Lo demás (los ids de presets, `SheetMode`, el modo ilustrativo, el caso de referencia, `RangeInput`, las ~20 pantallas nuevas) queda descartado porque la maqueta ya resolvió esas pantallas.
 
-# Plan 006 · P4 · Ficha de proyecto + simulador 25/75
+> **Decisiones del usuario al aprobar (22-nov) — mandan sobre el resto del plan:**
+> 1. **Se quitan del estrés los presets de sobrecosto de obra** (`works-20`, `works-50`). Presets que quedan: base, venta −20 %, retraso 3/6/9 meses, colocación 0 %. Ajusta tests, `data-testid` y E2E que los usen.
+> 2. **[SUPUESTO P4-4] NO se aplica**: el control de sobrecosto del simulador y el escenario conservador siguen aplicando el sobrecosto como hoy (a todo el presupuesto integral F); no cambian cifras visibles. Q5 queda abierta en docs/08.
+> 3. Plan aprobado con Q1 (2.500 · 1.500 · 1.000), Q3 (conservador venta −10 % y obra +20 %; optimista venta +5 %) y P5-1 como supuestos.
 
-Estado: borrador · Fecha: 2026-11-22 · Autor: arquitecto
-Fuentes: `docs/planes/brief-P4.md` · `docs/01 §3, §4, §6, §8` · `docs/02 §1–§6` · maestro §4–§7, §10, §15, §17 (solo lectura) · `docs/06` · `docs/08` (D1–D7, H1–H4, K1, L1, L5, N1–N7, O1, P3-Q1…Q5) · ADR-004, ADR-010, ADR-011 · `docs/planes/005-P3-marketplace.md` · `src/modules/{projects,participations,finance}/**` · `src/composition/**` · `src/shared/ui/{README.md,layout,brand,app-shell}` · `eslint.config.mjs` · `architecture.modules.mjs` · docs de Next 16 (`03-file-conventions/dynamic-routes.md` §With Cache Components, `03-file-conventions/not-found.md`, `04-functions/not-found.md`, `04-functions/generate-static-params.md`, `02-route-segment-config/dynamicParams.md`).
-Rama: `feat/participations-ficha-simulador` (la actual).
+
+# Plan 006 · P4 · Interconexión de la ficha, el simulador y la reserva
+
+Estado: borrador (pendiente de aprobación del usuario) · Fecha: 2026-11-22 · Autor: arquitecto
+Fuentes: `docs/planes/brief-P4.md` (con el Addendum) · ADR-004, ADR-010, ADR-011, ADR-012, ADR-013 · `docs/01 §3, §4, §6, §8` · `docs/02 §3–§6` · `docs/06` (reglas 4 y 4b) · `docs/08` (bloques D, O, P, Q y R) · maestro §6, §7, §10, §15 (solo lectura) · el código actual de `finance`, `projects`, `participations`, `investors/ui/components/{panel,admin}`, `composition` y `app/(inversionista)/proyectos/[slug]`.
+Rama sugerida: `feat/finance-interconexion-p4`.
 
 ## 1. Historia y criterios
 
 **Historia** (del brief). Como visitante o inversionista quiero abrir la ficha de un proyecto y ver qué es, cuánto cuesta, cómo avanza, qué riesgos tiene y simular cuánto podría tocarme en distintos escenarios, para decidir si participo, sabiendo que nada está garantizado.
 
-**Criterios** (del brief; lo marcado [PROPUESTO] los vuelve verificables con las semillas del 22-nov):
+**Qué cambia (Addendum).** La UI **no cambia de aspecto ni de `data-testid`**. Lo que cambia es el origen de los datos y dónde vive la lógica:
+- La lógica de negocio sale de `finance/ui/hooks/*` y pasa a `finance/domain`: simulador, presets, escenarios, estimación de la reserva, proyección por tenencia y desglose del presupuesto.
+- Las etapas del proceso pasan a `projects/domain`.
+- Los literales de `examples.ts` (investor) pasan a semillas tipadas en el snapshot `club-demo:v2`, que se leen con puertos y casos de uso desde el container.
 
-- **CA1** · `/proyectos/<slug>` muestra la ficha de cualquier proyecto **publicable** con el mismo criterio que P3 (la ficha se resuelve con `listMarketplace`, D2). M2-007 y slugs inexistentes muestran `ProjectNotFound` de marca dentro del shell (D3). `EXAMPLE_PROJECT_SLUG = "m2-006-chacao"`; `rutas.spec.ts` actualizado. [PROPUESTO] Las 6 fichas abren: `m2-001-palos-grandes`, `m2-002-el-hatillo`, `m2-003-chacao`, `m2-004-el-vinedo`, `m2-005-el-paraiso`, `m2-006-chacao`. `m2-007-palos-grandes`, `m2-001` y `no-existe` → `ficha-no-encontrada`. Un slug con formato inválido (`M2_RARO`) → `notFound()` → `not-found.tsx` con el mismo componente.
-- **CA2** · `PageHeader` + `Section`s con tonos alternos (§3.9): resumen, inmueble, presupuesto desglosado, escenarios, simulador (o resultado realizado), cronograma + actualizaciones, riesgos y siguiente paso con el aviso de riesgo cercano. [PROPUESTO] En M2-006: "Participaciones disponibles: 37 de 100", "Colocadas: 63 de 100", precio USD 100, compra USD 50.000, presupuesto integral USD 10.000 = obra USD 5.000 (7 rubros) + honorarios USD 3.000 (3 líneas) + contingencia USD 2.000, costos de venta estimados USD 2.280, precio objetivo USD 76.000.
-- **CA3** · Simulador (D3, D4) con cinco controles y siete presets. Todo número sale de `modules/finance` (`simulateProjection` → `calculateDistribution` + `calculateHolderPayout`). Resultado en tres bloques rotulados (capital aportado · ganancia proyectada · cobro proyectado), con el descargo `LEGAL_COPY.simulatorDisclaimer` debajo. Sin excedente: "no hay reparto del fondo" y la política del capital "por definir" (O1/H2), sin bloque de cobro. [PROPUESTO] M2-006, valores iniciales (1 participación, colocación 64): capital USD 100 · ganancia USD 34,30 · cobro USD 134,30. Presets sobre M2-006: venta −20 % → sin reparto · obra +20 % → ganancia USD 31,80 · obra +50 % → USD 28,05 · retraso 6 → "Plazo proyectado: 9 meses" con la ganancia igual · colocación 0 % → colocación "1 de 100" y empresa por retenidas USD 3.395,70.
-- **CA4** · Ni el simulador ni la ficha muestran ruedas, "estancado" ni "días sin vender". El retraso solo se ve como plazo proyectado. [PROPUESTO] Ningún tipo ni clave del resultado tiene el patrón /wheel|rueda/ (test). En la página no aparece /rueda|estancad|días sin vender/i (E2E).
-- **CA5** · Con "Ejemplo de referencia" (maestro §6, D5) y 1 participación: colocación 100 → C1 (fondo 5.000, por participación 50, externos 5.000, empresa del fondo 0, empresa 75 % 15.000, cobro 150). Colocación 63 → C6 (externos 3.150, empresa del fondo 1.850). Venta −50 % con obra +50 % → sin reparto (pérdida, como C5). Invariante: externos + empresa total = excedente al centavo (propiedad con fast-check).
-- **CA6** · M2-001 y M2-003 (`mode "historic"`): sección "Resultado de la liquidación" con capital, ganancia realizada y cobro realizado por participación (`MoneyDisplay kind="capital"` / `"realized"`). Sin simulador ni escenarios (`ficha-simulador-inactivo`). [PROPUESTO] M2-003: capital USD 100 · ganancia realizada USD 34,50 · cobro USD 134,50. M2-001: USD 30,24 · USD 130,24. En las cinco vistas con cifras, el capital tiene un tamaño **≥** que cualquier proyección de la misma vista.
-- **CA7** · Semillas v2 (`club-demo:v2`, `DemoSnapshot.version = 2`): presupuesto por líneas en finance, y en projects hitos, actualizaciones fechadas y riesgos. Todo con fechas relativas al Clock, sin ruedas y sin `stalled`. `seed-consistency.test.ts` amplía sus comprobaciones a lo nuevo. Los escenarios **no** se siembran: los deriva el motor (D6).
-- **CA8** · Responsive 390/1440. Estados de carga, error y no encontrado. Controles con `<label>`, `aria-valuetext` y resultado en `aria-live="polite"`. Foco visible y los `data-testid` de §5.3. Copy en `finance/ui/copy.ts` y `simulator-copy.ts`, con `check-copy` verde. Sin cintillo, sin "reales", sin verbos de transacción.
-- **CA9** · E2E en 390 y 1440 (§5.2). `pnpm verify`, `pnpm build` y `src/architecture-rules.test.ts` en verde. [PROPUESTO] Además, `src/modules/finance/money-in-ui.test.ts` falla si `finance/ui/**` hace aritmética con `.cents` o importa valores de `@/shared/domain/money` (R1).
+**Criterios** (CA1–CA9 del brief, adaptados a ADR-012/013; las cifras marcadas [PROPUESTO] las deriva el motor con las semillas del 22-nov y la base de sobrecosto de P4-4):
+
+- **CA1 · Rutas.**
+  - `/proyectos/<slug>` muestra la ficha de los 6 proyectos publicables. La fuente de verdad es `listMarketplace`, no una lista de slugs en la UI.
+  - `m2-007-palos-grandes` y `no-existe` muestran `ficha-no-encontrada` dentro del shell.
+  - Un slug con formato inválido (`M2_RARO`) llama a `notFound()` en el servidor.
+  - `/proyectos/<slug>/participar` sigue la misma regla.
+  - Desaparecen `PUBLISHED_PROJECT_SLUGS` e `isPublishedProjectSlug`.
+- **CA2 · Secciones.** Las de la maqueta, sin cambios visuales: cabecera, galería, inmueble, presupuesto, escenarios, simulador o resultado realizado, proceso y actualizaciones, riesgos y CTA. Lo que cambia es el origen de los datos:
+  - descripción y puntos destacados → `PropertyProfile` (projects);
+  - rubros y bolsa → `ProjectBudget` (finance);
+  - tablero → `ProjectProcess` (projects);
+  - actualizaciones → `ProjectUpdate` (projects);
+  - riesgos → `ProjectRisks` (projects), con el texto en `copy.ts`.
+
+  [PROPUESTO] M2-006 muestra: compra USD 50.000 · reforma USD 10.000 = obra USD 5.000 (4 rubros) + bolsa USD 5.000 (2.500 · 1.500 · 1.000) · costos de venta USD 2.280 · total USD 62.280.
+- **CA3 · Simulador** (solo en fase `open`, ADR-013 §3).
+  - Controles: precio de venta, participaciones (1…`heldRange.max`), colocación, sobrecosto y retraso, más 8 presets con sus ids actuales.
+  - Todos los números salen de `simulateProjection` (finance/domain), que llama a `calculateDistribution` y a `calculateHolderPayout`.
+  - El resultado se muestra en tres bloques: capital, ganancia con su % (`calculateProfitRate` vía `profitRateLabel`) y cobro. Debajo va el descargo `simulatorDisclaimer`.
+  - [PROPUESTO] M2-006, valores iniciales (colocación 63, 1 participación):
+    - estado inicial → ganancia USD 34,30 · "34,3 % sobre el capital" · cobro USD 134,30;
+    - `sale-20` → `simulador-sin-reparto`;
+    - `works-20` → USD 31,80;
+    - `works-50` → USD 28,05;
+    - `delay-6` → "9 meses" con la ganancia igual;
+    - `placement-0` → `simulador-sin-colocacion`.
+- **CA4 · Sin ruedas.**
+  - Ningún tipo, clave ni dato de la ficha coincide con /wheel|rueda|stalled/.
+  - El texto de la página no coincide con /rueda|estancad|días sin vender/i.
+- **CA5 · Casos canónicos** (test de integración contra el motor, `simulate-projection.canonical.test.ts`):
+  - **C1** (colocación 100) y **C6** (63) dan exactamente las cifras de docs/02 §4.
+  - **C3** (colocación 0) da `no_placement`, con la empresa recibiendo 5.000 del fondo.
+  - **C5** (pérdida) da `no_distribution`.
+  - Invariante con fast-check: externos + empresa total = excedente, al centavo.
+- **CA6 · Finalizados** (M2-001, M2-003): sin simulador ni escenarios. Muestran capital, ganancia realizada y % desde `detail.realized` (`calculateHolderPayout(dist, 1)`). [PROPUESTO] M2-003: USD 100 · USD 34,50 · "34,5 % sobre el capital". M2-001: USD 30,24.
+  - En `on_sale`, `renovation`, `placement_complete` y `sold` no hay simulador, pero sí escenarios fijos (ADR-013 §3, como en la maqueta).
+- **CA7 · Datos.**
+  - Snapshot `club-demo:v2` (`version: 2`) con perfiles, proceso, actualizaciones y riesgos en projects, y presupuestos en finance.
+  - Fechas relativas al Clock, sin ruedas y sin `stalled`.
+  - `seed-consistency.test.ts` se amplía (§5.2). La v1 se **reinicia**, sin migración (§2 D6).
+- **CA8 · Calidad.** Responsive 390/1440. Estados de carga, error y no encontrado. `aria-live` en el resultado. `data-testid` sin cambios. Copy en `ui/copy*.ts` con `check-copy` en verde y sin cintillo.
+  - [PROPUESTO] Una guardia `src/modules/finance/money-in-ui.test.ts` falla si `finance/ui/{hooks,components/investor}/**` importa **valores** de `@/shared/domain/money` o hace aritmética con `.cents`.
+- **CA9 · Pruebas.**
+  - E2E en 390 y 1440 (§5.3). `pnpm verify`, `pnpm build` y `src/architecture-rules.test.ts` en verde.
+  - Los E2E existentes (`ficha`, `rutas`, `visitas-terminos`, `admin-detalle`, `navegacion`, `marketplace`, `capturas-*`) siguen pasando. `reiniciar-datos.spec.ts` se actualiza a v2.
+  - [PROPUESTO] C1/C6 se comprueban en Vitest. En el navegador se comprueban las cifras de M2-006, porque la maqueta no ofrece una base "de referencia".
 
 ## 2. Módulos afectados y decisiones
 
 | Módulo / carpeta | Por qué | Nuevo |
 |---|---|---|
-| `modules/projects` (domain, application, infrastructure, index) | Hitos, actualizaciones, riesgos y validación de slug. Puerto `ProjectDetailsRepository` | se amplía |
-| `modules/participations` (index, CLAUDE.md, `ui/copy.ts`) | Exporta los **tipos** de sus puertos y `PHASE_PRESENTATION`. Cambia el texto del siguiente paso de P3 | 3 líneas |
-| `modules/finance` (domain, application, infrastructure, **ui**, index) | Presupuesto, simulador, escenarios, ficha. **Primera `ui/` del módulo** (D1) | se amplía (crea `ui/`) |
-| `composition/` | Snapshot v2, cableado de `getProjectSheet` y de los repos nuevos | se amplía |
-| `shared/config/demo.ts` | `storageKey: "club-demo:v2"` | 1 línea |
-| `shared/ui/app-shell/route-map.ts` | Slug de ejemplo real y `participateHref(slug)` | se amplía |
-| `shared/ui/primitives/range.tsx` · `shared/lib/format-percentage.ts` | Control deslizante nativo accesible y formato de puntos básicos (D8) | sí |
-| `app/(inversionista)/proyectos/[slug]/` | `page.tsx` monta la ficha; `not-found.tsx` nuevo | se cambia / sí |
-| `tests/e2e/` | `ficha.spec.ts` nuevo; `rutas.spec.ts` y `reiniciar-datos.spec.ts` | sí / se cambian |
+| `projects` (domain, application, infrastructure, index, CLAUDE.md) | Perfil del inmueble, proceso de 6 etapas, actualizaciones, riesgos y `isProjectSlug`. Puerto `ProjectContentRepository` y caso de uso `getProjectProcess` | se amplía |
+| `participations` (index, CLAUDE.md) | Exporta los **tipos** de sus puertos | 1 línea + doc |
+| `finance` (domain, application, infrastructure, ui, index, ui.ts, backoffice-ui.ts, CLAUDE.md) | Simulador, presets, escenarios, reserva, tenencia, presupuesto y ficha en domain. Casos de uso `getProjectDetail` y `getHoldingProjections`. La UI consume el container | se amplía; se borran `examples.ts` (investor), `types.ts`, `simulate.ts`, `scenarios.ts`, `project-figures.ts` y `process-stages.ts` |
+| `investors/ui/components/{panel,admin}` | `HoldingProcess` pasa a `useProcessStages`; se ajustan dos tests de paridad | se cambia |
+| `composition` | Snapshot v2, cableado de los repos y casos de uso nuevos, limpieza de la clave v1 | se amplía |
+| `shared/config/demo.ts` | `storageKey: "club-demo:v2"` y `legacyStorageKeys` | 2 líneas |
+| `app/(inversionista)/proyectos/[slug]/{page,participar/page}.tsx` | Sin `generateStaticParams`. `notFound()` solo con formato inválido | se cambia |
+| `tests/e2e/` | `ficha.spec.ts` se amplía; `reiniciar-datos.spec.ts` pasa a v2 | se cambia |
 
-No se toca: `eslint.config.mjs`, `architecture.modules.mjs`, `docs/referencia/**`, `backoffice.ts`, el motor (`distribution.ts`, `holder-payout.ts`, `settlement.ts`, `validate-distribution-input.ts`) ni sus tests C1–C6/I1–I9.
+No se tocan: `eslint.config.mjs`, `architecture.modules.mjs`, `docs/referencia/**`, el motor (`distribution.ts`, `holder-payout.ts`, `settlement.ts`, `validate-distribution-input.ts`, `profit-rate.ts`) ni sus tests, `shared/ui/**` (`ProcessBoard` y `PROCESS_STAGES` siguen igual), `finance/ui/components/admin/**` (B5) ni `projects/ui/components/admin/**` (B3).
 
-**D1 · La ficha vive en `finance/ui` (docs/01 §4 regla 2b). Sin módulo nuevo y sin ADR.**
-- La ficha combina `projects` (proyecto, inmueble, hitos, actualizaciones, riesgos), `participations` (fase, disponibles, clase) y `finance` (presupuesto, motor, liquidación). `finance` es el primer módulo del orden que puede importar a los tres. Además el dato propio de la ficha, el simulador, es dinero, y dinero es de finance (regla 5).
-- Imports, todos permitidos por el lint tal como está:
-  - `finance/domain → @/modules/projects` (tipos) y `@/modules/participations` (**solo `import type`**).
-  - `finance/application → module-api` (tipos de puertos).
-  - `finance/ui → @/modules/participations` (valor `PHASE_PRESENTATION`), `@/modules/projects`, `@/composition/providers`, `shared-ui`.
-  - `composition → finance/application|infrastructure` por ruta interna.
-  - `app → @/modules/finance`.
-- **Descartadas.**
-  - (a) Un módulo `catalog` o `project-sheet` a la derecha de finance: pide ADR, una línea en `architecture.modules.mjs` y cambiar el orden de §4, y no trae ninguna regla propia.
-  - (b) `participations/ui`: no puede importar finance (sería un ciclo).
-  - (c) Unir los datos en `composition` o en un hook: la regla de negocio (modo de la ficha, límites del simulador, escenarios) quedaría fuera de un `domain` testeable.
-- **Trampa de ciclo (R4 de P3), ahora también en finance.** `finance/index.ts` pasa a exportar UI, que llega a `composition/providers`. Esto lleva a cuatro reglas:
-  1. `finance/domain` y `finance/application` importan de participations **solo con `import type`**.
-  2. `HOLDING_LIMITS` (un valor) llega por inyección desde `composition/modules/finance.ts`, que lo importa por la ruta interna `@/modules/participations/domain/participation`.
-  3. `composition/**` y cualquier `infrastructure/` importan de finance solo por ruta interna. El paquete DATA cambia `seed-consistency.test.ts` para que importe el motor de `@/modules/finance/domain/*`.
-  4. Las cuatro quedan en `finance/CLAUDE.md`.
+**D1 · Dueño de cada dato** (el orden `projects → participations → finance → … → investors` se respeta, y la infraestructura no importa otros módulos):
 
-**D2 · La fuente de verdad de "publicable" es `listMarketplace`.** `getProjectSheet(slug)` busca primero la tarjeta (`ProjectListing`) por `slug`. Si no está, la respuesta es `not_found`. Así P3 y P4 nunca discrepan, también cuando B2/B3 publiquen proyectos en `localStorage`. Si la tarjeta existe pero faltan inmueble, economía, presupuesto o, en un liquidado, la liquidación, son datos incoherentes: la promesa se rechaza y la ficha muestra `ErrorState`.
+| Dato (hoy en `examples.ts`) | Módulo dueño | Por qué |
+|---|---|---|
+| Descripción y puntos destacados del inmueble | projects (`PropertyProfile`) | Describe el inmueble (docs/02 §3) |
+| Proceso de 6 etapas (días tras la compra) | projects (`ProjectProcess`) | Hitos y etapas del proyecto (docs/01 §3: "etapas, hitos") |
+| Actualizaciones fechadas | projects (`ProjectUpdate`) | docs/02 §3 |
+| Riesgos del proyecto | projects (`ProjectRisks`, solo el tipo; el texto va en copy) | Son del proyecto y no hablan de dinero. Sin niveles ni puntuaciones |
+| Rubros de obra y bolsa (honorarios, contingencia, reserva) | finance (`ProjectBudget`) | docs/02 §3 y §6 (`BudgetLine`) |
+| Escenarios | finance (**derivados** con el motor, no sembrados) | Así un escenario nunca descuadra con el motor |
+| Presets y rangos del simulador | finance/domain (constantes) | Regla de negocio (maestro §7) |
 
-**D3 · `not-found` en el cliente, con `notFound()` solo para formatos inválidos.** Con `cacheComponents` no existe `dynamicParams`. `generateStaticParams` exigiría al menos un slug, y aun así no conocería los proyectos que se crean en `localStorage`. Los datos viven en el cliente, así que el servidor no puede decidir si un slug existe sin sembrar en el servidor, y eso daría un 404 falso a los proyectos que cree B2 en el futuro. Por eso:
-- `page.tsx` pasa la promesa `params` a `ProjectSheet` (Server Component). Este la espera **dentro de `<Suspense>`**: el patrón "Without generateStaticParams" de `dynamic-routes.md`, sin `generateStaticParams`.
-- Si `isProjectSlug(slug)` es falso, el servidor llama a `notFound()` y se pinta `not-found.tsx` con `ProjectNotFound`.
-- Si no, `ProjectSheetView` (cliente) consulta `getProjectSheet`. Ante `not_found` pinta el mismo `ProjectNotFound`, que es un Server Component sin hooks y se puede usar en los dos sitios.
-- Los dos casos responden **200** (R5) y el shell sigue intacto.
+**D2 · La ficha sigue en `finance`** (docs/01 §4 regla 2b): combina projects, participations y finance. Desde ADR-012, `finance/index.ts` **no** exporta UI (la UI va por `ui.ts`), así que la trampa de ciclo del borrador ya no aplica a finance. Sí sigue aplicando a participations (R4 de P3):
+1. `finance/domain` y `finance/application` importan de `@/modules/participations` **solo con `import type`**.
+2. `HOLDING_LIMITS.max` llega por inyección (`holdingMax`) desde `composition/modules/finance.ts`, que lo importa por la ruta interna `@/modules/participations/domain/participation`.
+3. `finance/ui` puede seguir importando valores de `@/modules/participations` (está a la derecha del orden y es ui → ui pública).
 
-**D4 · Modos de la ficha** (`SheetMode`, se deriva de la `ListingPhase` de P3):
+**D3 · El tablero de proceso se vuelve asíncrono.** Hoy `processStagesFor(code, acquiredOn)` es síncrono y lee literales. Con datos en el store pasa a ser:
+- `projects/application/get-project-process.ts`, expuesto como `container.projects.getProjectProcess(code)`;
+- el hook de UI `useProcessStages(code)` en `finance/ui`, exportado por `ui.ts` y `backoffice-ui.ts`.
 
-| Fase P3 | Modo | Simulador | Escenarios | Resultado realizado |
+`ProjectProcessBoard` y `HoldingProcess` (investors) usan ese hook. La firma de `ProjectProcessBoardProps` **no cambia**, porque `projects/ui/admin` la inyecta como `ProcessBoardView`. `acquiredOn` sigue en las props, pero deja de leerse: la fecha sale del proyecto. Se anota en `docs/mejoras.md` quitar la prop en B3. Las etapas del dominio usan ids en inglés (`works_start` …). La tabla que las traduce a los ids visuales de `shared/ui/brand` (`inicio-obra` …) vive en `finance/ui`.
+
+**D4 · `not-found` en el cliente** (del borrador). Con `cacheComponents`, los datos viven en `localStorage` y el servidor no sabe qué slugs existen. Por eso:
+- se quita `generateStaticParams` de las dos páginas;
+- `page.tsx` espera `params` dentro de `<Suspense>`;
+- si `isProjectSlug(slug)` (projects) es falso, el servidor llama a `notFound()`;
+- si no, monta la pantalla; cuando `getProjectDetail` devuelve `null`, se pinta el `ProjectDetailMissing` actual (`ficha-no-encontrada`).
+
+Antes, M2-007 daba el 404 global; ahora da `ficha-no-encontrada` (CA1), con respuesta 200. Ese 404 real pendiente queda en `docs/mejoras.md`. `pnpm build` es criterio.
+
+**D5 · Modos** (iguales a la maqueta; los define `buildProjectDetail`):
+
+| `listing.phase` | `mode` | Simulador | Escenarios | Resultado realizado |
 |---|---|---|---|---|
-| `open` | `open` | activo; participaciones 1…min(20, disponibles) | sí | — |
-| `placement_complete`, `renovation`, `on_sale` | `illustrative` [SUPUESTO P4-3] | activo con aviso "ilustrativo"; 1…min(20, total) | sí | — |
-| `sold` | `settling` [SUPUESTO P4-9] | no ("liquidación en curso") | no | — |
-| `finished` | `historic` | no (`ficha-simulador-inactivo`) | no | sí (liquidación sembrada) |
+| `open` | `open` | sí | sí | — |
+| `placement_complete`, `renovation`, `on_sale`, `sold` | `fixed_projection` | no | sí | — |
+| `finished` (con liquidación) | `realized` | no | no | sí |
 
-**D5 · Dos bases de simulación: "Este proyecto" y "Ejemplo de referencia".** La de referencia es la del maestro §6, que es la de C1 (compra 10.000, presupuesto 10.000 con obra 5.000, venta 40.000, costos de venta 0, 100 × USD 100). Permite comprobar C1 y C6 en pantalla (CA5, CA9), y sirve como explicación. Es una constante del dominio con test. [SUPUESTO P4-10]
+Un proyecto `finished` sin liquidación es un dato incoherente: `buildProjectDetail` devuelve `MISSING_SETTLEMENT` y la promesa se rechaza (`ficha-error`).
 
-**D6 · Los escenarios se derivan, no se siembran.** `buildScenarios` aplica deltas fijos sobre la base del proyecto con el mismo `simulateProjection`. Así un escenario nunca puede descuadrar con el motor. [SUPUESTO P4-1] Deltas propuestos, pendientes de confirmación (P4-Q1):
+**D6 · v1 → v2 por reinicio, sin migración.** La v1 no guarda nada que haya escrito el usuario (la reserva de la maqueta no persiste). DATA lo confirma con `grep -rn "\.update(\|\.write(" src/composition src/modules/*/infrastructure`; si encuentra un escritor, devuelve `BLOQUEADO` (sería necesaria una migración). Con la clave nueva, el store siembra de cero. El container borra en la creación, con un `try/catch` silencioso, las claves de `demoConfig.legacyStorageKeys` (`["club-demo:v1"]`). Así se cierra la deuda R6 del borrador.
 
-| Escenario | Precio de venta | Sobrecosto de obra |
-|---|---:|---:|
-| Conservador | −10 % (−1000 pb) | +20 % (2000 pb) |
-| Base | 0 | 0 |
-| Optimista | +5 % (+500 pb) | 0 |
-
-**D7 · Reglas del simulador** (todas marcadas; ninguna está en el maestro con más detalle):
-- **Precio de venta**: ajuste en pb sobre el precio objetivo, entre −5000 y +3000 (paso 100). `P' = applyPercentageFloor(P, 10000 + ajuste)`.
-- **Sobrecosto de obra** [SUPUESTO P4-4]: entre 0 y 5000 pb (paso 500), aplicado al subtotal de obra (`works`) del presupuesto. El sobrecosto se **suma a F** en la entrada del motor (`F' = F + sobrecosto`). No lo absorbe la contingencia, que es la lectura conservadora. No cambia el número ni el precio de las participaciones.
-- **Retraso** [SUPUESTO P4-2]: entre 0 y 12 meses (paso 1). Solo alarga el plazo proyectado (`TARGET_TERM_MONTHS + retraso`). No resta dinero, porque el maestro no fija el costo del mantenimiento (P4-Q2).
-- **Costos de venta O**: fijos al valor estimado aunque cambie el precio [SUPUESTO P4-6b] (P4-Q6).
-- **Participaciones que simulas** (D4): de 1 a `heldLimits.max`.
-- **Colocación total**: incluye las tuyas, en el rango [participaciones simuladas, total]. Valor inicial: `open` → colocadas + 1 (64 en M2-006); `illustrative` → máx(simuladas, colocadas); referencia → 100 (C1).
-- **Preset "Colocación 0 %"** [SUPUESTO P4-6]: colocación = tus participaciones, es decir, sin otros participantes. Con un 0 literal no podrías participar. El motor ya cubre C3 en sus tests.
-- **Un preset a la vez.** Aplicar un preset devuelve las tres variables de estrés y la colocación a su valor inicial, y luego fija la variable del preset. No cambia ni la base ni las participaciones simuladas.
-- Las tenencias previas del inversionista demo no descuentan del máximo de D4 (lo hace P5) [SUPUESTO P4-7].
-
-**D8 · Control deslizante nativo como primitiva compartida.** No hay `slider` en `shared/ui/primitives`. Se crea `range.tsx` (`RangeInput`) sobre `<input type="range">` nativo, que es accesible por teclado, anuncia el valor y Playwright lo maneja con `fill()`. Se descarta el Slider de Radix porque fijar 63 por teclado en un E2E es frágil. Se añade al README (es contrato de §3.7). También `formatBps` en `shared/lib`, para que la UI no divida puntos básicos.
-
-**D9 · Hooks y dominio.** Siguiendo el precedente de P3 (`MarketplaceBrowser` usa `filterListings`), **solo los hooks** (`ui/hooks/*`) importan funciones puras de `finance/domain`. Los componentes reciben datos y callbacks. Nota para el orquestador: aclarar en `docs/01 §4` la celda "ui → domain propio: tipos; funciones puras solo desde hooks" (es una aclaración y no necesita ADR).
+**D7 · Solo los hooks llaman al dominio** (precedente de P3 y de la maqueta). Los componentes reciben datos ya calculados. `useSimulator` importa `simulateProjection` y `applyStressPreset`, y nada más. Para `docs/01 §4` (aclaración del orquestador, sin ADR): la celda ui → domain propio pasa a "tipos; funciones puras solo desde `ui/hooks`".
 
 ## 3. Contratos (TypeScript)
 
-Son el acuerdo entre D, DATA, UI y E2E. Si cambia una firma, se avisa al orquestador antes de entregar.
+Son el acuerdo entre D, DATA, UI y QA. Si cambia una firma, se avisa al orquestador antes de entregar. `Result`, `DomainError`, `Money`, `IsoDate` e `Id` salen de `shared/domain`.
 
-### 3.1 `projects` (paquete D)
+### 3.1 `projects/domain` (paquete D)
 
 ```ts
-// src/modules/projects/domain/project-slug.ts
-/** Misma forma que valida la semilla: kebab-case en minúsculas. */
-export const PROJECT_SLUG_PATTERN: RegExp; // /^[a-z0-9]+(-[a-z0-9]+)*$/
+// projects/domain/project-slug.ts
+export const PROJECT_SLUG_PATTERN: RegExp;                       // /^[a-z0-9]+(-[a-z0-9]+)*$/ (el mismo de la semilla)
 export function isProjectSlug(raw: unknown): raw is string;
 
-// src/modules/projects/domain/milestone.ts
-import type { IsoDate } from "@/shared/domain/calendar-date";
-import type { Id } from "@/shared/domain/id";
-import type { ProjectId } from "./project";
-export type MilestoneId = Id<"Milestone">;
-export const MILESTONE_KINDS = [
-  "purchase", "placement_open", "placement_close", "works_start",
-  "works_end", "listing", "sale_signed", "settlement",
-] as const;
-export type MilestoneKind = (typeof MILESTONE_KINDS)[number];
-export type Milestone = {
-  readonly id: MilestoneId;
-  readonly projectId: ProjectId;
-  readonly kind: MilestoneKind;
-  /** Fecha de referencia del cronograma (proyección mientras no se cumpla). */
-  readonly plannedOn: IsoDate;
-  /** null = no cumplido. */
-  readonly completedOn: IsoDate | null;
+// projects/domain/property-profile.ts
+/** Texto de ejemplo del inmueble (maqueta → semilla). Sin dirección exacta (D6). */
+export type PropertyProfile = {
+  readonly propertyId: PropertyId;
+  readonly description: string;
+  readonly highlights: readonly string[];                        // 1..5
 };
-export type MilestoneState = "done" | "planned" | "pending";
-/** done si completedOn ≠ null · planned si plannedOn ≥ today · pending si ya pasó sin cumplirse (sin fecha visible, D4 de §6). */
-export function milestoneState(m: Milestone, today: IsoDate): MilestoneState;
-/** Orden de MILESTONE_KINDS; no muta. */
-export function sortMilestones(ms: readonly Milestone[]): readonly Milestone[];
 
-// src/modules/projects/domain/project-update.ts
+// projects/domain/process.ts  (ADR-013 §5)
+export const PROCESS_STAGE_KINDS = ["works_start", "works_50", "works_80", "sale_start", "on_sale", "sold"] as const;
+export type ProcessStageKind = (typeof PROCESS_STAGE_KINDS)[number];
+export const PROCESS_STEP_STATUSES = ["done", "current", "upcoming"] as const;
+export type ProcessStepStatus = (typeof PROCESS_STEP_STATUSES)[number];
+/** offsetDays: días tras la compra. started: la etapa en curso ya empezó (fecha cierta); si no, fecha estimada. */
+export type ProcessStep = { readonly status: ProcessStepStatus; readonly offsetDays: number; readonly started: boolean };
+export type ProjectProcess = { readonly projectId: ProjectId; readonly steps: Readonly<Record<ProcessStageKind, ProcessStep>> };
+export type ProcessStageTimeline = {
+  readonly stage: ProcessStageKind;
+  readonly status: ProcessStepStatus;
+  readonly date: IsoDate;                                        // addDays(acquiredOn, offsetDays)
+  /** true = proyección: upcoming, o current sin empezar. */
+  readonly estimated: boolean;
+};
+export type ProcessErrorCode =
+  | "NEGATIVE_OFFSET" | "DECREASING_OFFSETS"                     // offsets ≥ 0 y no decrecientes en el orden de PROCESS_STAGE_KINDS
+  | "STATUS_ORDER"                                               // done* current? upcoming* (como máximo un current)
+  | "DONE_NOT_STARTED" | "UPCOMING_STARTED";
+export function checkProjectProcess(p: ProjectProcess): Result<ProjectProcess, DomainError<ProcessErrorCode>>;
+/** En el orden de PROCESS_STAGE_KINDS. Pura; no valida (eso lo hace checkProjectProcess). */
+export function toProcessTimeline(acquiredOn: IsoDate, p: ProjectProcess): readonly ProcessStageTimeline[];
+
+// projects/domain/project-update.ts
 export type ProjectUpdateId = Id<"ProjectUpdate">;
-export const UPDATE_SOURCES = ["purchase_record", "placement_report", "works_report", "commercial_report", "settlement_report"] as const;
-export type UpdateSource = (typeof UPDATE_SOURCES)[number];
-export const RESPONSIBLE_ROLES = ["acquisitions", "works", "commercial", "finance"] as const;
-export type ResponsibleRole = (typeof RESPONSIBLE_ROLES)[number];
-export const EVIDENCE_KINDS = ["photos", "document"] as const;
-export type EvidenceKind = (typeof EVIDENCE_KINDS)[number];
-/** Actualización fechada (maestro §10: fecha, fuente, responsable y evidencia). Título y cuerpo son datos de ejemplo. */
 export type ProjectUpdate = {
   readonly id: ProjectUpdateId;
   readonly projectId: ProjectId;
   readonly publishedOn: IsoDate;
-  readonly source: UpdateSource;
-  readonly responsible: ResponsibleRole;
   readonly title: string;
   readonly body: string;
-  readonly evidence: EvidenceKind | null;
 };
-/** publishedOn descendente; empate → id ascendente. No muta. */
+/** publishedOn descendente; en empate, id ascendente. No muta. */
 export function sortUpdatesNewestFirst(us: readonly ProjectUpdate[]): readonly ProjectUpdate[];
 
-// src/modules/projects/domain/project-risk.ts
-/** Riesgos del maestro §15 que ve el inversionista (sin niveles ni puntuaciones). */
-export const RISK_KINDS = ["sale_price", "works_overrun", "slow_sale", "liquidity", "conflict_of_interest", "legal_structure"] as const;
-export type RiskKind = (typeof RISK_KINDS)[number];
-export type ProjectRisk = { readonly projectId: ProjectId; readonly kind: RiskKind };
-
-// src/modules/projects/application/ports.ts: se AÑADE
-export interface ProjectDetailsRepository {
-  /** Sin orden garantizado (ordena el dominio). */
-  milestonesOf(projectId: ProjectId): Promise<readonly Milestone[]>;
-  updatesOf(projectId: ProjectId): Promise<readonly ProjectUpdate[]>;
-  risksOf(projectId: ProjectId): Promise<readonly ProjectRisk[]>;
-}
-
-// src/modules/projects/index.ts: se AÑADE (sin quitar nada)
-export type { MilestoneId, MilestoneKind, Milestone, MilestoneState } from "./domain/milestone";
-export { MILESTONE_KINDS, milestoneState, sortMilestones } from "./domain/milestone";
-export type { ProjectUpdateId, UpdateSource, ResponsibleRole, EvidenceKind, ProjectUpdate } from "./domain/project-update";
-export { UPDATE_SOURCES, RESPONSIBLE_ROLES, EVIDENCE_KINDS, sortUpdatesNewestFirst } from "./domain/project-update";
-export type { RiskKind, ProjectRisk } from "./domain/project-risk";
-export { RISK_KINDS } from "./domain/project-risk";
-export { PROJECT_SLUG_PATTERN, isProjectSlug } from "./domain/project-slug";
-export type { ProjectRepository, PropertyRepository, ProjectDetailsRepository } from "./application/ports";
+// projects/domain/project-risk.ts  (maestro §15; el texto vive en finance/ui/copy)
+export const PROJECT_RISK_KINDS = [
+  "sale_below_target", "works_overrun", "slow_sale",           // comunes a todos (COMMON_RISKS de la maqueta)
+  "narrow_buyer_pool", "local_market", "hidden_works_issues", "incomplete_placement",
+] as const;
+export type ProjectRiskKind = (typeof PROJECT_RISK_KINDS)[number];
+export type ProjectRisks = { readonly projectId: ProjectId; readonly kinds: readonly ProjectRiskKind[] };
+/** Sin duplicados, en el orden de PROJECT_RISK_KINDS. */
+export function normalizeRiskKinds(kinds: readonly ProjectRiskKind[]): readonly ProjectRiskKind[];
 ```
 
-### 3.2 `finance/domain` (paquete D)
+### 3.2 `projects/application` e `index.ts` (paquete D)
 
 ```ts
-// src/modules/finance/domain/budget.ts
-import type { ProjectId } from "@/modules/projects";
-import type { Money } from "@/shared/domain/money";
-export const BUDGET_CATEGORIES = ["works", "management_fee", "contingency", "reserve"] as const;   // docs/02 §6
+// projects/application/ports.ts: se AÑADE
+export interface ProjectContentRepository {
+  profileOf(propertyId: PropertyId): Promise<PropertyProfile | null>;
+  processOf(projectId: ProjectId): Promise<ProjectProcess | null>;
+  /** Sin orden garantizado: ordena el dominio. */
+  updatesOf(projectId: ProjectId): Promise<readonly ProjectUpdate[]>;
+  risksOf(projectId: ProjectId): Promise<ProjectRisks | null>;
+}
+
+// projects/application/get-project-process.ts
+export type GetProjectProcess = (code: string) => Promise<readonly ProcessStageTimeline[] | null>;
+export type GetProjectProcessDeps = {
+  readonly projects: Pick<ProjectRepository, "list">;
+  readonly content: Pick<ProjectContentRepository, "processOf">;
+};
+/** async. null si no hay proyecto con ese código, si acquiredOn es null o si no hay proceso. Si el proceso no pasa checkProjectProcess → rechaza. */
+export function createGetProjectProcess(deps: GetProjectProcessDeps): GetProjectProcess;
+
+// projects/index.ts: se AÑADE (sin quitar nada)
+export { PROJECT_SLUG_PATTERN, isProjectSlug } from "./domain/project-slug";
+export type { PropertyProfile } from "./domain/property-profile";
+export type { ProcessStageKind, ProcessStepStatus, ProcessStep, ProjectProcess, ProcessStageTimeline, ProcessErrorCode } from "./domain/process";
+export { PROCESS_STAGE_KINDS, PROCESS_STEP_STATUSES, checkProjectProcess, toProcessTimeline } from "./domain/process";
+export type { ProjectUpdateId, ProjectUpdate } from "./domain/project-update";
+export { sortUpdatesNewestFirst } from "./domain/project-update";
+export type { ProjectRiskKind, ProjectRisks } from "./domain/project-risk";
+export { PROJECT_RISK_KINDS, normalizeRiskKinds } from "./domain/project-risk";
+export type { ProjectRepository, PropertyRepository, ProjectContentRepository } from "./application/ports";
+export type { GetProjectProcess } from "./application/get-project-process";
+```
+
+### 3.3 `finance/domain` (paquete D)
+
+```ts
+// finance/domain/budget.ts  (docs/02 §6)
+export const BUDGET_CATEGORIES = ["works", "management_fee", "contingency", "reserve"] as const;
 export type BudgetCategory = (typeof BUDGET_CATEGORIES)[number];
 export const BUDGET_ITEMS = [
-  "demolition", "masonry", "electrical", "plumbing", "flooring", "carpentry_kitchen", "paint_finishes",   // works
-  "project_management", "works_supervision", "administration_reporting",                                  // management_fee (D7)
-  "contingency",                                                                                           // contingency
-  "reserve",                                                                                               // reserve
+  "kitchen", "bathrooms", "floors_paint", "electrical_plumbing", "garden_exterior", "carpentry",   // works
+  "management_fee", "contingency", "reserve",                                                    // bolsa (maestro §6)
 ] as const;
 export type BudgetItem = (typeof BUDGET_ITEMS)[number];
-/** Tabla congelada: la categoría nunca se guarda, se deriva. */
-export const BUDGET_ITEM_CATEGORY: Readonly<Record<BudgetItem, BudgetCategory>>;
+export const BUDGET_ITEM_CATEGORY: Readonly<Record<BudgetItem, BudgetCategory>>;               // la categoría se deriva, no se guarda
 export type BudgetLine = { readonly item: BudgetItem; readonly amount: Money };
-/** Presupuesto integral de recuperación (F) por líneas. Lo presupuestado; lo devengado/gastado/remanente es de B3/B5. */
+/** Presupuesto integral F por líneas (lo presupuestado; lo devengado/gastado/remanente es de B3/B5). El orden de las líneas es el de presentación. */
 export type ProjectBudget = { readonly projectId: ProjectId; readonly lines: readonly BudgetLine[] };
-export type BudgetGroup = { readonly category: BudgetCategory; readonly total: Money; readonly lines: readonly BudgetLine[] };
-export type BudgetErrorCode = "NEGATIVE_AMOUNT" | "DUPLICATE_ITEM" | "NO_WORKS_LINES" | "BUDGET_TOTAL_MISMATCH";
-/** Σ líneas = recoveryBudget; sin ítems repetidos; amount ≥ 0; al menos una línea works. Nunca lanza. */
-export function checkProjectBudget(budget: ProjectBudget, recoveryBudget: Money): Result<ProjectBudget, DomainError<BudgetErrorCode>>;
-/** Grupos en el orden de BUDGET_CATEGORIES, líneas en el orden de BUDGET_ITEMS; omite grupos vacíos o de total 0. */
-export function groupBudget(budget: ProjectBudget): readonly BudgetGroup[];
-/** Total del grupo works (base del sobrecosto). 0 si no hay. */
-export function worksTotal(budget: ProjectBudget): Money;
+export type BudgetErrorCode = "PROJECT_MISMATCH" | "NEGATIVE_AMOUNT" | "DUPLICATE_ITEM" | "NO_WORKS_LINES" | "BUDGET_TOTAL_MISMATCH";
+/** Σ líneas = economics.recoveryBudget; mismo projectId; sin ítems repetidos; amount ≥ 0; al menos una línea works. Nunca lanza. */
+export function checkProjectBudget(b: ProjectBudget, economics: ProjectEconomics): Result<ProjectBudget, DomainError<BudgetErrorCode>>;
+/** Σ de las líneas works (base del sobrecosto, P4-4). */
+export function worksSubtotal(b: ProjectBudget): Money;
+export type BudgetBreakdown = {
+  readonly acquisition: Money;                      // C (capital propio de la empresa)
+  readonly works: readonly BudgetLine[];            // categoría works, en el orden de la semilla
+  readonly fees: readonly BudgetLine[];             // management_fee · contingency · reserve, en el orden de la semilla
+  readonly recovery: Money;                         // F
+  readonly saleCosts: Money;                        // O estimado
+  readonly total: Money;                            // C + F + O (sale hoy de un hook: se mueve aquí)
+};
+export function buildBudgetBreakdown(economics: ProjectEconomics, b: ProjectBudget): BudgetBreakdown;
 
-// src/modules/finance/domain/reference-case.ts
-/** Maestro §6 / C1: compra 10.000 · F 10.000 (obra 5.000) · venta 40.000 · O 0 · 100 × USD 100. Test: con 100 colocadas da C1 exacto. */
-export const REFERENCE_SIMULATION_BASE: SimulationBase;
-
-// src/modules/finance/domain/simulator.ts
-export const SIMULATION_SOURCES = ["project", "reference"] as const;
-export type SimulationSource = (typeof SIMULATION_SOURCES)[number];
+// finance/domain/simulator.ts  (reemplaza ui/hooks/simulate.ts; misma semántica salvo P4-4)
 export type SimulationBase = {
   readonly salePrice: Money;          // P objetivo
   readonly acquisitionCost: Money;    // C
   readonly recoveryBudget: Money;     // F
-  readonly worksBudget: Money;        // subtotal works (base del sobrecosto, D7)
-  readonly saleCosts: Money;          // O estimado
-  readonly participations: { readonly total: number; readonly unitPrice: Money };
-  /** Colocadas por terceros hoy (proyecto) o 100 (referencia). */
-  readonly placedToday: number;
+  readonly worksBudget: Money;        // subtotal de obra (base del sobrecosto) [SUPUESTO P4-4]
+  readonly saleCosts: Money;          // O estimado, fijo al mover el precio
+  readonly total: number;
+  readonly unitPrice: Money;
+  readonly placed: number;            // colocación actual de la clase
+  readonly targetTermMonths: number;  // TARGET_TERM_MONTHS si la tarjeta no trae plazo
 };
-export type SimulatorSetup = {
-  readonly mode: "open" | "illustrative";
-  readonly bases: Readonly<Record<SimulationSource, SimulationBase>>;
-  /** open: {1, min(HOLDING_LIMITS.max, disponibles)} · illustrative: {1, min(HOLDING_LIMITS.max, total)}. */
-  readonly heldLimits: { readonly min: number; readonly max: number };
-  readonly targetTermMonths: number;
+/** Porcentajes en puntos básicos (docs/01 §5). */
+export type SimulationControls = {
+  readonly saleAdjustmentBps: number;   // −3000…+2000, paso 500
+  readonly worksOverrunBps: number;     // 0…5000, paso 1000
+  readonly delayMonths: number;         // 0…9 [SUPUESTO Q2: solo alarga el plazo]
+  readonly placed: number;              // 0…total
+  readonly held: number;                // 1…heldRange.max
 };
-export type SimulatorInputs = {
-  readonly source: SimulationSource;
-  readonly held: number;
-  readonly placed: number;
-  readonly salePriceAdjustmentBps: number;
-  readonly worksOverrunBps: number;
-  readonly delayMonths: number;
+export const SIMULATION_RANGES: {
+  readonly saleAdjustmentBps: { readonly min: -3000; readonly max: 2000; readonly step: 500 };
+  readonly worksOverrunBps: { readonly min: 0; readonly max: 5000; readonly step: 1000 };
+  readonly delayMonths: { readonly min: 0; readonly max: 9; readonly step: 1 };
 };
-export const SIMULATOR_RANGES: {
-  readonly salePriceAdjustmentBps: { readonly min: -5000; readonly max: 3000; readonly step: 100 };
-  readonly worksOverrunBps: { readonly min: 0; readonly max: 5000; readonly step: 500 };
-  readonly delayMonths: { readonly min: 0; readonly max: 12; readonly step: 1 };
-};
-/** [held, total] de la base activa. */
-export function placedRange(setup: SimulatorSetup, inputs: SimulatorInputs): { readonly min: number; readonly max: number };
-/** Colocación de partida (D7): reference → total · open → min(total, placedToday + held) · illustrative → max(held, placedToday). */
-export function defaultPlaced(setup: SimulatorSetup, source: SimulationSource, held: number): number;
-/** { source: "project", held: 1, placed: defaultPlaced(...), 0, 0, 0 }. */
-export function initialSimulatorInputs(setup: SimulatorSetup): SimulatorInputs;
-/** Recorta a rangos; Math.trunc; NaN/±Infinity → valor inicial del campo. Idempotente. Nunca lanza. */
-export function normalizeSimulatorInputs(setup: SimulatorSetup, raw: SimulatorInputs): SimulatorInputs;
-export type SimulatorChange =
-  | { readonly type: "source"; readonly value: SimulationSource }      // placed ← defaultPlaced(nueva base, held)
-  | { readonly type: "held"; readonly value: number }                  // placed ← max(placed, held)
-  | { readonly type: "placed"; readonly value: number }
-  | { readonly type: "salePrice"; readonly value: number }
-  | { readonly type: "overrun"; readonly value: number }
-  | { readonly type: "delay"; readonly value: number }
-  | { readonly type: "preset"; readonly preset: StressPresetId }       // D7: un preset a la vez
-  | { readonly type: "reset" };                                        // initialSimulatorInputs, conserva source
-/** Reductor puro: devuelve siempre entradas normalizadas. */
-export function applySimulatorChange(setup: SimulatorSetup, current: SimulatorInputs, change: SimulatorChange): SimulatorInputs;
-
-// src/modules/finance/domain/stress-presets.ts  (maestro §7, docs/02 §4)
-export const STRESS_PRESET_IDS = ["sale_minus_20", "works_plus_20", "works_plus_50", "delay_3", "delay_6", "delay_9", "placement_zero"] as const;
-export type StressPresetId = (typeof STRESS_PRESET_IDS)[number];
-/** sale_minus_20 → salePriceAdjustmentBps −2000 · works_plus_20 → 2000 · works_plus_50 → 5000 · delay_n → n · placement_zero → placed = held. */
-export function applyStressPreset(setup: SimulatorSetup, current: SimulatorInputs, preset: StressPresetId): SimulatorInputs;
-/** El preset cuyo resultado coincide exactamente con `inputs` (con el resto en su valor inicial); si no, null. */
-export function activeStressPreset(setup: SimulatorSetup, inputs: SimulatorInputs): StressPresetId | null;
-
-// src/modules/finance/domain/simulate-projection.ts
-export type HolderProjection =
-  | { readonly kind: "distributed"; readonly contributed: Money; readonly gain: Money; readonly payout: Money }   // de calculateHolderPayout
-  | { readonly kind: "no_distribution"; readonly contributed: Money; readonly capitalPolicy: "to_be_defined" };  // O1/H2: sin cobro
+export type SimulationOutcome =
+  | { readonly kind: "payout"; readonly distribution: Distribution; readonly payout: HolderPayout }
+  | { readonly kind: "no_distribution"; readonly distribution: NoDistribution }       // O1/H2: capital "por definir"
+  | { readonly kind: "no_placement"; readonly distribution: Distribution }            // colocación 0 (C3)
+  | { readonly kind: "invalid" };
 export type SimulationResult = {
   readonly basis: "projection";
-  readonly inputs: SimulatorInputs;           // ya normalizadas
-  readonly salePrice: Money;                  // P'
-  readonly worksOverrun: Money;               // floor(worksBudget × overrun)
-  readonly recoveryBudget: Money;             // F' = F + worksOverrun
-  readonly acquisitionCost: Money;
-  readonly saleCosts: Money;
-  readonly outcome: DistributionOutcome;      // calculateDistribution tal cual
-  readonly holder: HolderProjection;
-  readonly term: { readonly targetMonths: number; readonly delayMonths: number; readonly projectedMonths: number };
+  readonly salePrice: Money;          // P' = P ± floor(P × |ajuste|)
+  readonly worksOverrun: Money;       // floor(worksBudget × sobrecosto)
+  readonly recoveryBudget: Money;     // F' = F + worksOverrun
+  readonly termMonths: number;        // target + delay
+  readonly heldUsed: number;          // min(held, placed)
+  readonly outcome: SimulationOutcome;
 };
-export type SimulationErrorCode = DistributionInputErrorCode | "HELD_OUT_OF_RANGE";
-/**
- * Único cálculo del simulador. Normaliza → construye DistributionInput (basis "projection") → calculateDistribution →
- * calculateHolderPayout(outcome, held) si hay reparto; contributed = multiplyMoney(unitPrice, held) siempre.
- * Nunca lanza. Sin Date. No expone ruedas (CA4).
- */
-export function simulateProjection(setup: SimulatorSetup, inputs: SimulatorInputs): Result<SimulationResult, DomainError<SimulationErrorCode>>;
+export function neutralControls(base: SimulationBase, held?: number): SimulationControls;   // ajustes 0, placed = base.placed, held = 1
+/** Recorta a los rangos (held a [1, heldMax], placed a [0, total]); Math.trunc; NaN/±Infinity → valor neutro. Idempotente. */
+export function normalizeControls(base: SimulationBase, heldMax: number, c: SimulationControls): SimulationControls;
+/** Único cálculo del simulador: normaliza (con heldMax = total) → calculateDistribution (basis "projection") → calculateHolderPayout(heldUsed). Nunca lanza. Sin Date. */
+export function simulateProjection(base: SimulationBase, c: SimulationControls): SimulationResult;
 
-// src/modules/finance/domain/scenarios.ts
-export const SCENARIO_KINDS = ["conservative", "base", "optimistic"] as const;
-export type ScenarioKind = (typeof SCENARIO_KINDS)[number];
-/** [SUPUESTO P4-1] (D6). */
-export const SCENARIO_ASSUMPTIONS: Readonly<Record<ScenarioKind, { readonly salePriceAdjustmentBps: number; readonly worksOverrunBps: number }>>;
-export type ScenarioOutcome = { readonly kind: ScenarioKind; readonly assumptions: (typeof SCENARIO_ASSUMPTIONS)[ScenarioKind]; readonly result: SimulationResult };
-/** Base del proyecto, held 1, placed = defaultPlaced(setup, "project", 1), delay 0. Si simulateProjection da err, lo propaga. */
-export function buildScenarios(setup: SimulatorSetup): Result<readonly ScenarioOutcome[], DomainError<SimulationErrorCode>>;
+// finance/domain/stress-presets.ts  (maestro §7, docs/02 §4; ids = los de la maqueta, que fijan los data-testid)
+export const STRESS_PRESET_IDS = ["base", "sale-20", "works-20", "works-50", "delay-3", "delay-6", "delay-9", "placement-0"] as const;
+export type StressPresetId = (typeof STRESS_PRESET_IDS)[number];
+export const STRESS_PRESETS: Readonly<Record<StressPresetId, Partial<Pick<SimulationControls, "saleAdjustmentBps" | "worksOverrunBps" | "delayMonths" | "placed">>>>;
+// base {} · sale-20 {saleAdjustmentBps: −2000} · works-20 {worksOverrunBps: 2000} · works-50 {5000} · delay-n {delayMonths: n} · placement-0 {placed: 0}
+/** neutralControls(base, current.held) + el parche del preset (un preset a la vez). */
+export function applyStressPreset(base: SimulationBase, current: SimulationControls, id: StressPresetId): SimulationControls;
 
-// src/modules/finance/domain/project-sheet.ts
-import type { ListingPhase, ParticipationClass, ProjectListing } from "@/modules/participations";   // SOLO import type (D1)
-import type { Milestone, MilestoneKind, MilestoneState, ProjectRisk, ProjectUpdate, Property, PublicStage, RiskKind, ProjectCode, ProjectId } from "@/modules/projects";
-export type SheetMode = "open" | "illustrative" | "settling" | "historic";
-export type MilestoneView = { readonly kind: MilestoneKind; readonly state: MilestoneState; /** done → completedOn · planned → plannedOn · pending → null */ readonly date: IsoDate | null };
-export type BudgetBreakdown = {
-  readonly acquisitionCost: Money;                 // C · capital propio de la empresa
-  readonly recoveryBudget: Money;                  // F = Σ grupos
-  readonly groups: readonly BudgetGroup[];
-  /** null en historic (lo sustituye el resultado realizado). */
-  readonly projection: { readonly targetSalePrice: Money; readonly estimatedSaleCosts: Money } | null;
-};
-export type RealizedResult = {
-  readonly settledOn: IsoDate;
-  readonly salePrice: Money;
-  readonly saleCosts: Money;
-  readonly distribution: Distribution;             // de la liquidación sembrada, tal cual
-  readonly perParticipation: HolderPayout;         // calculateHolderPayout(distribution, 1), basis "realized"
-};
-export type ProjectSheet = {
-  readonly projectId: ProjectId;
-  readonly code: ProjectCode;
-  readonly slug: string;
-  readonly name: string;
-  readonly acquiredOn: IsoDate;
-  readonly stage: PublicStage;
-  readonly phase: ListingPhase;
-  readonly mode: SheetMode;                         // D4
-  readonly property: { readonly city: string; readonly zone: string; readonly kind: Property["kind"]; readonly areaM2: number };  // D6: sin dirección
-  readonly participations: {
-    readonly total: number;
-    readonly placed: number;
-    readonly available: number;                     // de la tarjeta (P3-3)
-    readonly retained: number;                      // mode open ? 0 : total − placed
-    readonly unitPrice: Money;
-  };
-  readonly targetTermMonths: number | null;         // de la tarjeta
-  readonly budget: BudgetBreakdown;
-  readonly scenarios: readonly ScenarioOutcome[];   // [] salvo open/illustrative
-  readonly simulator: SimulatorSetup | null;        // solo open/illustrative
-  readonly realized: RealizedResult | null;         // solo historic
-  readonly milestones: readonly MilestoneView[];    // orden MILESTONE_KINDS
-  readonly updates: readonly ProjectUpdate[];       // más reciente primero
-  readonly risks: readonly RiskKind[];              // orden RISK_KINDS, sin duplicados
-};
-export type ProjectSheetSource = {
+// finance/domain/scenarios.ts  [SUPUESTO Q3]
+export const SCENARIO_IDS = ["conservative", "base", "optimistic"] as const;
+export type ScenarioId = (typeof SCENARIO_IDS)[number];
+export const SCENARIO_ASSUMPTIONS: Readonly<Record<ScenarioId, { readonly saleAdjustmentBps: number; readonly worksOverrunBps: number }>>;
+// conservative {−1000, 2000} · base {0, 0} · optimistic {500, 0}
+export type ScenarioRow = { readonly id: ScenarioId; readonly salePrice: Money; readonly outcome: SimulationOutcome };
+/** 1 participación, colocación actual y retraso 0, con simulateProjection. */
+export function buildScenarios(base: SimulationBase): readonly ScenarioRow[];
+
+// finance/domain/holding-projection.ts
+/** [SUPUESTO P5-1] La reserva se suma a lo colocado (con el total como tope). */
+export function estimateReservation(base: SimulationBase, quantity: number): SimulationResult;
+/** Capital de una reserva: unitPrice × quantity (multiplyMoney). quantity < 0 → RangeError de Money: valida antes. */
+export function reservationAmount(unitPrice: Money, quantity: number): Money;
+/** Ganancia proyectada de `held` participaciones en el escenario base (la misma cuenta del simulador). null si no hay payout. */
+export function projectHoldingGain(base: SimulationBase, held: number): Money | null;
+
+// finance/domain/project-detail.ts  (si pasa de 200 líneas: project-detail-types.ts + project-detail.ts)
+import type { ListingPhase, ParticipationClass, ProjectListing } from "@/modules/participations";   // SOLO import type (D2)
+import type { Project, Property, PropertyProfile, ProjectProcess, ProcessStageTimeline, ProjectUpdate, ProjectRisks, ProjectRiskKind } from "@/modules/projects";
+export type DetailMode = "open" | "fixed_projection" | "realized";       // D5
+export type ProjectDetail = {
   readonly listing: ProjectListing;
   readonly property: Property;
+  readonly profile: PropertyProfile;
+  readonly participationClass: ParticipationClass;
+  readonly economics: ProjectEconomics;
+  readonly settlement: Settlement | null;
+  readonly mode: DetailMode;
+  readonly budget: BudgetBreakdown;
+  readonly simulation: {
+    readonly base: SimulationBase;
+    /** D4: open → min(holdingMax, disponibles); resto → min(holdingMax, colocadas). 0 = sin cupos (P5 "sin cupos"). */
+    readonly maxHeld: number;
+    /** Para el control: { min: 1, max: max(1, maxHeld) }. */
+    readonly heldRange: { readonly min: 1; readonly max: number };
+  };
+  readonly scenarios: readonly ScenarioRow[];                  // [] en realized
+  /** Solo en realized: calculateHolderPayout(settlement.distribution, 1) (capital, ganancia y cobro por participación). */
+  readonly realized: HolderPayout | null;
+  readonly process: readonly ProcessStageTimeline[] | null;    // null sin proceso publicado
+  readonly updates: readonly ProjectUpdate[];                  // más reciente primero
+  readonly risks: readonly ProjectRiskKind[];                  // normalizados
+};
+export type ProjectDetailSource = {
+  readonly listing: ProjectListing;
+  readonly project: Project;
+  readonly property: Property;
+  readonly profile: PropertyProfile;
   readonly participationClass: ParticipationClass;
   readonly economics: ProjectEconomics;
   readonly budget: ProjectBudget;
   readonly settlement: Settlement | null;
-  readonly milestones: readonly Milestone[];
+  readonly process: ProjectProcess | null;
   readonly updates: readonly ProjectUpdate[];
-  readonly risks: readonly ProjectRisk[];
-  readonly today: IsoDate;
-  readonly holdingLimits: { readonly min: number; readonly max: number };
+  readonly risks: ProjectRisks | null;
+  readonly holdingMax: number;                                 // HOLDING_LIMITS.max inyectado
 };
-export type ProjectSheetErrorCode = BudgetErrorCode | SimulationErrorCode | "MISSING_SETTLEMENT" | "PROJECT_MISMATCH";
-/** Pura, nunca lanza. PROJECT_MISMATCH si algún projectId difiere del de la tarjeta. historic sin settlement → MISSING_SETTLEMENT. */
-export function buildProjectSheet(source: ProjectSheetSource): Result<ProjectSheet, DomainError<ProjectSheetErrorCode>>;
+export type ProjectDetailErrorCode = BudgetErrorCode | "PROJECT_MISMATCH" | "MISSING_SETTLEMENT" | "INVALID_PROCESS";
+/** Pura, nunca lanza. PROJECT_MISMATCH si algún projectId/propertyId no coincide con la tarjeta y el proyecto. */
+export function buildProjectDetail(s: ProjectDetailSource): Result<ProjectDetail, DomainError<ProjectDetailErrorCode>>;
 ```
-Si `project-sheet.ts` pasa de 200 líneas, se separa en `project-sheet-types.ts` (tipos) y `project-sheet.ts` (función). El contrato no cambia.
 
-### 3.3 `finance/application` (paquete D)
+### 3.4 `finance/application` e `index.ts` (paquete D)
 
 ```ts
-// src/modules/finance/application/ports.ts: se AÑADE
+// finance/application/ports.ts: se AÑADE
 export interface ProjectBudgetRepository {
   findByProject(projectId: ProjectId): Promise<ProjectBudget | null>;
 }
 
-// src/modules/finance/application/get-project-sheet.ts
+// finance/application/get-project-detail.ts
 import type { ListMarketplace, ParticipationClassRepository } from "@/modules/participations";   // import type
-import type { ProjectDetailsRepository, PropertyRepository } from "@/modules/projects";
-import type { Clock } from "@/shared/domain/clock";
-export type ProjectSheetLookup = { readonly kind: "found"; readonly sheet: ProjectSheet } | { readonly kind: "not_found" };
-export type GetProjectSheet = (slug: string) => Promise<ProjectSheetLookup>;
-export type GetProjectSheetDeps = {
+import type { ProjectContentRepository, ProjectRepository, PropertyRepository } from "@/modules/projects";
+export type GetProjectDetail = (slug: string) => Promise<ProjectDetail | null>;
+export type GetProjectDetailDeps = {
   readonly listMarketplace: ListMarketplace;
+  readonly projects: Pick<ProjectRepository, "findById">;
   readonly properties: Pick<PropertyRepository, "findById">;
-  readonly details: ProjectDetailsRepository;
+  readonly content: ProjectContentRepository;
   readonly classes: Pick<ParticipationClassRepository, "findByProject">;
   readonly economics: Pick<ProjectEconomicsRepository, "findByProject">;
   readonly budgets: ProjectBudgetRepository;
   readonly settlements: Pick<SettlementRepository, "findByProject">;
-  readonly clock: Clock;
-  readonly holdingLimits: { readonly min: number; readonly max: number };   // inyectado (D1)
+  readonly holdingMax: number;
 };
 /**
- * `async`: cualquier throw síncrono de un repo se convierte en rechazo.
- * 1) listMarketplace() y buscar por slug → si no está: { kind: "not_found" } (D2).
- * 2) Promise.all con property (findById(listing… vía projectId → la tarjeta no trae propertyId: usa projects? NO; ver nota), clase, economía, presupuesto, liquidación, hitos, actualizaciones, riesgos.
- * 3) Si falta algo obligatorio o buildProjectSheet da err → rechaza con Error(`ficha ${slug}: ${code}`).
+ * async (un throw síncrono de un repo se convierte en rechazo).
+ * 1) listMarketplace() y búsqueda por slug → si no está: null (no consulta nada más).
+ * 2) Promise.all(project, class, economics, budget, settlement, process, updates, risks); después, property y profile.
+ * 3) Si falta un obligatorio (project, property, profile, class, economics, budget) o buildProjectDetail da err → rechaza con Error(`ficha ${slug}: ${code}`).
  */
-export function createGetProjectSheet(deps: GetProjectSheetDeps): GetProjectSheet;
-```
-**Nota de contrato.** `ProjectListing` no trae `propertyId`. Para no tocar P3, `GetProjectSheetDeps` añade `projects: Pick<ProjectRepository, "findBySlug">`: se busca el `Project` por slug y de ahí sale `propertyId`. Si falta el proyecto, es un dato incoherente y la promesa se rechaza.
+export function createGetProjectDetail(deps: GetProjectDetailDeps): GetProjectDetail;
 
-### 3.4 `participations` (paquete UI escribe `index.ts`; D actualiza `CLAUDE.md`)
+// finance/application/get-holding-projections.ts  (sale de useHoldingProjections: la suma deja de hacerse en la UI)
+export type HoldingProjectionRequest = { readonly code: string; readonly quantity: number };
+export type HoldingProjections = {
+  readonly byCode: Readonly<Record<string, Money | null>>;     // null = sin reparto o sin ficha
+  readonly total: Money | null;                                 // sumMoney de los no-null; null si no hay ninguno
+};
+export type GetHoldingProjections = (requests: readonly HoldingProjectionRequest[]) => Promise<HoldingProjections>;
+export function createGetHoldingProjections(deps: {
+  readonly listMarketplace: ListMarketplace;
+  readonly getProjectDetail: GetProjectDetail;
+}): GetHoldingProjections;   // projectHoldingGain(detail.simulation.base, quantity)
 
-```ts
-// src/modules/participations/index.ts: se AÑADE (sin quitar nada)
+// finance/index.ts: se AÑADE (sin quitar nada; sigue sin exportar UI)
+export type { BudgetCategory, BudgetItem, BudgetLine, ProjectBudget, BudgetErrorCode, BudgetBreakdown } from "./domain/budget";
+export { BUDGET_CATEGORIES, BUDGET_ITEMS, BUDGET_ITEM_CATEGORY, checkProjectBudget, worksSubtotal, buildBudgetBreakdown } from "./domain/budget";
+export type { SimulationBase, SimulationControls, SimulationOutcome, SimulationResult } from "./domain/simulator";
+export { SIMULATION_RANGES, neutralControls, normalizeControls, simulateProjection } from "./domain/simulator";
+export type { StressPresetId } from "./domain/stress-presets";
+export { STRESS_PRESET_IDS, STRESS_PRESETS, applyStressPreset } from "./domain/stress-presets";
+export type { ScenarioId, ScenarioRow } from "./domain/scenarios";
+export { SCENARIO_IDS, SCENARIO_ASSUMPTIONS, buildScenarios } from "./domain/scenarios";
+export { estimateReservation, reservationAmount, projectHoldingGain } from "./domain/holding-projection";
+export type { DetailMode, ProjectDetail, ProjectDetailErrorCode } from "./domain/project-detail";
+export { buildProjectDetail } from "./domain/project-detail";
+export type { ProjectBudgetRepository } from "./application/ports";
+export type { GetProjectDetail } from "./application/get-project-detail";
+export type { GetHoldingProjections, HoldingProjectionRequest, HoldingProjections } from "./application/get-holding-projections";
+
+// participations/index.ts: se AÑADE (paquete D)
 export type { ParticipationClassRepository, ParticipationRepository } from "./application/ports";
-export { PHASE_PRESENTATION } from "./ui/components/investor/phase-presentation";
 ```
-`CLAUDE.md`: "`finance` NO importa de aquí" pasa a decir "`finance` importa de aquí **solo tipos**, salvo `PHASE_PRESENTATION` en `finance/ui` (D1)".
 
-### 3.5 Datos semilla v2 (paquete DATA)
+### 3.5 Semillas v2 (paquete DATA)
 
 ```ts
-// src/modules/projects/infrastructure/seed.ts
+// projects/infrastructure/seed.ts
 export type ProjectsSlice = {
   readonly properties: readonly Property[];
   readonly projects: readonly Project[];
-  readonly milestones: readonly Milestone[];     // NUEVO
-  readonly updates: readonly ProjectUpdate[];    // NUEVO
-  readonly risks: readonly ProjectRisk[];        // NUEVO
+  readonly profiles: readonly PropertyProfile[];     // NUEVO · 6 (sin M2-007)
+  readonly processes: readonly ProjectProcess[];     // NUEVO · 6
+  readonly updates: readonly ProjectUpdate[];        // NUEVO · 17
+  readonly risks: readonly ProjectRisks[];           // NUEVO · 6
 };
-// projectsSliceSchema amplía con los tres arrays (z.enum(MILESTONE_KINDS) etc.). buildProjectsSeed(clock) los arma con
-// buildProjectProgress(projects, dates) de seed-progress.ts y buildProjectUpdates(projects) de seed-updates.ts.
+// projectsSliceSchema se amplía (z.enum(PROCESS_STAGE_KINDS / PROCESS_STEP_STATUSES / PROJECT_RISK_KINDS)) y el slug usa PROJECT_SLUG_PATTERN.
+// Los datos de contenido van en projects/infrastructure/seed-content.ts (CONTENT por key; una función buildProjectContent(projects, dates)).
+// publishedOn = dates.daysAfter(acquiredOn, offsetDays). Cada proceso pasa checkProjectProcess y, si no, throw (fallo de semilla).
 
-// src/modules/finance/infrastructure/seed.ts
+// finance/infrastructure/seed.ts
 export type FinanceSlice = {
   readonly economics: readonly ProjectEconomics[];
   readonly settlements: readonly Settlement[];
-  readonly budgets: readonly ProjectBudget[];    // NUEVO (7, incluido M2-007 para B2)
+  readonly budgets: readonly ProjectBudget[];        // NUEVO · 7 (M2-007 incluido, para B2)
 };
-// buildFinanceSeed valida cada presupuesto con checkProjectBudget(budget, economics.recoveryBudget); si err → throw (fallo de semilla).
+// Las líneas van en finance/infrastructure/seed-budget.ts. buildFinanceSeed valida cada una con checkProjectBudget(b, economics) → si da err, throw.
 
-// src/composition/demo-snapshot.ts
-export type DemoSnapshot = { readonly version: 2; /* resto igual */ };   // z.literal(2)
-// src/shared/config/demo.ts
+// composition/demo-snapshot.ts
+export type DemoSnapshot = { readonly version: 2; /* resto igual */ };     // z.literal(2); buildDemoSnapshot → version: 2
+// shared/config/demo.ts
 storageKey: "club-demo:v2",
+legacyStorageKeys: ["club-demo:v1"] as const,
 ```
 
-**Ids legibles:** `mil_<key>_<kind>` (p. ej. `mil_chacao_02_purchase`), `upd_<key>_<n>`. Los riesgos no llevan id.
+**Traslado literal de `examples.ts`.** Los mismos valores y el mismo orden, para que el aspecto sea idéntico:
+- **Perfiles:** `description` y `highlights` de cada slug, sin cambios.
+- **Proceso:** los `d/c/u(offset, started)` de cada slug, con las claves traducidas: `inicio-obra → works_start` · `obra-50 → works_50` · `obra-80 → works_80` · `inicio-venta → sale_start` · `en-venta → on_sale` · `vendida → sold`.
+- **Actualizaciones:** `offsetDays`, `title` y `text → body`. Ids `upd_<key>_<n>`, con n desde 1 por fecha ascendente.
+- **Riesgos:** los 3 comunes en los seis. Los extra son: hatillo_01 `narrow_buyer_pool` · valencia_01 `local_market` · paraiso_01 `hidden_works_issues` · chacao_02 `incomplete_placement`.
+- **Presupuestos:** las líneas de obra de cada slug con su ítem (Cocina→`kitchen`, Baños→`bathrooms`, Pisos y pintura→`floors_paint`, Electricidad y plomería→`electrical_plumbing`, Jardín y exteriores→`garden_exterior`, Carpintería→`carpentry`), más la bolsa `management_fee 2.500 · contingency 1.500 · reserve 1.000` [SUPUESTO Q1].
+  - palos_grandes_02 (M2-007) usa las líneas de chacao_02. Es un ejemplo de ejemplo y no se muestra en ninguna pantalla.
 
-**Presupuesto (mismo para los 7, USD enteros; [SUPUESTO P4-5], P4-Q5).** Se fija en `seed-budget.ts`. La suma de las líneas es `F = 10.000`. Obra = 5.000 y honorarios + contingencia = 5.000, como en el maestro §6.
-
-| Ítem | USD | Ítem | USD |
-|---|---:|---|---:|
-| demolition | 400 | project_management | 1.000 |
-| masonry | 900 | works_supervision | 1.250 |
-| electrical | 700 | administration_reporting | 750 |
-| plumbing | 600 | contingency | 2.000 |
-| flooring | 1.100 | reserve | (no se siembra) |
-| carpentry_kitchen | 800 | | |
-| paint_finishes | 500 | | |
-
-**Hitos ([SUPUESTO P4-8], cronograma de referencia derivado del plazo objetivo de 3 meses).** `plannedOn = acquiredOn + offset` en días: purchase 0 · placement_open 1 · placement_close 20 · works_start 21 · works_end 60 · listing 62 · sale_signed 90 · settlement 105.
-
-Los hitos cumplidos dependen del estado:
-- funding: {purchase, placement_open}
-- renovation: lo anterior + {placement_close, works_start}
-- on_sale: lo anterior + {works_end, listing}
-- sold: lo anterior + {sale_signed}
-- settled: todos
-
-`completedOn = plannedOn`, salvo `sale_signed = timeline.saleSignedOn` y `settlement = timeline.settledOn`. M2-007 no lleva hitos, actualizaciones ni riesgos.
-
-**Riesgos.** Los 6 proyectos con clase llevan los seis de `RISK_KINDS`.
-
-**Actualizaciones** (`seed-updates.ts`; `publishedOn = acquiredOn + días`; texto exacto; DATA corre `check-copy` sobre este archivo):
-
-| Proyecto | +días | source · responsible · evidence | Título | Cuerpo |
-|---|---:|---|---|---|
-| palos_grandes_01 | 1 | purchase_record · acquisitions · document | Compra firmada y expediente abierto | La empresa firmó la compra con capital propio y abrió el expediente del inmueble. |
-| palos_grandes_01 | 60 | works_report · works · photos | Obra terminada | Se completaron cocina, baños y pisos según el presupuesto por rubros. |
-| palos_grandes_01 | 140 | commercial_report · commercial · document | Venta firmada | Se firmó la venta del inmueble. Comienza la liquidación. |
-| palos_grandes_01 | 160 | settlement_report · finance · document | Liquidación publicada | Se publicó la liquidación con la devolución de capitales y el reparto del excedente de ejemplo. |
-| hatillo_01 | 1 | purchase_record · acquisitions · document | Compra firmada y expediente abierto | (igual que arriba) |
-| hatillo_01 | 60 | works_report · works · photos | Obra terminada | Se terminaron la remodelación de la cocina, los baños y la fachada. |
-| hatillo_01 | 64 | commercial_report · commercial · null | Inmueble publicado | El inmueble se publicó en portales y con agentes de la zona. |
-| hatillo_01 | 200 | commercial_report · commercial · document | Ajuste de la estrategia comercial | La venta toma más tiempo que el plazo objetivo. Se revisó el precio de publicación y se sumaron canales de venta. |
-| hatillo_01 | 240 | commercial_report · commercial · null | Nuevas visitas | Hubo visitas de compradores interesados; todavía no hay una oferta firmada. |
-| chacao_01 | 1 | purchase_record · acquisitions · document | Compra firmada y expediente abierto | (igual) |
-| chacao_01 | 60 | works_report · works · photos | Obra terminada | Se completaron pisos, pintura y carpintería según el presupuesto por rubros. |
-| chacao_01 | 75 | commercial_report · commercial · document | Venta firmada | Se firmó la venta del inmueble. Comienza la liquidación. |
-| chacao_01 | 90 | settlement_report · finance · document | Liquidación publicada | (igual que palos_grandes_01) |
-| valencia_01 | 1 | purchase_record · acquisitions · document | Compra firmada y expediente abierto | (igual) |
-| valencia_01 | 45 | works_report · works · photos | Avance de obra | Se terminaron electricidad y plomería; siguen pisos y pintura. |
-| valencia_01 | 62 | commercial_report · commercial · null | Inmueble publicado | (igual que hatillo_01) |
-| valencia_01 | 100 | commercial_report · commercial · null | Primeras visitas | Se recibieron las primeras visitas; todavía no hay una oferta firmada. |
-| paraiso_01 | 1 | purchase_record · acquisitions · document | Compra firmada y expediente abierto | (igual) |
-| paraiso_01 | 20 | placement_report · finance · document | Colocación completa | Se colocaron las 100 participaciones de ejemplo del proyecto. |
-| paraiso_01 | 40 | works_report · works · photos | Avance de obra | Demolición y albañilería terminadas; empieza la electricidad. |
-| chacao_02 | 1 | purchase_record · acquisitions · document | Compra firmada y expediente abierto | (igual) |
-| chacao_02 | 3 | placement_report · finance · null | Colocación abierta | Se abrió la colocación de participaciones de ejemplo para financiar la reforma. |
-| chacao_02 | 10 | works_report · works · document | Presupuesto de obra aprobado | Se aprobó el presupuesto por rubros con dos contratistas evaluados. |
+Antes de entregar, DATA corre `node scripts/check-copy.mjs src/modules/projects/infrastructure`.
 
 ### 3.6 `composition` (paquete DATA)
 
 ```ts
-// src/composition/modules/projects.ts
-export type ProjectsModule = { projectRepository; propertyRepository; readonly detailsRepository: ProjectDetailsRepository };
+// composition/modules/projects.ts
+export type ProjectsModule = {
+  readonly projectRepository: ProjectRepository;
+  readonly propertyRepository: PropertyRepository;
+  readonly contentRepository: ProjectContentRepository;     // NUEVO
+  readonly getProjectProcess: GetProjectProcess;            // NUEVO
+};
 
-// src/composition/modules/finance.ts
-import { HOLDING_LIMITS } from "@/modules/participations/domain/participation";   // ruta interna (D1)
+// composition/modules/finance.ts
+import { HOLDING_LIMITS } from "@/modules/participations/domain/participation";   // ruta interna (D2)
 export type FinanceModule = {
   readonly economicsRepository: ProjectEconomicsRepository;
   readonly settlementRepository: SettlementRepository;
-  readonly budgetRepository: ProjectBudgetRepository;     // NUEVO
-  readonly getProjectSheet: GetProjectSheet;              // NUEVO
+  readonly budgetRepository: ProjectBudgetRepository;       // NUEVO
+  readonly getProjectDetail: GetProjectDetail;              // NUEVO
+  readonly getHoldingProjections: GetHoldingProjections;    // NUEVO
 };
 export function registerFinance(
   store: DemoStore<DemoSnapshot>,
   deps: {
-    readonly clock: Clock;
-    readonly projects: Pick<ProjectsModule, "projectRepository" | "propertyRepository" | "detailsRepository">;
+    readonly projects: Pick<ProjectsModule, "projectRepository" | "propertyRepository" | "contentRepository">;
     readonly participations: Pick<ParticipationsModule, "classRepository" | "listMarketplace">;
   },
 ): FinanceModule;
 
-// src/composition/container.ts: solo cambia el cableado
+// composition/container.ts: cambian el cableado y la limpieza de claves (D6). Container conserva su forma.
 const projects = registerProjects(store);
 const participations = registerParticipations(store, projects);
-const finance = registerFinance(store, { clock, projects, participations });
+const finance = registerFinance(store, { projects, participations });
 ```
-`Container` conserva su forma. Sigue prohibido importar valores desde `@/modules/participations` o `@/modules/finance` (sus `index`) en `composition/**`.
+`composition/**` sigue sin importar valores desde `@/modules/participations` (su index). Puede importar de `@/modules/finance` (index sin UI) y de las rutas internas de application/infrastructure, como hoy.
 
-### 3.7 `shared` (paquete UI)
+### 3.7 `finance/ui` (paquete UI)
 
 ```ts
-// src/shared/ui/app-shell/route-map.ts
-/** [SUPUESTO S3 → resuelto en P4] Proyecto de ejemplo real (abierto a participar) para P4, P5 y B3. */
-export const EXAMPLE_PROJECT_SLUG = "m2-006-chacao";
-/** URL de P5 de un proyecto: `/proyectos/${slug}/participar`. Coincide con ROUTES.p5.pattern. */
-export function participateHref(slug: string): AppPath;
-// app-shell/index.ts: exporta participateHref.
+// ui/hooks/use-project-detail.ts ("use client")
+export const projectDetailQueryKey: (slug: string) => readonly ["finance", "project-detail", string];
+export function useProjectDetail(slug: string): UseQueryResult<ProjectDetail | null, Error>;   // container.finance.getProjectDetail
+/** Se conserva para los tests de paridad: delega en container.finance.getProjectDetail. */
+export function loadProjectDetail(container: Container, slug: string): Promise<ProjectDetail | null>;
 
-// src/shared/lib/format-percentage.ts
-/** 2500 → "25 %" · −2000 → "−20 %" (signo menos U+2212) · con signed: 500 → "+5 %", 0 → "0 %". Decimales con coma: 250 → "2,5 %". NBSP antes de %. */
-export function formatBps(bps: number, options?: { readonly signed?: boolean }): string;
+// ui/hooks/holding-projection.ts
+/** Envoltorio de compatibilidad: projectHoldingGain(detail.simulation.base, held). */
+export function projectHolding(detail: ProjectDetail, held: number): Money | null;
+export function useHoldingProjections(requests: readonly HoldingProjectionRequest[]): UseQueryResult<HoldingProjections, Error>;  // container.finance.getHoldingProjections
 
-// src/shared/ui/primitives/range.tsx · "use client" no hace falta (input controlado por el padre)
-export type RangeInputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "value" | "onChange" | "min" | "max" | "step"> & {
-  value: number; min: number; max: number; step?: number;
-  onValueChange(next: number): void;          // Number(e.currentTarget.value)
-  "aria-valuetext"?: string;
+// ui/hooks/use-process-stages.ts ("use client")
+export function useProcessStages(code: string): UseQueryResult<readonly ProcessStageView[] | null, Error>;  // container.projects.getProjectProcess + toProcessStageViews
+// ui/hooks/process-stage-view.ts (tabla de presentación, sin lógica de negocio)
+export const PROCESS_STAGE_ID: Readonly<Record<ProcessStageKind, ProcessStageId>>;
+export function toProcessStageViews(timeline: readonly ProcessStageTimeline[]): readonly ProcessStageView[];
+
+// ui/hooks/use-simulator.ts: misma forma que hoy; los tipos pasan a ser los del dominio
+export type UseSimulator = {
+  controls: SimulationControls; result: SimulationResult; activePreset: StressPresetId | null;
+  setControl: <K extends keyof SimulationControls>(key: K, value: SimulationControls[K]) => void;
+  applyPreset: (id: StressPresetId) => void;
 };
-// <input type="range"> con accent-[var(--primary)], h-11 de zona táctil, focus-visible:ring-2 ring-ring, w-full. Sin colores de marca a mano.
-```
-README: añadir la sección "RangeInput (`primitives/range.tsx`)", que se usa en simuladores y rangos numéricos. Siempre con `<Label htmlFor>` visible y `aria-valuetext`. No se usa para elegir entre opciones discretas sin orden. Añadir también `formatBps` en "Formateadores".
+export function useSimulator(base: SimulationBase, heldMax: number): UseSimulator;   // normalizeControls en cada setControl
 
-### 3.8 `finance/ui` (paquete UI)
+// ui/hooks/profit-rate.ts: sin cambios (profitRateLabel, PROFIT_RATE_COPY)
 
-```ts
-// hooks · "use client"
-// src/modules/finance/ui/hooks/use-project-sheet.ts
-export const projectSheetQueryKey = (slug: string) => ["finance", "project-sheet", slug] as const;
-/** useQuery({ queryKey, queryFn: () => useContainer().finance.getProjectSheet(slug), retry: false }). */
-export function useProjectSheet(slug: string): UseQueryResult<ProjectSheetLookup, Error>;
-
-// src/modules/finance/ui/hooks/use-simulator.ts
-export type SimulatorController = {
-  readonly inputs: SimulatorInputs;
-  readonly result: Result<SimulationResult, DomainError<SimulationErrorCode>>;
-  readonly activePreset: StressPresetId | null;
-  readonly placed: { readonly min: number; readonly max: number };
-  dispatch(change: SimulatorChange): void;
-};
-/** useReducer((s, c) => applySimulatorChange(setup, s, c), setup, initialSimulatorInputs); result = useMemo(simulateProjection). */
-export function useSimulator(setup: SimulatorSetup): SimulatorController;
+// finance/ui.ts: exportaciones finales
+export * from "./ui/components/investor";      // ProjectDetail, ProjectParticipate, ProjectDetailLoading, ProjectProcessBoard (+Props). SIN PUBLISHED_PROJECT_SLUGS ni isPublishedProjectSlug
+export { projectHolding, useHoldingProjections } from "./ui/hooks/holding-projection";
+export type { HoldingProjections, HoldingProjectionRequest } from "@/modules/finance";
+export { loadProjectDetail } from "./ui/hooks/use-project-detail";
+export type { ProjectDetail as ProjectDetailData } from "@/modules/finance";   // alias de compatibilidad
+export { profitRateLabel, PROFIT_RATE_COPY } from "./ui/hooks/profit-rate";
+export { useProcessStages } from "./ui/hooks/use-process-stages";             // reemplaza a processStagesFor
+// finance/backoffice-ui.ts: export * from "./ui/components/admin"; export { useProcessStages } from "./ui/hooks/use-process-stages";
 ```
 
-Componentes en `src/modules/finance/ui/components/investor/`. Todos aceptan `TestIdProp`, tienen menos de 200 líneas y **no importan `../../domain` ni `@/shared/domain/money` (valores)**:
+Componentes que cambian (mismo marcado, mismas clases y mismos `data-testid`):
 
-| Archivo | Tipo | Props | Notas |
-|---|---|---|---|
-| `ProjectSheet.tsx` | Server | `TestIdProp & { params: Promise<{ slug: string }> }` | `<div data-testid="pagina-p4" data-route-id="p4">` + `<Suspense fallback={<ProjectSheetSkeleton/>}><SheetForSlug params/></Suspense>`. `SheetForSlug` (async, en el mismo archivo) hace `await params`. Si `!isProjectSlug(slug)` → `notFound()`. Si no → `<ProjectSheetView slug/>` |
-| `ProjectSheetSkeleton.tsx` | Server | `TestIdProp` | `data-testid="ficha-cargando"`: bloque de cabecera + 3 `CardSkeleton`. Sin `h1` |
-| `ProjectSheetView.tsx` | Client | `TestIdProp & { slug: string }` | pending → `ProjectSheetSkeleton` · error → `ErrorState data-testid="ficha-error"` + `Button data-testid="ficha-reintentar" onClick=refetch` · `not_found` → `<ProjectNotFound/>` · found → `<article data-testid="ficha" data-project-code data-mode data-phase>` con las secciones de §3.9 |
-| `ProjectNotFound.tsx` | Server (sin hooks) | `TestIdProp` | `data-testid="ficha-no-encontrada"`: `PageHeader` (h1) + `Link` a `routeHref("p3")` con `data-testid="ficha-no-encontrada-volver"` |
-| `SheetHeader.tsx` | Server | `{ sheet }` | `PageHeader id="titulo-p4"`. Lateral (aside): `ProjectSeal data-testid="ficha-sello"` + `StatusBadge data-testid="ficha-etapa" {...PHASE_PRESENTATION[phase]}`. Acción: `SheetCta` |
-| `SheetCta.tsx` | Server | `{ sheet; testId }` | open → `Button asChild` + `Link href={participateHref(slug)}` (copy `cta.participate`) · resto → `Link href={routeHref("p3")}` (`cta.browse`). Siempre seguido de `LegalNotice notice="riskNotice" variant="inline"` |
-| `SheetSummary.tsx` | Server | `{ sheet }` | Disponibles, colocadas/retenidas, precio (`MoneyDisplay kind="amount"`), plazo objetivo en `ProjectionLabel` (si no es null) |
-| `SheetProperty.tsx` | Server | `{ sheet }` | Tipo, superficie, zona y nota de dirección (D6). Sin mapa ni fotos |
-| `SheetBudget.tsx` | Server | `{ budget: BudgetBreakdown }` | `<dl>` por grupo; montos con `MoneyDisplay kind="amount"`; proyección con `kind="projection"` |
-| `SheetScenarios.tsx` | Server | `{ scenarios; unitPrice }` | 3 `Surface`. Capital por participación (`kind="capital"`, size `md`) primero; precio, excedente, ganancia por participación y cobro con `kind="projection"` size `md` (D: capital ≥ proyección) |
-| `Simulator.tsx` | Client | `{ setup: SimulatorSetup }` | `useSimulator`; compone Controls, Presets, Result, Breakdown y el descargo `LegalNotice notice="simulatorDisclaimer" data-testid="simulador-descargo"` **debajo** de todo |
-| `SimulatorControls.tsx` | Client | `{ controller; setup }` | Base (2 botones `aria-pressed`) y 5 `RangeInput` con `Label` + valor visible `<output>` |
-| `SimulatorPresets.tsx` | Client | `{ active; onPreset; onReset }` | `role="group"`: 7 botones `aria-pressed` y uno de "volver a base". `flex-wrap` en 390 |
-| `SimulatorResult.tsx` | Client | `{ result; setup }` | `role="status" aria-live="polite" data-testid="simulador-resultado"`. 3 bloques (capital `size="lg"`, ganancia y cobro `size="lg"`, nunca mayores). Plazo proyectado en `ProjectionLabel` |
-| `SimulatorBreakdown.tsx` | Client | `{ outcome: DistributionOutcome }` | Reparto del excedente (6 filas) o "sin reparto" |
-| `SheetRealized.tsx` | Server | `{ realized; settledOn }` | Capital (`kind="capital"`), ganancia y cobro realizados (`kind="realized"`) y reparto realizado. Nota `ficha-simulador-inactivo` |
-| `SheetTimeline.tsx` | Server | `{ milestones; updates }` | `<ol>` de hitos + `<ul>` de actualizaciones con fecha (`formatIsoDate`), fuente, responsable y evidencia |
-| `SheetRisks.tsx` | Server | `{ risks }` | `BulletList marker="dash"` (título + mitigación) + `LegalNotice riskNotice` |
-| `SheetNextStep.tsx` | Server | `{ sheet }` | `Section` final con `SheetCta testId="siguiente-paso"` |
-| `presentation.ts` | — | — | Tablas `MILESTONE_LABEL`, `MILESTONE_STATE_LABEL`, `BUDGET_ITEM_LABEL`, `BUDGET_CATEGORY_LABEL`, `RISK_PRESENTATION`, `SOURCE_LABEL`, `RESPONSIBLE_LABEL`, `EVIDENCE_LABEL`, `PRESET_TEST_ID`. `Record` exhaustivos que leen de `copy.ts` |
-
-Los "Server" sin hooks que se usan dentro de `ProjectSheetView` (cliente) se renderizan como componentes del cliente. Por eso no pueden ser `async` ni importar nada de servidor.
-
-```ts
-// src/modules/finance/index.ts (paquete UI; contenido COMPLETO)
-export type { ValueBasis, DistributionShares, ParticipationTerms, DistributionInput, DistributionInputErrorCode, CapitalReturn, Distribution, NoDistribution, DistributionOutcome } from "./domain/distribution";
-export { DEFAULT_DISTRIBUTION_SHARES, calculateDistribution } from "./domain/distribution";
-export { validateDistributionInput } from "./domain/validate-distribution-input";
-export type { HolderPayout } from "./domain/holder-payout";
-export { calculateHolderPayout } from "./domain/holder-payout";
-export type { ProjectEconomics } from "./domain/project-economics";
-export type { SettlementId, RealizedDistributionInput, Settlement, SettlementErrorCode } from "./domain/settlement";
-export { createSettlement } from "./domain/settlement";
-export type { BudgetCategory, BudgetItem, BudgetLine, ProjectBudget, BudgetGroup } from "./domain/budget";
-export type { SimulationSource, SimulationBase, SimulatorSetup, SimulatorInputs, SimulatorChange } from "./domain/simulator";
-export type { StressPresetId } from "./domain/stress-presets";
-export type { SimulationResult, HolderProjection } from "./domain/simulate-projection";
-export type { ScenarioKind, ScenarioOutcome } from "./domain/scenarios";
-export type { SheetMode, ProjectSheet, RealizedResult, BudgetBreakdown, MilestoneView } from "./domain/project-sheet";
-export { simulateProjection } from "./domain/simulate-projection";
-export type { GetProjectSheet, ProjectSheetLookup, ProjectBudgetRepository } from "./application/…";   // de get-project-sheet.ts y ports.ts
-export { ProjectSheet, type ProjectSheetProps } from "./ui/components/investor/ProjectSheet";
-export { ProjectNotFound, type ProjectNotFoundProps } from "./ui/components/investor/ProjectNotFound";
-```
-`index.ts` **no** exporta `ProjectSheet` como tipo y como componente con el mismo nombre. El tipo de dominio se exporta como `ProjectSheet` y el componente como `ProjectSheetPage`. **Corrección del contrato:** el componente y su archivo se llaman `ProjectSheetPage` / `ProjectSheetPage.tsx` (props `ProjectSheetPageProps`), para evitar el choque con el tipo. Esto aplica en toda la tabla de arriba.
-
-### 3.9 `app/` (paquete UI)
-
-```tsx
-// src/app/(inversionista)/proyectos/[slug]/page.tsx
-import { ProjectSheetPage } from "@/modules/finance";
-import { routeMetadata } from "@/shared/ui/app-shell";
-export const metadata = routeMetadata("p4");
-export default function ProjectPage({ params }: PageProps<"/proyectos/[slug]">) {
-  return <ProjectSheetPage params={params} />;
-}
-// Si PageProps<"/proyectos/[slug]"> no resuelve con los grupos de rutas: { params: Promise<{ slug: string }> }.
-
-// src/app/(inversionista)/proyectos/[slug]/not-found.tsx
-import { ProjectNotFound } from "@/modules/finance";
-export default function ProjectNotFoundPage() {
-  return <ProjectNotFound />;
-}
-```
-
-**Orden y tonos de la ficha** (ADR-010: una banda, una idea; no hay dos tonos iguales seguidos):
-
-| # | Sección (`data-testid`) | Tono | open / illustrative | settling | historic |
-|---|---|---|---|---|---|
-| 0 | `PageHeader` (`ficha-cabecera`) | dark | ✔ | ✔ | ✔ |
-| 1 | Resumen (`ficha-resumen`) | light | ✔ | ✔ | ✔ |
-| 2 | El inmueble (`ficha-inmueble`) | paper | ✔ | ✔ | ✔ |
-| 3 | Presupuesto (`ficha-presupuesto`) | sand | ✔ | ✔ | ✔ (sin `projection`) |
-| 4 | Escenarios (`ficha-escenarios`) | light | ✔ | — | — |
-| 5 | Simulador (`ficha-simulador`) / Liquidación en curso (`ficha-liquidacion-en-curso`) / Resultado (`ficha-resultado`) | sand ruled | simulador | en curso | resultado |
-| 6 | Cronograma y actualizaciones (`ficha-cronograma`) | paper | ✔ | ✔ | ✔ |
-| 7 | Riesgos (`ficha-riesgos`) | dark | ✔ | ✔ | ✔ |
-| 8 | Siguiente paso (`ficha-siguiente-paso`) | sand | ✔ | ✔ | ✔ |
-
-En `settling` y `historic` la #4 no está, así que #3 (sand) va seguida de #5 (sand): por eso #5 lleva `ruled`.
-
-### 3.10 Copy
-
-`src/modules/finance/ui/copy.ts` → `PROJECT_SHEET_COPY` y `src/modules/finance/ui/simulator-copy.ts` → `SIMULATOR_COPY` (los dos `as const`; los dos cumplen `copy\.ts$` para `check-copy`). Sin "rueda", "estancado", "días sin vender", "real/reales", "Invierte/Compra/Invertir/Comprar", "Club M²" ni promesas. **Tampoco en comentarios.** Los avisos legales salen de `LEGAL_COPY`.
-
-| Clave (`PROJECT_SHEET_COPY`) | Texto |
+| Archivo | Cambio |
 |---|---|
-| `header.eyebrow` | Ficha del proyecto |
-| `header.description(kind, m2, city, zone)` | `${kind} de ${m2} m² en ${city} · ${zone}. Proyecto de ejemplo con datos simulados.` |
-| `kind.apartment · house` | Apartamento · Casa |
-| `cta.participate · browse` | Vista previa: cómo participar · Ver proyectos abiertos a participar |
-| `summary.title` | Resumen |
-| `summary.availability(a, t)` · `closedNote` | `Participaciones disponibles: ${a} de ${t}` · colocación cerrada |
-| `summary.placed(p, t)` · `retained(n)` | `Colocadas: ${p} de ${t}` · `Retenidas por la empresa: ${n}` |
-| `summary.price` · `summary.targetTerm(m)` | Precio por participación · `Plazo objetivo: ${m} meses desde la compra` |
-| `property.title · kind · area · zone` | El inmueble · Tipo · Superficie · Zona |
-| `property.areaValue(m)` · `zoneValue(c, z)` | `${m} m²` · `${c} · ${z}` |
-| `property.addressNote` · `photosNote` | Mostramos la zona, no la dirección exacta. · Esta sección mostrará las fotos del antes y el después. |
-| `budget.title` | Presupuesto desglosado |
-| `budget.description` | Cifras de ejemplo. La empresa compra el inmueble con capital propio; las participaciones financian solo el presupuesto integral de recuperación. |
-| `budget.acquisition · recovery` | Compra del inmueble · capital propio de la empresa · Presupuesto integral de recuperación · lo financian las participaciones |
-| `budget.category.works · management_fee · contingency · reserve` | Obra por rubros · Honorarios de gestión de la empresa · Contingencia · Reserva |
-| `budget.item.*` | Demolición y retiro de escombros · Albañilería · Electricidad · Plomería · Pisos y revestimientos · Carpintería y cocina · Pintura y acabados · Gestión del proyecto y compras · Supervisión técnica de obra · Administración, documentos y reportes · Imprevistos de obra · Reserva del proyecto |
-| `budget.subtotal` | Subtotal |
-| `budget.feesNote` | Los honorarios y la contingencia son parte del presupuesto, no una ganancia adicional de la empresa. Lo que no se use se informará como remanente. |
-| `budget.saleCosts · targetSale` | Costos de venta estimados (comisiones, impuestos y registro) · Precio de venta objetivo |
-| `scenarios.title · description` | Escenarios · Tres escenarios de ejemplo para el precio de venta y el costo de obra. Ninguno es una promesa. |
-| `scenarios.kind.conservative · base · optimistic` | Conservador · Base · Optimista |
-| `scenarios.assumptions(sale, works)` | `Venta ${sale} · obra ${works}` (con `formatBps(…, {signed:true})`) |
-| `scenarios.capital · salePrice · surplus · perParticipation · payout` | Capital por participación · Precio de venta · Excedente · Ganancia por participación · Cobro por 1 participación |
-| `scenarios.noDistribution` | Sin excedente: no hay reparto del fondo. |
-| `settling.title · description` | Liquidación en curso · El inmueble se vendió. El resultado se publicará al liquidar el proyecto. |
-| `realized.title · description` | Resultado de la liquidación · Proyecto finalizado. Estas cifras son el resultado realizado de la liquidación de ejemplo. |
-| `realized.settledOn(date)` | `Liquidado el ${date}` |
-| `realized.capital · gain · payout` | Capital aportado por participación · Ganancia realizada por participación · Cobro realizado por participación |
-| `realized.simulatorInactive` | El simulador no aplica a un proyecto finalizado. |
-| `timeline.title · milestonesHeading · updatesHeading` | Cronograma y actualizaciones · Hitos · Actualizaciones |
-| `timeline.milestone.*` | Compra firmada · Apertura de la colocación · Cierre de la colocación · Inicio de obra · Fin de obra · Publicación para la venta · Firma de venta · Liquidación |
-| `timeline.state.done · planned · pending` | Hecho · Previsto · Pendiente |
-| `timeline.pendingNote` | Se informa en las actualizaciones. |
-| `timeline.publishedOn(date)` · `responsible(label)` | `Publicado el ${date}` · `Responsable: ${label}` |
-| `timeline.source.*` | Acta de compra · Informe de colocación · Informe de obra · Informe comercial · Informe de liquidación |
-| `timeline.responsibleRole.*` | Equipo de adquisiciones · Coordinación de obra · Equipo comercial · Equipo de finanzas |
-| `timeline.evidence.photos · document` | Evidencia: fotos de avance (simuladas) · Evidencia: documento de ejemplo |
-| `timeline.emptyUpdates` | Este proyecto todavía no tiene actualizaciones publicadas. |
-| `risks.title · description` | Riesgos · Lo que puede salir distinto de lo previsto y cómo se gestiona. |
-| `risks.sale_price` | Precio de venta menor al previsto — Se usan comparables cerrados y un escenario conservador. |
-| `risks.works_overrun` | Obra más cara de lo presupuestado — Presupuesto por rubros, contratistas evaluados y una contingencia. |
-| `risks.slow_sale` | Venta más lenta o sin comprador — Estrategia de precio, varios canales de venta y opciones de conservación o alquiler. |
-| `risks.liquidity` | Liquidez insuficiente al cierre — Caja separada por proyecto y reservas. Qué pasa con el capital si no hay excedente está por definir. |
-| `risks.conflict_of_interest` | Conflicto de intereses — Los honorarios de la empresa se muestran desglosados en el presupuesto. |
-| `risks.legal_structure` | Estructura legal pendiente — Hoy no se reciben aportes: las participaciones son de ejemplo hasta que exista una estructura habilitada. |
-| `nextStep.open.title · description` | ¿Te interesa este proyecto? · Mira cómo será el proceso para participar. Es una vista previa: hoy no se reciben aportes. |
-| `nextStep.closed.title · description` | Este proyecto ya no recibe participaciones · Explora los proyectos abiertos a participar. |
-| `loading` · `error.title · description · action` | Cargando la ficha… · No pudimos cargar la ficha · Inténtalo de nuevo. Si continúa, reinicia los datos simulados. · Reintentar |
-| `notFound.eyebrow · title · description · action` | Proyectos · No encontramos este proyecto · Puede que el enlace no sea correcto o que el proyecto todavía no esté publicado. · Ver los proyectos del club |
+| `ProjectDetail.tsx` | Rama por `data.mode` (D5). `BudgetSection budget={data.budget}` · `ScenariosSection rows={data.scenarios}` · `SimulatorSection data` · `RealizedResult` con `data.realized` y `data.settlement` · `TimelineSection` · `RisksSection risks={data.risks}` |
+| `BudgetSection.tsx` | Tipo `BudgetBreakdown`. La etiqueta de cada línea sale de `C.budget.items[line.item]` (key = item) |
+| `ScenariosSection.tsx` | Recibe `rows: readonly ScenarioRow[]`; no calcula nada |
+| `SimulatorSection.tsx` · `SimulatorControls.tsx` · `SimulatorResultPanel.tsx` | Tipos del dominio. Los controles en pb muestran `formatPercentage({ bps })` en `valueText`. `maxHeld` = `data.simulation.heldRange.max` (se quita el `Math.max` de la UI). Presets desde `STRESS_PRESET_IDS` (mismo testid `simulador-preset-${id}`) |
+| `RealizedResult.tsx` | Capital, ganancia y % desde `realized: HolderPayout`. Precio, excedente y fondo desde `settlement` |
+| `TimelineSection.tsx` | `ProcessBoard stages={toProcessStageViews(data.process ?? [])}`. Las actualizaciones muestran `formatIsoDate(u.publishedOn)` · `u.title` · `u.body` |
+| `RisksSection.tsx` · `ProjectParticipate.tsx` | Textos `C.risks.kinds[kind]` |
+| `ProjectParticipate.tsx` | `estimateReservation(data.simulation.base, q)` y `reservationAmount` desde un hook nuevo `use-reservation-estimate.ts`. Sin cupos = `data.simulation.maxHeld < 1` |
+| `PropertySection.tsx` | `data.profile.description` y `data.profile.highlights` |
+| `ProjectProcessBoard.tsx` | `useProcessStages(code)`. Mientras está pendiente → `null`; con `null` → `noProcess`. Props sin cambios (D3) |
+| `copy.ts` | Añade `budget.items: Record<BudgetItem, string>` (las etiquetas actuales; `management_fee` "Honorarios de gestión de la empresa", `contingency` "Contingencia de obra", `reserve` "Reserva") y `risks.kinds: Record<ProjectRiskKind, string>` (los 7 textos actuales, literales) |
+| `copy-simulator.ts` | `saleVariation(bps)` y `overrunValue(bps)` con `formatPercentage`. Mismo texto visible ("−20 % sobre el objetivo", "+20 %") |
 
-| Clave (`SIMULATOR_COPY`) | Texto |
-|---|---|
-| `title · description` | Simulador del reparto · Mueve las variables y mira cómo cambiaría tu parte del fondo del 25 %. Todo es proyección. |
-| `illustrative` | Este proyecto ya no tiene participaciones disponibles. La simulación ilustra el reparto para quien tuviera esas participaciones. |
-| `base.label · project · reference` | Base de la simulación · Este proyecto · Ejemplo de referencia |
-| `base.referenceNote(c, f, p)` | `Ejemplo del modelo del club: compra ${c} · presupuesto ${f} · venta ${p} · sin costos de venta.` (montos con `formatMoney`) |
-| `held.label · hint(max)` | Participaciones que simulas · `Entre 1 y ${max} por persona` |
-| `held.value(n)` | `1 participación` / `${n} participaciones` |
-| `placed.label · value(p, t) · hint` | Colocación total del proyecto · `${p} de ${t}` · Incluye las tuyas. Las no colocadas quedan en manos de la empresa. |
-| `salePrice.label · value(pct)` | Precio de venta · `${pct} sobre el precio objetivo` |
-| `overrun.label · value(pct) · note` | Sobrecosto de obra · `${pct} sobre la obra` · El sobrecosto se suma al presupuesto y reduce el excedente. |
-| `delay.label · value(m) · none · note` | Retraso de la venta · `${m} meses` · Sin retraso · En esta simulación el retraso solo cambia el plazo; su costo está por definir. |
-| `presets.label · reset` | Pruebas de estrés · Volver a los valores base |
-| `presets.sale_minus_20 · works_plus_20 · works_plus_50` | Venta −20 % · Obra +20 % · Obra +50 % |
-| `presets.delay_3 · delay_6 · delay_9 · placement_zero` | Retraso 3 meses · Retraso 6 meses · Retraso 9 meses · Colocación 0 % (sin otros participantes) |
-| `result.heading · capital · gain · payout` | Resultado de la simulación · Capital aportado · Ganancia proyectada · Cobro proyectado |
-| `result.noDistribution` | Sin excedente: no hay reparto del fondo de participaciones. |
-| `result.capitalPolicy` | Qué pasa con el capital aportado si no hay excedente: por definir. |
-| `result.term(projected, target, delay)` | `Plazo proyectado: ${projected} meses desde la compra (objetivo ${target}${delay > 0 ? ` + retraso ${delay}` : ""})` |
-| `breakdown.title` | Cómo se reparte el excedente proyectado |
-| `breakdown.surplus · fund · perParticipation · toExternal · companyFromFund · companyDirect` | Excedente · Fondo de participaciones (25 %) · Por participación · A los participantes · A la empresa por sus participaciones retenidas · A la empresa (75 %) |
-| `error.title · description` | No pudimos simular con estos valores · Vuelve a los valores base. |
-| `aria.result` | Resultado actualizado |
+Se borran: `ui/components/investor/examples.ts` y `examples.test.ts`, `ui/types.ts`, `ui/hooks/{simulate,scenarios,project-figures,process-stages}.ts` y sus tests `simulate.test.ts`, `estimate-reservation.test.ts` y `figures.test.ts`. Su cobertura se reparte así: los tests de dominio van en D, `profit-rate.test.ts` y `process-stage-view.test.ts` en UI.
 
-`participations/ui/copy.ts` (paquete UI), solo `nextStep`: `title` "Abre la ficha de un proyecto" · `description` "La ficha muestra el inmueble, el presupuesto desglosado, los escenarios y el simulador del reparto." · `action` "Ver la ficha de un proyecto abierto".
+**Fuera del módulo (paquete UI).**
+- `investors/ui/components/panel/HoldingProcess.tsx`: `"use client"` y `useProcessStages(code)`, con el mismo marcado. `acquiredOn` sigue en las props pero no se usa (D3).
+- `investors/.../panel/projection-parity.test.tsx`: tipos nuevos, con la misma aserción.
+- `investors/.../admin/process-parity.test.tsx`: monta el tablero admin dentro de `<Providers>` y usa `await findByTestId`.
+- `app/(inversionista)/proyectos/[slug]/page.tsx` y `participar/page.tsx`: sin `generateStaticParams`; `isProjectSlug` de `@/modules/projects` (D4).
 
 ## 4. Paquetes
 
 | # | Agente | Archivos (exclusivos) | Depende de | Paralelo con | Criterios |
 |---|---|---|---|---|---|
-| D | dominio-financiero | **projects:** `domain/project-slug.ts` (+`.test.ts`), `domain/milestone.ts` (+test), `domain/project-update.ts` (+test), `domain/project-risk.ts`, `application/ports.ts`, `index.ts`, `public-api.test.ts`, `CLAUDE.md` · **finance:** `domain/budget.ts` (+test), `domain/reference-case.ts` (+test), `domain/simulator.ts` (+test), `domain/stress-presets.ts` (+test), `domain/simulate-projection.ts`, `domain/simulate-projection.canonical.test.ts`, `domain/simulate-projection.properties.test.ts`, `domain/scenarios.ts` (+test), `domain/project-sheet.ts` (+`project-sheet-types.ts` si hace falta, +test), `application/ports.ts`, `application/get-project-sheet.ts` (+test), `money-in-ui.test.ts`, `CLAUDE.md` · **participations:** `CLAUDE.md` | contratos §3.1–3.3 | DATA, UI, E2E (redacción) | CA3–CA6 (lógica), CA9 (guardia) |
-| DATA | datos-demo | **projects:** `infrastructure/seed.ts`, `infrastructure/seed-progress.ts` (nuevo), `infrastructure/seed-updates.ts` (nuevo), `infrastructure/projects.mock-repository.ts` (+test) · **finance:** `infrastructure/seed.ts`, `infrastructure/seed-budget.ts` (nuevo), `infrastructure/finance.mock-repository.ts` (+test) · **composition:** `demo-snapshot.ts`, `modules/projects.ts`, `modules/finance.ts`, `container.ts`, `container.test.ts`, `seed-consistency.test.ts`, `project-sheet-seed.test.ts` (nuevo) · `src/shared/config/demo.ts` | §3.1–3.3 (tipos) y §3.5–3.6. Escribe contra las firmas; verifica cuando D entregue | D, UI | CA1, CA2 (cifras), CA5, CA6, CA7 |
-| UI | constructor-ui | **finance/ui:** `copy.ts`, `simulator-copy.ts`, `hooks/use-project-sheet.ts`, `hooks/use-simulator.ts`, `components/investor/{ProjectSheetPage, ProjectSheetSkeleton, ProjectSheetView, ProjectNotFound, SheetHeader, SheetCta, SheetSummary, SheetProperty, SheetBudget, SheetScenarios, Simulator, SimulatorControls, SimulatorPresets, SimulatorResult, SimulatorBreakdown, SheetRealized, SheetTimeline, SheetRisks, SheetNextStep}.tsx`, `components/investor/presentation.ts` (+`presentation.test.ts`), `components/investor/ProjectSheetView.test.tsx`, `components/investor/Simulator.test.tsx` · `src/modules/finance/index.ts` · `src/modules/participations/index.ts` · `src/modules/participations/ui/copy.ts` · **shared:** `ui/primitives/range.tsx`, `lib/format-percentage.ts` (+test), `ui/README.md`, `ui/app-shell/route-map.ts`, `ui/app-shell/route-map.test.ts`, `ui/app-shell/index.ts` · **app:** `(inversionista)/proyectos/[slug]/page.tsx`, `(inversionista)/proyectos/[slug]/not-found.tsx` | §3 completo; tipos de D | D, DATA, E2E (redacción) | CA1–CA4, CA6, CA8 |
-| E2E | qa-e2e | `tests/e2e/ficha.spec.ts` (nuevo) · `tests/e2e/rutas.spec.ts` · `tests/e2e/reiniciar-datos.spec.ts` | testids de §5.3; se ejecuta después de D, DATA y UI | redacción con todos | CA1, CA3–CA6, CA8, CA9 |
+| D | dominio-financiero | **projects:** `domain/{project-slug,property-profile,process,project-update,project-risk}.ts` + `.test.ts` de slug, process, update y risk · `application/ports.ts` · `application/get-project-process.ts` (+test) · `index.ts` · `public-api.test.ts` · `CLAUDE.md` · **finance:** `domain/{budget,simulator,stress-presets,scenarios,holding-projection,project-detail}.ts` (+`project-detail-types.ts` si hace falta) · `domain/budget.test.ts` · `domain/simulate-projection.canonical.test.ts` · `domain/simulate-projection.properties.test.ts` · `domain/stress-presets.test.ts` · `domain/scenarios.test.ts` · `domain/holding-projection.test.ts` · `domain/project-detail.test.ts` · `application/ports.ts` · `application/get-project-detail.ts` (+test) · `application/get-holding-projections.ts` (+test) · `index.ts` · `money-in-ui.test.ts` · `CLAUDE.md` · **participations:** `index.ts` · `CLAUDE.md` | contratos §3.1–3.4 | DATA y la redacción de UI/QA | CA3–CA6 (lógica), CA8 (guardia) |
+| DATA | datos-demo | **projects:** `infrastructure/seed.ts` · `infrastructure/seed-content.ts` (nuevo) · `infrastructure/projects.mock-repository.ts` (+test) · **finance:** `infrastructure/seed.ts` · `infrastructure/seed-budget.ts` (nuevo) · `infrastructure/finance.mock-repository.ts` (+test) · **composition:** `demo-snapshot.ts` · `modules/projects.ts` · `modules/finance.ts` · `container.ts` · `container.test.ts` · `seed-consistency.test.ts` · `project-detail-seed.test.ts` (nuevo) · **shared:** `config/demo.ts` | §3 (tipos de D). Escribe contra las firmas; entrega `HECHO` cuando D haya entregado | D | CA1 (datos), CA2, CA5–CA7 |
+| UI | constructor-ui | **finance:** `ui/**` excepto `ui/components/admin/**` (más `ui/components/admin/index.ts`, solo para reexportar el tablero) · `ui.ts` · `backoffice-ui.ts` · **investors:** `ui/components/panel/HoldingProcess.tsx` · `ui/components/panel/projection-parity.test.tsx` · `ui/components/admin/process-parity.test.tsx` · **app:** `(inversionista)/proyectos/[slug]/page.tsx` · `(inversionista)/proyectos/[slug]/participar/page.tsx` | D y DATA (sus tests usan `createContainer`) | redacción con D y DATA | CA1–CA4, CA6, CA8 |
+| QA | qa-e2e | `tests/e2e/ficha.spec.ts` · `tests/e2e/reiniciar-datos.spec.ts` | D, DATA y UI integrados | redacción con todos | CA1, CA3–CA6, CA8, CA9 |
 
-**Orden.** D ∥ DATA ∥ UI ∥ (redacción de E2E), todos contra §3. Se integra en este orden: **D → DATA → UI → ejecución de E2E**. El orquestador corre `pnpm verify` y `pnpm build`. Después vienen `revisor-codigo` ∥ `revisor-cumplimiento` y, al final, la integración. DATA y UI pueden compilar contra tipos provisionales, pero no entregan `HECHO` hasta que D haya entregado.
+**Orden.** D ∥ DATA ∥ (redacción de UI y QA), todos contra §3. Se integra **D → DATA → UI → QA**. El orquestador corre `pnpm verify` y `pnpm build` después de cada integración, y luego vienen `revisor-codigo` ∥ `revisor-cumplimiento`. Si UI pasa de su presupuesto, se divide en **UI-a** (hooks, `ui.ts`, `backoffice-ui.ts`, investors y app) y **UI-b** (componentes y copy de investor). UI-b depende de las firmas de los hooks de §3.7.
 
 **Notas por paquete.**
 - **D.**
-  - El dominio no usa `Date` ni hace aritmética sobre `.cents`: usa solo `shared/domain/money` (`applyPercentageFloor`, `addMoney`, `multiplyMoney`, `sumMoney`) y `percentage`.
-  - `simulate-projection.ts` llama a `calculateDistribution` y `calculateHolderPayout`, nunca a fórmulas propias. Si `calculateHolderPayout` devuelve `HELD_OUT_OF_RANGE`, se propaga.
-  - `money-in-ui.test.ts` recorre `src/modules/finance/ui/**/*.{ts,tsx}` con `readFileSync` y falla si encuentra `/\.cents\s*[-+*/%]|[-+*/%]\s*[\w.]*\.cents/` o un `import {` no-`type` desde `"@/shared/domain/money"`.
-  - `finance/CLAUDE.md` añade: primera `ui/` (D1), las cuatro reglas de la trampa de ciclo (D1), "solo los hooks importan domain" (D9), y los supuestos P4-1…P4-10 con un enlace a este plan. Debe seguir en 30 líneas o menos.
-  - `projects/CLAUDE.md` añade una línea sobre hitos, actualizaciones y riesgos (sin niveles) e `isProjectSlug`.
+  - Nada de `Date` ni aritmética con `.cents` en domain: solo `applyPercentageFloor`, `addMoney`, `subtractMoney`, `multiplyMoney`, `sumMoney` y `percentage`.
+  - `simulateProjection` reproduce `ui/hooks/simulate.ts` línea por línea, salvo que el sobrecosto se aplica a `worksBudget` (P4-4).
+  - `money-in-ui.test.ts` recorre `src/modules/finance/ui/{hooks,components/investor}/**/*.{ts,tsx}` (sin `*.test.*`) con `readFileSync`. Falla ante `/\.cents\b/` o ante un `import {` sin `type` desde `"@/shared/domain/money"`. Sobre el árbol actual **fallará** hasta que UI termine; D lo entrega marcado `it.todo` → UI lo activa (`it`) como último paso. Lo coordina el orquestador.
+  - `finance/CLAUDE.md` (≤ 30 líneas) añade:
+    - las reglas D2 y D7;
+    - "la ficha se arma en `buildProjectDetail`";
+    - los supuestos P4-4, Q1–Q3 y P5-1 con un enlace a este plan.
+  - `participations/CLAUDE.md`: "`finance` importa de aquí **solo tipos** en domain/application; `finance/ui` puede importar valores".
+  - `projects/CLAUDE.md`: perfil, proceso, actualizaciones y riesgos, sin niveles; `isProjectSlug`.
   - `public-api.test.ts` amplía la lista exacta y mantiene "ninguna clave /wheel/i".
 - **DATA.**
-  - Es el único paquete que toca `seed*.ts` y `composition/**`.
-  - Las fechas salen de `relativeDates(clock)` o de `addDays(acquiredOn, n)`. No hay fechas literales: el test se amplía a `seed-progress.ts`, `seed-updates.ts` y `seed-budget.ts`.
-  - `buildFinanceSeed` valida los presupuestos con `checkProjectBudget` y lanza un error si fallan.
-  - `seed-consistency.test.ts` pasa a importar el motor de `@/modules/finance/domain/*` (D1). La aserción `parseDemoSnapshot({ version: 2 })` cambia a `({ version: 1 })` → `ok === false`.
-  - Antes de entregar: `node scripts/check-copy.mjs src/modules/projects/infrastructure`.
+  - Es el único paquete que toca `seed*.ts`, `composition/**` y `shared/config/demo.ts`.
+  - Fechas solo con `relativeDates(clock)`, sin literales: el test de "sin fechas literales" incluye `seed-content.ts` y `seed-budget.ts`.
+  - Confirma D6 con el grep antes de empezar.
+  - `seed-consistency.test.ts` puede seguir importando de `@/modules/finance`, porque su index no lleva UI.
 - **UI.**
-  - Lee `dynamic-routes.md` (§With Cache Components), `not-found.md` y `preserving-ui-state.md` antes de escribir.
-  - Ningún componente lee el container en el render. Solo `useQuery` lo hace (R6 de P3).
-  - Reutiliza `PageHeader`, `Section`, `Surface`, `BulletList`, `ProjectSeal`, `StatusBadge`, `MoneyDisplay`, `ProjectionLabel`, `LegalNotice`, `ErrorState`, `CardSkeleton`, `TextSkeleton`, `Button` y `Label`. **No** crea componentes en `shared/ui` aparte de `range.tsx`. Si falta algo más, devuelve `BLOQUEADO`.
-  - Los valores de `aria-valuetext` y de `<output>` se arman con `formatMoney` y `formatBps`, nunca con aritmética.
-  - Antes de entregar: `node scripts/check-copy.mjs src/modules/finance src/modules/participations src/app`.
-- **E2E.**
-  - Importa `LEGAL_COPY` por ruta relativa. Normaliza NBSP (U+00A0) y el signo menos (U+2212) antes de comparar.
-  - Acota los locators a `[data-testid="pagina-p4"]:visible` (Activity).
-  - Mueve los rangos con `locator.fill("63")`.
-  - En `reiniciar-datos.spec.ts`: `KEY = "club-demo:v2"` y `snap.version` = 2. El valor alterado conserva `version: 1`, que se descarta y siembra de nuevo igual.
+  - El aspecto **no cambia**. Antes y después, compara con `pnpm playwright test tests/e2e/capturas-maqueta.spec.ts` (capturas de ficha, participar, panel y admin).
+  - Ningún componente importa `../../../domain/*` con valores ni valores de `@/shared/domain/money`.
+  - Corre `node scripts/check-copy.mjs src/modules/finance src/modules/investors src/app` antes de entregar.
+- **QA.**
+  - Acota los locators a `[data-testid="pagina-p4"]:visible`.
+  - Normaliza NBSP y el signo menos (U+2212).
+  - Compara importes con el texto que da `formatMoney`, no con literales armados a mano.
 
 ## 5. Pruebas
 
-### 5.1 Unitarias e integración (Vitest)
-
-**D · projects**
-- `project-slug.test.ts`: acepta `m2-006-chacao`. Rechaza `M2_RARO`, `""`, `a--b`, `-a`, `a-` y valores que no son string.
-- `milestone.test.ts`: `milestoneState` da `done`, `planned` (plannedOn = today cuenta como planned) y `pending`. `sortMilestones` sigue el orden de `MILESTONE_KINDS` y no muta la entrada.
-- `project-update.test.ts`: orden descendente por fecha; en empate, por id.
-- `public-api.test.ts`: lista exacta ampliada y ninguna clave /wheel/i.
-
-**D · finance**
-- `budget.test.ts`:
-  - La plantilla de §3.5 suma USD 10.000, con obra 5.000, honorarios 3.000 y contingencia 2.000.
-  - `BUDGET_TOTAL_MISMATCH` con una línea de USD 1 de más. También `DUPLICATE_ITEM`, `NEGATIVE_AMOUNT` y `NO_WORKS_LINES`.
-  - `groupBudget` respeta el orden y omite `reserve` vacío. `worksTotal` = 5.000.
-  - `BUDGET_ITEM_CATEGORY` es exhaustivo.
-- `reference-case.test.ts`: `REFERENCE_SIMULATION_BASE` con `placed 100` da con `calculateDistribution` el C1 exacto del test canónico.
-- `simulator.test.ts`:
-  - `initialSimulatorInputs` en open M2-like (colocadas 63, disponibles 37) da `placed 64` y `held 1`. En illustrative (81) da `placed 81`. Al cambiar a la base de referencia, `placed 100`.
-  - `held` se recorta a `heldLimits` (21 → 20 y 0 → 1). Con disponibles 5: máximo 5.
-  - `placed` se recorta a [held, total]. NaN e Infinity vuelven al valor inicial.
-  - `normalize` es idempotente (fast-check).
-  - `reset` conserva `source`.
-- `stress-presets.test.ts`:
-  - Cada preset fija solo su variable y deja el resto en el valor inicial. `placement_zero` da `placed = held`.
-  - `activeStressPreset` reconoce los 7 presets y devuelve `null` con valores mixtos.
-  - Aplicar `delay_6` después de `sale_minus_20` deja la venta en 0 (un preset a la vez).
-- `simulate-projection.canonical.test.ts` (CA5), con nombres de negocio:
-  - **C1** · referencia, held 1, placed 100: `fund` 500 000 ¢, `perParticipation` 5 000 ¢, `toExternal` 500 000 ¢, `companyFromFund` 0, `companyDirect` 1 500 000 ¢. `holder` = {contributed 10 000 ¢, gain 5 000 ¢, payout 15 000 ¢}.
-  - **C6** · placed 63: `toExternal` 315 000 ¢ y `companyFromFund` 185 000 ¢.
-  - **C3 vía colocación mínima** · placed = held = 1: `perParticipation` 5 000 ¢.
-  - **Sin excedente** · referencia con venta −5000 pb: P 20.000 → `no_distribution`, `holder.kind "no_distribution"`, `capitalPolicy "to_be_defined"` y `contributed` 10 000 ¢.
-  - **Pérdida (como C5)** · venta −5000 pb y obra +5000 pb: excedente −2.500 → sin reparto.
-  - **M2-006** (base: C 50.000, F 10.000, obra 5.000, P 76.000, O 2.280):
-    - inicial → gain 3 430 ¢ y payout 13 430 ¢
-    - venta −20 % → `no_distribution` (excedente −148 000 ¢)
-    - obra +20 % → gain 3 180 ¢
-    - obra +50 % → 2 805 ¢
-    - retraso 6 → `projectedMonths 9` con el mismo gain
-    - colocación 0 → `companyFromFund` 339 570 ¢
-- `simulate-projection.properties.test.ts`, con fast-check sobre entradas arbitrarias (también fuera de rango):
+### 5.1 Dominio (paquete D, Vitest)
+- `simulate-projection.canonical.test.ts` (CA5). Base C1 = P 40.000 · C 10.000 · F 10.000 · obra 5.000 · O 0 · 100 × USD 100:
+  - **C1** (placed 100, held 1): excedente 20.000 · fondo 5.000 · 50 por participación · externos 5.000 · empresa del fondo 0 · empresa 75 % 15.000 · capital 100 · ganancia 50 · cobro 150.
+  - **C6** (63): externos 3.150 · empresa del fondo 1.850 · cobro 150.
+  - **C3** (`placement-0`): `no_placement` · externos 0 · empresa del fondo 5.000.
+  - **C5** (P 19.000): `no_distribution`.
+  - **C4** (P 30.000, O 1.000): 22,50 por participación.
+- Estrés sobre C1:
+  - `sale-20` → P 32.000 y excedente 12.000;
+  - `works-50` → `worksOverrun` 2.500 y F' 12.500 (P4-4);
+  - `delay-6` → `termMonths` 9 con el excedente igual.
+- `simulate-projection.properties.test.ts` (fast-check, entradas arbitrarias, también fuera de rango):
   - nunca lanza;
-  - si hay reparto, `toExternal + companyTotal === surplus`, `holder.gain === perParticipation × held` y `payout = contributed + gain`;
-  - `projectedMonths = target + delay`;
+  - con `payout`: `toExternal + companyTotal === surplus` y `capitalExterno + capitalEmpresa + surplus + O === P'`;
+  - `heldUsed ≤ placed`;
+  - `termMonths = target + delay`;
   - `recoveryBudget ≥ F`;
+  - `normalizeControls` es idempotente;
   - `JSON.stringify(result)` no coincide con /wheel|rueda|stalled/.
-- `scenarios.test.ts`:
-  - devuelve 3 escenarios, en orden.
-  - En M2-006, por participación: conservador 1 280 ¢ (P 6 840 000 ¢, F' 1 100 000 ¢), base 3 430 ¢ y optimista 4 380 ¢.
-  - Las asunciones coinciden con D6.
-- `project-sheet.test.ts`, con fixtures en línea:
-  - Modos D4 para las 6 fases.
-  - `open`: `heldLimits.max` = min(20, disponibles) y `retained 0`.
-  - `illustrative`: `retained = total − placed`.
-  - `historic`: `simulator null`, `scenarios []`, `realized.perParticipation` = `calculateHolderPayout(dist, 1)` y `budget.projection null`. Sin liquidación → `MISSING_SETTLEMENT`.
-  - Otro `projectId` en cualquier parte → `PROJECT_MISMATCH`.
-  - Un hito vencido sin cumplir da `pending` con `date null`.
-  - Los riesgos salen ordenados y sin duplicados.
-  - Las claves del resultado no coinciden con /wheel/i.
-- `get-project-sheet.test.ts`, con repos falsos:
-  - Un slug ausente en `listMarketplace` da `not_found` y no consulta los demás repos.
-  - Con datos completos da `found`.
-  - Si falta la economía, la promesa se rechaza.
-  - Si un repo lanza en síncrono, se rechaza (no hay excepción sin capturar).
-  - Usa `clock.today()` para los hitos.
-- `money-in-ui.test.ts` (guardia, CA9): pasa sobre el árbol actual y detecta una cadena de prueba con `.cents +`.
+- `stress-presets.test.ts`: cada preset cambia solo su variable, conserva `held` y parte de los valores neutros; `base` = `neutralControls`. Los ids coinciden con la maqueta (protegen los testids).
+- `scenarios.test.ts`: 3 filas en el orden de `SCENARIO_IDS`. [PROPUESTO] Con la base M2-006, ganancia por participación: conservador USD 12,80 · base USD 34,30 · optimista USD 43,80.
+- `holding-projection.test.ts` (P5-1, base M2-006):
+  - con 1, la colocación pasa a 64 y reparte;
+  - con 37, llega a 100;
+  - con 42, se queda en 100 (tope);
+  - más colocadas suben `toExternal`;
+  - sin excedente → `no_distribution`;
+  - `projectHoldingGain(base, 2)` = 2 × 34,30;
+  - `reservationAmount(100, 3)` = 300.
+- `budget.test.ts`:
+  - la plantilla de M2-006 suma 10.000, con obra 5.000 y bolsa 5.000;
+  - errores `BUDGET_TOTAL_MISMATCH` (+1 ¢), `DUPLICATE_ITEM`, `NEGATIVE_AMOUNT`, `NO_WORKS_LINES` y `PROJECT_MISMATCH`;
+  - `buildBudgetBreakdown` da total = C + F + O y separa works de fees conservando el orden;
+  - `BUDGET_ITEM_CATEGORY` es exhaustivo.
+- `project-detail.test.ts` (fixtures en línea):
+  - modos D5 para las 6 fases;
+  - `maxHeld` open = min(20, disponibles) y, en el resto, min(20, colocadas); `heldRange.max ≥ 1`;
+  - realized → `scenarios []` y `realized` = `calculateHolderPayout(dist, 1)`; `finished` sin liquidación → `MISSING_SETTLEMENT`;
+  - un id ajeno → `PROJECT_MISMATCH`; un proceso inválido → `INVALID_PROCESS`;
+  - actualizaciones ordenadas y riesgos normalizados;
+  - claves sin /wheel/i.
+- `get-project-detail.test.ts` (repos falsos):
+  - un slug ausente → `null`, sin consultar los demás repos;
+  - con datos completos → el detalle;
+  - sin economía, presupuesto o perfil → rechaza;
+  - un repo que lanza en síncrono → rechaza.
+- `get-holding-projections.test.ts`: suma correcta con `sumMoney`; un código desconocido → `null`; si todos son null, `total` es `null`.
+- projects:
+  - `project-slug.test.ts`: acepta `m2-006-chacao`; rechaza `M2_RARO`, `""`, `a--b`, `-a` y valores que no son string;
+  - `process.test.ts`: los 5 códigos de error; `toProcessTimeline` en orden y con `estimated` según la regla;
+  - `project-update.test.ts` y `project-risk.test.ts`;
+  - `get-project-process.test.ts`: código inexistente, `acquiredOn` null y sin proceso → `null`.
 
-**DATA**
+### 5.2 Datos (paquete DATA)
 - `seed-consistency.test.ts` amplía:
-  - (a) cada presupuesto pasa `checkProjectBudget` con su `recoveryBudget`; obra = 5.000 y honorarios + contingencia = 5.000 (maestro §6); hay 7 presupuestos.
-  - (b) hitos: los 6 publicados tienen 8 cada uno; `completedOn ≤ today`; los cumplidos son los de su estado; `sale_signed` y `settlement` de los liquidados coinciden con `timeline`; M2-007 no tiene ninguno.
-  - (c) actualizaciones: hay 23 (§3.5). `publishedOn` está entre `acquiredOn` y today, y en los liquidados es ≤ `settledOn`. Los ids son únicos.
-  - (d) los 6 publicados tienen los 6 riesgos.
-  - (e) `JSON.stringify(snapshot)` no coincide con /rueda|estancad|días sin vender|wheel/i.
-  - (f) no hay fechas literales en los 5 `seed*.ts`.
-  - (g) desplazar today desplaza también hitos y actualizaciones.
-  - (h) versión 2: el snapshot sobrevive a JSON, y `{version: 1}` no se acepta.
-- `container.test.ts`: `storageKey "club-demo:v2"`, `c.finance.getProjectSheet` existe, sigue sin exponer backoffice.
-- `project-sheet-seed.test.ts` (`createContainer({ clock: fixedClock(isoDate("2026-11-22")), storage: memoryStorage() })`):
-  - Los 6 slugs de CA1 dan `found`.
-  - `m2-007-palos-grandes`, `m2-001` y `no-existe` dan `not_found`.
-  - M2-006: `mode "open"`, `available 37`, `placed 63`, `heldLimits.max 20`, compra 5 000 000 ¢ y 3 grupos de presupuesto. Su hito `placement_close` está `planned`.
-  - M2-005 `illustrative` · M2-002 `illustrative`, sin texto /estanc/ · M2-003 `historic` con `realized.perParticipation.gain` 3 450 ¢ · M2-001 `historic` con 3 024 ¢.
-  - Tras `c.demo.reset()` da lo mismo.
-- Repos mock: `detailsRepository` filtra por proyecto y `budgetRepository.findByProject` devuelve null si el id no existe.
+  - (a) 7 presupuestos que pasan `checkProjectBudget`, con obra 5.000 y bolsa 5.000 (maestro §6);
+  - (b) 6 procesos que pasan `checkProjectProcess`, con estas coherencias:
+    - `settled` → todo `done` y `sold.offsetDays` = días de `acquiredOn` a `saleSignedOn`;
+    - `on_sale` → `on_sale` en `current`;
+    - `renovation` → una etapa de obra en `current` o `upcoming` y ninguna de venta `done`;
+    - `funding` → `works_start` no `done`;
+  - (c) en el reloj de hoy, `done` o `current started` → fecha ≤ today, y `estimated` → fecha ≥ today;
+  - (d) 17 actualizaciones con ids únicos, `acquiredOn ≤ publishedOn ≤ today` y, en los liquidados, ≤ `settledOn`;
+  - (e) los 6 publicados llevan los 3 riesgos comunes; M2-007 no lleva perfil, proceso, actualizaciones ni riesgos;
+  - (f) `JSON.stringify(snapshot)` no coincide con /rueda|estancad|días sin vender|wheel|stalled/i;
+  - (g) no hay fechas literales en ningún `seed*.ts`;
+  - (h) desplazar today desplaza también las actualizaciones;
+  - (i) `version 2` sobrevive a JSON y `{ version: 1 }` no se acepta.
+- `container.test.ts`:
+  - `storageKey "club-demo:v2"`;
+  - `finance.getProjectDetail`, `finance.getHoldingProjections` y `projects.getProjectProcess` existen;
+  - con un `memoryStorage` que trae `club-demo:v1`, al crear el container la clave v1 desaparece;
+  - sigue sin exponer backoffice.
+- `project-detail-seed.test.ts` (`fixedClock("2026-11-22")`, `storage: null`):
+  - los 6 slugs dan detalle; `m2-007-palos-grandes` y `no-existe` dan `null`;
+  - M2-006: `mode "open"`, `maxHeld 20`, `budget.total` 62.280, 4 líneas de obra y 3 de bolsa, `scenarios[1]` 34,30;
+  - M2-002 y M2-005: `fixed_projection`;
+  - M2-003: `realized.gain` 34,50; M2-001: 30,24;
+  - `getProjectProcess("M2-005")` da las mismas fechas que `detail.process`;
+  - tras `demo.reset()` da lo mismo.
+- Repos mock: filtran por id y devuelven `null` o `[]` cuando no hay datos.
 
-**UI**
-- `format-percentage.test.ts`: 2500 → "25 %", −2000 → "−20 %", 500 con signed → "+5 %", 0 con signed → "0 %", 250 → "2,5 %".
-- `route-map.test.ts`: `EXAMPLE_PROJECT_SLUG === "m2-006-chacao"`; `participateHref` coincide con el patrón de p5; las pruebas actuales siguen en verde.
-- `presentation.test.ts`: los `Record` son exhaustivos sobre `MILESTONE_KINDS`, `RISK_KINDS`, `BUDGET_ITEMS`, `UPDATE_SOURCES`, `RESPONSIBLE_ROLES`, `EVIDENCE_KINDS` y `STRESS_PRESET_IDS`, y ninguna etiqueta coincide con /rueda|estanc|días/i.
-- `ProjectSheetView.test.tsx` (jsdom, `<Providers container={fake}>`):
-  - Una promesa pendiente muestra `ficha-cargando`.
-  - Un rechazo muestra `ficha-error`, y `ficha-reintentar` hace una segunda llamada.
-  - `not_found` muestra `ficha-no-encontrada`.
-  - Con un fixture open están las 9 secciones. Con uno historic hay `ficha-resultado` y `ficha-simulador-inactivo`, y no hay `ficha-simulador`, `ficha-escenarios` ni `projection-label` dentro de `ficha-resultado`.
-  - `textContent` no coincide con /rueda|estancad/i.
-- `Simulator.test.tsx` (jsdom, setup de referencia):
-  - El estado inicial muestra C1 (USD 100 / 50 / 150).
-  - Con `fireEvent.change` de `simulador-colocacion` a 63, `reparto-externos` muestra 3.150.
-  - `preset-venta-menos-20` deja `aria-pressed="true"`.
-  - Con un setup de M2-006 y el preset venta −20 % aparecen `resultado-sin-reparto` y `resultado-politica-capital`, y no hay `resultado-cobro`.
-  - `simulador-descargo` es el último hijo de `ficha-simulador` y tiene el texto exacto.
-
-### 5.2 E2E (`tests/e2e/ficha.spec.ts`, proyectos `movil-390` y `desktop-1440`)
-
-1. **Desde P3.** `/proyectos` → `tarjeta-enlace` de M2-006 → URL `/proyectos/m2-006-chacao$` → `ficha` con `data-mode="open"` y un solo `h1` ("Apartamento El Rosal").
-2. **Secciones y avisos (M2-006).**
-   - Son visibles las 9 secciones de §3.9.
-   - `ficha-disponibles` = "Participaciones disponibles: 37 de 100".
-   - `presupuesto-compra` contiene "USD 50.000" y `presupuesto-integral` "USD 10.000".
-   - Hay 3 `presupuesto-grupo`; el de `works` tiene 7 `presupuesto-linea` y el de honorarios 3.
-   - `presupuesto-costos-venta` está dentro de un `projection-label`.
-   - `ficha-aviso-riesgo-cta` y `ficha-aviso-riesgo` muestran `LEGAL_COPY.riskNotice`.
-   - `simulador-descargo` muestra `LEGAL_COPY.simulatorDisclaimer`.
-   - La zona `ficha-inmueble-zona` = "Caracas · Chacao", sin dirección.
-3. **Escenarios.** Hay 3 `escenario`. El de `base` tiene `escenario-por-participacion` con "USD 34,30" y el conservador "USD 12,80". Cada uno tiene `projection-label`.
-4. **Simulador · C1 y C6.**
-   - Clic en `simulador-base-referencia` → `resultado-capital` "USD 100", `resultado-ganancia` "USD 50" y `resultado-cobro` "USD 150". `reparto-externos` "USD 5.000", `reparto-empresa-fondo` "USD 0" y `reparto-empresa-directo` "USD 15.000".
-   - `simulador-colocacion.fill("63")` → `reparto-externos` "USD 3.150" y `reparto-empresa-fondo` "USD 1.850". La ganancia sigue en "USD 50".
-   - `simulador-participaciones.fill("20")` → capital "USD 2.000" y ganancia "USD 1.000".
-5. **Presets (M2-006, base del proyecto).**
-   - `preset-venta-menos-20` → `resultado-sin-reparto` y `resultado-politica-capital` ("por definir") visibles; no hay `resultado-cobro`; `resultado-capital` sigue visible.
-   - `preset-obra-mas-20` → "USD 31,80" · `preset-obra-mas-50` → "USD 28,05".
-   - `preset-retraso-6` → `resultado-plazo` contiene "9 meses" y la ganancia vuelve a "USD 34,30".
-   - `preset-colocacion-0` → `simulador-colocacion-valor` = "1 de 100".
-   - `simulador-restablecer` → ningún preset tiene `aria-pressed="true"`.
-6. **Límites D4.** `simulador-participaciones` tiene `max="20"` en M2-006 y `min="1"`.
-7. **Ilustrativo (M2-002).** `/proyectos/m2-002-el-hatillo` → `data-mode="illustrative"` y `simulador-modo-ilustrativo` visible. El cuerpo no coincide con /rueda|estancad|días sin vender/i. `ficha-etapa` no tiene `data-tone="attention"`.
-8. **Finalizado (M2-003).**
-   - `data-mode="historic"`.
-   - `resultado-realizado-ganancia` = "USD 34,50" (con `data-kind="realized"`) y `resultado-realizado-capital` = "USD 100" (con `data-kind="capital"`).
-   - `ficha-simulador-inactivo` visible; no hay `ficha-simulador` ni `ficha-escenarios`.
-   - Dentro de `ficha-resultado` no hay `projection-label`.
-9. **No encontrado.** `/proyectos/m2-007-palos-grandes`, `/proyectos/no-existe` y `/proyectos/M2_RARO` → `ficha-no-encontrada` visible, `zona-investor` visible y un solo `h1`. `ficha-no-encontrada-volver` lleva a `/proyectos`. El cuerpo no contiene "Dúplex Los Palos Grandes".
-10. **Reiniciar datos.** En la ficha de M2-006 se mueve el simulador y se corre `demo-reset-*`. Después `ficha` sigue visible con `ficha-disponibles` "37 de 100".
-11. **Accesibilidad.** Cada `input[type=range]` dentro de `ficha-simulador` tiene un `label` asociado (`getByLabel`) y `aria-valuetext`. `simulador-resultado` tiene `aria-live="polite"`. Al tabular, el foco visible llega a `simulador-participaciones`.
-12. **Sin errores.** Ningún `console.error` ni `pageerror` al cargar, simular y navegar (incluidos los de hidratación).
-13. **Responsive.** En 390: `scrollWidth ≤ 390` en las fichas de M2-006 y M2-003, y los presets hacen wrap. En 1440: `resultado-capital` y `resultado-ganancia` comparten `boundingBox().y`.
-
-`rutas.spec.ts`:
-- `BUILT` = `["p1", "p3", "p4"]`.
-- Recorrido inversionista: `["/registro", "/proyectos", "/proyectos/m2-006-chacao", "/proyectos/m2-006-chacao/participar", "/portafolio"]`.
-- Recorrido operativo: `"/admin/proyectos/m2-006-chacao"`.
-
-El test de p4 sigue exigiendo `pagina-p4`, un `h1` y `siguiente-paso` con href `/proyectos/m2-006-chacao/participar`.
-
-### 5.3 `data-testid`
-
-- **Página y estados:** `pagina-p4` (+`data-route-id`) · `ficha` (+`data-project-code`, `data-mode`, `data-phase`) · `ficha-cargando` · `ficha-error` · `ficha-reintentar` · `ficha-no-encontrada` · `ficha-no-encontrada-volver`
-- **Cabecera:** `ficha-cabecera` · `ficha-sello` · `ficha-etapa` · `ficha-cta-participar` (o `ficha-cta-proyectos`) · `ficha-aviso-riesgo-cta`
-- **Resumen e inmueble:** `ficha-resumen` · `ficha-disponibles` · `ficha-colocacion` · `ficha-precio` · `ficha-plazo` · `ficha-inmueble` · `ficha-inmueble-tipo` · `ficha-inmueble-superficie` · `ficha-inmueble-zona`
-- **Presupuesto:** `ficha-presupuesto` · `presupuesto-compra` · `presupuesto-integral` · `presupuesto-grupo` (+`data-category`) · `presupuesto-linea` (+`data-item`) · `presupuesto-subtotal` · `presupuesto-nota-honorarios` · `presupuesto-costos-venta` · `presupuesto-precio-objetivo`
-- **Escenarios:** `ficha-escenarios` · `escenario` (+`data-scenario`) · `escenario-capital` · `escenario-precio` · `escenario-excedente` · `escenario-por-participacion` · `escenario-cobro` · `escenario-sin-reparto`
-- **Simulador:** `ficha-simulador` · `simulador-modo-ilustrativo` · `simulador-base-proyecto` · `simulador-base-referencia` · `simulador-participaciones`/`-valor` · `simulador-colocacion`/`-valor` · `simulador-precio`/`-valor` · `simulador-sobrecosto`/`-valor` · `simulador-retraso`/`-valor` · `simulador-presets` · `preset-venta-menos-20` · `preset-obra-mas-20` · `preset-obra-mas-50` · `preset-retraso-3` · `preset-retraso-6` · `preset-retraso-9` · `preset-colocacion-0` · `simulador-restablecer` · `simulador-resultado` · `resultado-capital` · `resultado-ganancia` · `resultado-cobro` · `resultado-sin-reparto` · `resultado-politica-capital` · `resultado-plazo` · `simulador-reparto` · `reparto-excedente` · `reparto-fondo` · `reparto-por-participacion` · `reparto-externos` · `reparto-empresa-fondo` · `reparto-empresa-directo` · `simulador-descargo` · `simulador-error`
-- **Liquidación:** `ficha-liquidacion-en-curso` · `ficha-resultado` · `resultado-realizado-capital` · `resultado-realizado-ganancia` · `resultado-realizado-cobro` · `ficha-simulador-inactivo`
-- **Cronograma y riesgos:** `ficha-cronograma` · `hito` (+`data-kind`, `data-state`) · `hito-fecha` · `ficha-actualizaciones` · `actualizacion` (+`data-source`) · `actualizacion-fecha` · `actualizacion-responsable` · `actualizacion-evidencia` · `ficha-riesgos` · `riesgo` (+`data-kind`) · `ficha-aviso-riesgo`
-- **Cierre:** `ficha-siguiente-paso` · `siguiente-paso`
-- **Ya existentes:** `projection-label`, `money-display` (cada `MoneyDisplay` recibe el testid de la lista), `demo-reset-*`, `zona-investor`.
+### 5.3 UI y E2E
+- UI (Vitest, jsdom):
+  - `process-stage-view.test.ts`: tabla exhaustiva y estados que se trasladan igual;
+  - `profit-rate.test.ts` (lo que hoy está en `figures.test.ts`);
+  - los dos tests de paridad de investors siguen pasando (ficha = panel = portafolio = backoffice);
+  - `money-in-ui.test.ts` se activa.
+- E2E `ficha.spec.ts` (se conservan los 3 casos actuales; se añaden estos, en `movil-390` y `desktop-1440`):
+  1. Desde P3: la tarjeta de M2-006 lleva a `/proyectos/m2-006-chacao`, con `pagina-p4` y un solo `h1`.
+  2. M2-006:
+     - `simulador-ganancia` contiene "USD 34,30" y "34,3 % sobre el capital";
+     - `escenario-conservative-ganancia` "USD 12,80";
+     - `presupuesto-total` "USD 62.280";
+     - `simulador-descargo` = `LEGAL_COPY.simulatorDisclaimer`.
+  3. Presets:
+     - `simulador-preset-sale-20` → `simulador-sin-reparto` visible y sin `simulador-cobro`;
+     - `works-20` → "USD 31,80";
+     - `works-50` → "USD 28,05";
+     - `delay-6` → `simulador-plazo` contiene "9 meses" y la ganancia vuelve a "USD 34,30";
+     - `placement-0` → `simulador-sin-colocacion`;
+     - `base` → `aria-pressed="true"`.
+  4. `simulador-participaciones` tiene `max="20"` y `min="1"`; `simulador-resultado-vivo` tiene `aria-live="polite"`.
+  5. M2-003: `realizado-ganancia` "USD 34,50" y "34,5 %"; sin `seccion-simulador` ni `seccion-escenarios`.
+  6. `/proyectos/m2-007-palos-grandes` y `/proyectos/no-existe` → `ficha-no-encontrada` con `zona-investor` visible; el cuerpo no contiene "Dúplex Los Palos Grandes". `/proyectos/M2_RARO` → página not-found.
+  7. `/proyectos/m2-006-chacao/participar` → `participar-ganancia` contiene "USD 34,30" con 1 participación.
+  8. Reiniciar datos en la ficha → `ficha-disponibles` sigue en "37 de 100".
+  9. Ningún `console.error` ni `pageerror`; el texto no coincide con /rueda|estancad|días sin vender/i; en 390, `scrollWidth ≤ 390`.
+- `reiniciar-datos.spec.ts`: `KEY = "club-demo:v2"`, `snap.version === 2`. El valor alterado lleva `version: 2` con `projects: "alterado"`. Se añade: una `club-demo:v1` sembrada a mano desaparece al recargar.
 
 ## 6. Riesgos, supuestos y preguntas
 
-- **R1 · El lint de dinero ignora `src/modules/finance/**` entero**, también la futura `finance/ui`. Una pantalla de finance podría calcular sin que el lint se queje. Mitigación sin tocar `eslint.config.mjs`: la guardia `money-in-ui.test.ts` (CA9) y D9. Para `docs/mejoras.md`: acotar el `ignores` a `finance/{domain,application,infrastructure}` en un cambio de lint aparte.
-- **R2 · Trampa de ciclo en finance** (D1). Si un módulo a la derecha (investors en P6) importa valores de `@/modules/finance`, arrastra la UI y el container. Va a `docs/mejoras.md`, junto a la R4 de P3: hace falta una entrada de UI separada por módulo, con un ADR, cuando P6 lo necesite.
-- **R3 · Hidratación.** El HTML del servidor solo tiene el esqueleto (sin `h1`) y el `h1` aparece cuando el cliente resuelve la consulta. `rutas.spec` espera el `h1` con reintento automático. El E2E 12 detecta errores de hidratación, y `pnpm build` es criterio de aceptación.
-- **R4 · Activity (Next 16).** Al pasar de una ficha a otra o volver de P5, la ficha anterior queda oculta en el DOM y conserva el estado del simulador. Es lo deseado. El E2E acota a `:visible`.
-- **R5 · El "no encontrado" responde 200** (D3), con `noindex` solo en el caso de `notFound()`. Se acepta en la demo porque los datos están en el cliente. Para `docs/mejoras.md`: un 404 real cuando haya backend.
-- **R6 · Snapshot v2.** Una clave `club-demo:v1` antigua queda huérfana en `localStorage` (es inofensiva, unos KB). Para `docs/mejoras.md`: limpiarla al crear el container.
-- **R7 · Volumen.** Hay unos 20 componentes nuevos en UI. Si constructor-ui pasa de su presupuesto, el orquestador puede dividir UI en **UI-a** (ficha sin simulador) y **UI-b** (`Simulator*.tsx`, `use-simulator.ts`, `simulator-copy.ts`, `range.tsx`, `format-percentage.ts`), que son archivos disjuntos y pueden correr en paralelo. `ProjectSheetView` monta `<Simulator setup/>` con la firma de §3.8.
-- **R8 · Choque de nombres** `ProjectSheet` (tipo) / componente. Ya está resuelto en §3.8: el componente se llama `ProjectSheetPage`.
-- **R9 · Escenario de referencia en una ficha de proyecto.** Puede confundir si no se rotula bien. Siempre aparece la nota con las cifras base y el botón "Este proyecto" es el que está activo por defecto (P4-Q8).
+**Riesgos.**
+- **R1 · Cambian cifras visibles por P4-4.** Hoy el sobrecosto se aplica a F completo (obra + bolsa); el maestro §7 habla de "obra 20–50 % más cara". Con P4-4 cambian los presets y el escenario conservador: en M2-006, el conservador pasa de USD 10,30 a USD 12,80, `works-20` de 29,30 a 31,80 y `works-50` de 21,80 a 28,05. Ningún E2E actual depende de esas cifras. Si el usuario prefiere mantener F, basta con cambiar `worksBudget` por `recoveryBudget` en `simulateProjection` y las cifras [PROPUESTO] de §1 y §5.
+- **R2 · El tablero de proceso se vuelve asíncrono** (D3). Es un parpadeo de un frame en el panel y en el backoffice. El test de paridad admin necesita `<Providers>`.
+- **R3 · `generateStaticParams` desaparece** (D4). Si `pnpm build` falla con `cacheComponents`, UI devuelve `BLOQUEADO` con el error. La alternativa es conservar `generateStaticParams` con los slugs de `isProjectSlug` + un solo slug ejemplo (no una lista de negocio), y el orquestador lo decide.
+- **R4 · El lint de dinero ignora `modules/finance/**`.** Mitigación: `money-in-ui.test.ts`. Para `docs/mejoras.md`:
+  - acotar el `ignores` a `finance/{domain,application,infrastructure}`;
+  - `admin/SettlementPanel.tsx:72` suma `.cents` en la UI, y `admin/FinanceScreen.tsx` usa `.cents` y `usd()` (B5).
+- **R5 · Datos incoherentes.** Antes, un dato que faltaba daba "no encontrada"; ahora da `ficha-error`, que es lo correcto para un dato corrupto.
+- **R6 · Compatibilidad.** Se mantienen los nombres públicos `loadProjectDetail`, `projectHolding`, `ProjectDetailData` y `ProjectProcessBoardProps` como envoltorios o alias, para no tocar más pantallas. Para `docs/mejoras.md`: limpiarlos en P6/B3.
 
 **Supuestos aplicados** (todos con propuesta por defecto; el usuario los confirma al aprobar el plan):
-- **[SUPUESTO P4-1]** Los deltas de escenarios de D6.
-- **[SUPUESTO P4-2]** El retraso solo alarga el plazo.
-- **[SUPUESTO P4-3]** El modo ilustrativo en `placement_complete`, `renovation` y `on_sale`, con 1…min(20, total).
-- **[SUPUESTO P4-4]** El sobrecosto se aplica al subtotal de obra, se suma a F y no lo absorbe la contingencia.
-- **[SUPUESTO P4-5]** Reparto de la bolsa en honorarios 3.000 (desglosados en 3) y contingencia 2.000, más rubros de obra iguales en los 7 proyectos.
-- **[SUPUESTO P4-6]** "Colocación 0 %" = sin otros participantes (colocación = tus participaciones).
-- **[SUPUESTO P4-6b]** O se mantiene fijo al cambiar el precio.
-- **[SUPUESTO P4-7]** El máximo de D4 no descuenta tenencias previas en la ficha.
-- **[SUPUESTO P4-8]** El cronograma de referencia (offsets de §3.5). Un hito vencido sin cumplir se ve "Pendiente" sin fecha, con "Se informa en las actualizaciones".
-- **[SUPUESTO P4-9]** `sold` → "Liquidación en curso", sin simulador.
-- **[SUPUESTO P4-10]** El ejemplo de referencia del maestro está disponible en el simulador.
+- **[SUPUESTO Q1]** (docs/08 Q1) Bolsa de USD 5.000 = honorarios 2.500 · contingencia 1.500 · reserva 1.000, rotulada como ejemplo. La obra de cada proyecto, con los rubros de la maqueta, suma USD 5.000.
+- **[SUPUESTO Q2]** (docs/08 Q2) El retraso solo alarga el plazo proyectado y no resta ganancia.
+- **[SUPUESTO Q3]** (docs/08 Q3) Escenarios: conservador venta −10 % y obra +20 %; base 0; optimista venta +5 %.
+- **[SUPUESTO P5-1]** (docs/08 R) La estimación de la reserva suma la cantidad a lo ya colocado, con el total como tope.
+- **[SUPUESTO P4-4] (nuevo)** El sobrecosto se aplica al subtotal de obra (`works`), se suma a F y no lo absorbe la contingencia.
+- **[SUPUESTO P4-11] (nuevo)** "Colocación 0 %" = 0 colocadas (C3 literal): se muestra "sin colocación" y no hay cobro externo, como en la maqueta.
+- **[SUPUESTO P4-12] (nuevo)** Si `held` > colocación, se usa `heldUsed = min(held, placed)` y se muestra el aviso `heldAdjusted`, como en la maqueta.
+- **[SUPUESTO P4-13] (nuevo)** M2-007 lleva presupuesto sembrado (para B2) pero no perfil, proceso, actualizaciones ni riesgos.
+- **Ya no son supuestos:** P4-3 (el simulador solo en `open`, decidido en ADR-013 §3) y P4-2 (cubierto por Q2).
 
-**Reglas de negocio inventadas:** ninguna. Lo que no fija el maestro (§6 "bolsa mixta", §7 pruebas sin fórmula, §17 "por validar") queda como supuesto y como pregunta.
+**Reglas de negocio inventadas:** ninguna. Lo que el maestro no fija (§6 "bolsa mixta" y §7, que nombra las pruebas sin dar fórmula) queda como supuesto.
 
-**Preguntas para `docs/08`.** El arquitecto no edita ese archivo. El orquestador las añade como "Bloque Q · Ficha y simulador (P4, 22-nov) 🟠":
+**Preguntas para `docs/08`** (las añade el orquestador; el arquitecto no edita el archivo): al **bloque Q** se suman dos filas.
 
 | # | Pregunta | Propuesta por defecto |
 |---|---|---|
-| P4-Q1 | ¿Qué deltas usan los escenarios conservador/base/optimista? | Conservador: venta −10 % y obra +20 %; base: 0; optimista: venta +5 % |
-| P4-Q2 | ¿Un retraso cuesta dinero (mantenimiento, servicios, impuestos por mes)? ¿Cuánto? | Por ahora solo alarga el plazo y se rotula "su costo está por definir" |
-| P4-Q3 | En un proyecto sin colocación abierta (obra, venta), ¿se puede simular? | Sí, en modo ilustrativo, de 1 a 20 participaciones |
-| P4-Q4 | Un sobrecosto de obra, ¿lo absorbe primero la contingencia? ¿Quién lo financia? | Se suma completo al presupuesto (lectura conservadora); quién lo financia está por definir |
-| P4-Q5 | ¿Cómo se reparte la bolsa de USD 5.000 entre honorarios y contingencia, y qué rubros tiene la obra? | Honorarios 3.000 (gestión 1.000, supervisión 1.250, administración 750) y contingencia 2.000; obra en 7 rubros que suman 5.000 |
-| P4-Q6 | ¿Los costos de venta son un monto fijo o un % del precio de venta? | Fijos en el simulador (hoy cada proyecto siembra ~3 % del precio objetivo) |
-| P4-Q7 | El preset "colocación 0 %", ¿significa "nadie más participa"? | Sí: la colocación queda en tus participaciones y la empresa retiene el resto |
-| P4-Q8 | ¿Se mantiene en el simulador la base "Ejemplo de referencia" del modelo? | Sí, como segunda opción; por defecto se simula el proyecto |
-| P4-Q9 | ¿El límite de 20 por persona descuenta lo que ya tienes en el proyecto? | En la ficha no; P5 lo aplicará al reservar |
-| P4-Q10 | ¿Un hito vencido sin cumplir muestra su fecha original? | No: "Pendiente · se informa en las actualizaciones" |
+| Q5 | ¿El sobrecosto de obra de las pruebas de estrés se aplica solo a la obra o a todo el presupuesto integral (incluida la bolsa)? ¿Lo absorbe primero la contingencia? | Solo a la obra, sumado completo a F (P4-4) |
+| Q6 | ¿Los costos de venta (O) son fijos o un % del precio de venta cuando el simulador mueve el precio? | Fijos al valor estimado |
 
-**Para `docs/mejoras.md`:** R1 (acotar el lint de dinero), R2 (entrada de UI separada en finance y participations), R5 (404 real), R6 (limpiar la clave v1), mapa aproximado (D6), galería de fotos (F4-2), simulador compartible (fuera de alcance).
+**Para `docs/mejoras.md`:** R4 (lint y admin de finance), R6 (alias), la prop `acquiredOn` sin uso (D3), el 404 real cuando haya backend (D4), las fotos reales (F4-2), y los campos `source`/`responsible`/`evidence` de `ProjectUpdate` (docs/02 §3, maestro §10) cuando B3 publique actualizaciones (snapshot v3).
 
-**Para `docs/01`** (lo hace el orquestador, sin ADR): en el árbol de §3, `finance/ui/` y `[slug]/not-found.tsx`. En la tabla de §4, la celda ui → domain propio pasa a "tipos; funciones puras solo desde `ui/hooks`" (D9). En §6, la clave `club-demo:v2`.
+**Para docs (los actualiza el orquestador en el mismo cambio, sin ADR):**
+- `docs/01 §4`: la celda ui → domain propio pasa a "tipos; funciones puras solo desde `ui/hooks`" (D7).
+- `docs/01 §6`: clave `club-demo:v2` y limpieza de claves antiguas.
+- `docs/06` regla 4: `profitRateLabel` sigue en `@/modules/finance/ui`, sin cambios.
 
 ## 7. ADR requerido
 
-No. D1 aplica `docs/01 §4` regla 2b tal como está: no hay módulo nuevo y no cambian ni el orden de módulos ni `eslint.config.mjs`. `range.tsx` es una primitiva compartida que se documenta en el README. Las notas de §6 para `docs/01` aclaran el documento sin cambiar ninguna regla. El cambio de snapshot a v2 es de datos simulados y no exige decisión de arquitectura. Las decisiones de producto P4-Q1…Q10 llevan propuesta por defecto y no bloquean. **El usuario debe confirmarlas al aprobar este plan**, en especial P4-Q1, P4-Q4 y P4-Q5, porque fijan las cifras que verá el inversionista.
+**No.**
+- D2 aplica la regla 2b de `docs/01 §4` tal como está.
+- No cambian el orden de módulos, `eslint.config.mjs` ni la separación `index.ts` / `ui.ts` / `backoffice-ui.ts` de ADR-012.
+- Lo que manda ADR-013 se mantiene: `calculateProfitRate`, el simulador solo en `open`, la reserva con estimación, los términos y el tablero de 6 etapas.
+- El paso a v2 es un cambio de datos simulados.
+
+El único cambio de cifras visibles (P4-4) es una decisión de producto que va como supuesto y como pregunta Q5. **El usuario debe confirmar Q1, Q3 y P4-4 al aprobar el plan**, porque fijan las cifras que verá el inversionista. Si rechaza P4-4, el cambio queda en una línea (R1).

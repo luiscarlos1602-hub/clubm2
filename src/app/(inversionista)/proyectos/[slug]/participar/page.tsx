@@ -1,17 +1,14 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { PUBLISHED_PROJECT_SLUGS, ProjectDetailLoading, ProjectParticipate, isPublishedProjectSlug } from "@/modules/finance/ui";
+import { ProjectDetailLoading, ProjectParticipate } from "@/modules/finance/ui";
+import { isProjectSlug } from "@/modules/projects";
 import { routeMetadata } from "@/shared/ui/app-shell";
 
 export const metadata = routeMetadata("p5");
 
-export function generateStaticParams() {
-  return PUBLISHED_PROJECT_SLUGS.map((slug) => ({ slug }));
-}
-
 async function ParticipateContent({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  if (!isPublishedProjectSlug(slug)) notFound();
+  if (!isProjectSlug(slug)) notFound();
   return <ProjectParticipate slug={slug} />;
 }
 

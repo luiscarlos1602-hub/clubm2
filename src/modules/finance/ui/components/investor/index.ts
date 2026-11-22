@@ -2,5 +2,4 @@
 export { ProjectDetail } from "./ProjectDetail";
 export { ProjectParticipate } from "./ProjectParticipate";
 export { ProjectDetailLoading } from "./ProjectDetailStates";
-export { PUBLISHED_PROJECT_SLUGS, isPublishedProjectSlug } from "./examples";
 export { ProjectProcessBoard, type ProjectProcessBoardProps } from "./ProjectProcessBoard";

@@ -1,12 +1,12 @@
 import { BulletList, Section, Surface } from "@/shared/ui/layout";
-import type { ProjectDetailData } from "../../hooks/use-project-detail";
+import type { ProjectDetail } from "../../../domain/project-detail";
 import { PROJECT_DETAIL_COPY } from "./copy";
 
 const C = PROJECT_DETAIL_COPY.property;
 
 /** El inmueble: tipo, superficie y zona (sin dirección exacta, D6). */
-export function PropertySection({ data }: { data: ProjectDetailData }) {
-  const { property, example, listing } = data;
+export function PropertySection({ data }: { data: ProjectDetail }) {
+  const { property, profile, listing } = data;
   const facts = [
     { label: C.typeLabel, value: C.kind[property.kind] },
     { label: C.areaLabel, value: C.area(property.areaM2) },
@@ -18,8 +18,8 @@ export function PropertySection({ data }: { data: ProjectDetailData }) {
         <h2 id="titulo-inmueble" className="font-heading text-3xl font-medium">
           {C.title}
         </h2>
-        <p className="max-w-[60ch] text-muted-foreground">{example.description}</p>
-        <BulletList items={example.highlights} marker="check" />
+        <p className="max-w-[60ch] text-muted-foreground">{profile.description}</p>
+        <BulletList items={profile.highlights} marker="check" />
       </div>
       <Surface>
         <dl className="flex flex-col divide-y divide-border">

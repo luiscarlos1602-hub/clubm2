@@ -1,3 +1,5 @@
+import { formatPercentage } from "@/shared/lib/format-percentage";
+
 /** Textos del simulador de la ficha. El descargo debajo del resultado es LEGAL_COPY.simulatorDisclaimer. */
 export const SIMULATOR_COPY = {
   title: "Simulador",
@@ -5,13 +7,13 @@ export const SIMULATOR_COPY = {
   controlsTitle: "Supuestos",
   controls: {
     sale: "Precio de venta",
-    saleVariation: (pct: number) => (pct === 0 ? "en el objetivo" : `${pct > 0 ? "+" : "−"}${Math.abs(pct)} % sobre el objetivo`),
+    saleVariation: (bps: number) => (bps === 0 ? "en el objetivo" : `${bps > 0 ? "+" : "−"}${formatPercentage({ bps: Math.abs(bps) })} sobre el objetivo`),
     held: "Mis participaciones",
     heldValue: (n: number) => `${n} ${n === 1 ? "participación" : "participaciones"}`,
     placed: "Colocación total",
     placedValue: (placed: number, total: number) => `${placed} de ${total}`,
     overrun: "Sobrecosto de obra",
-    overrunValue: (pct: number) => (pct === 0 ? "sin sobrecosto" : `+${pct} %`),
+    overrunValue: (bps: number) => (bps === 0 ? "sin sobrecosto" : `+${formatPercentage({ bps })}`),
     delay: "Retraso",
     delayValue: (months: number) => (months === 0 ? "sin retraso" : `${months} ${months === 1 ? "mes" : "meses"}`),
   },
@@ -19,8 +21,6 @@ export const SIMULATOR_COPY = {
   presets: {
     base: "Escenario base",
     "sale-20": "Venta −20 %",
-    "works-20": "Obra +20 %",
-    "works-50": "Obra +50 %",
     "delay-3": "Retraso 3 meses",
     "delay-6": "Retraso 6 meses",
     "delay-9": "Retraso 9 meses",

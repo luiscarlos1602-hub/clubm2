@@ -1,4 +1,6 @@
-import { processStagesFor } from "@/modules/finance/ui";
+"use client";
+
+import { useProcessStages } from "@/modules/finance/ui";
 import type { IsoDate } from "@/shared/domain/calendar-date";
 import { formatIsoDate } from "@/shared/lib/format-date";
 import { PROCESS_STAGE_LABEL, ProcessBoard } from "@/shared/ui/brand";
@@ -6,10 +8,10 @@ import { PANEL_COPY } from "./copy";
 
 const C = PANEL_COPY.process;
 
-/** Resumen de una línea + tablero de proceso desplegable. Las etapas salen de finance (única fuente, la misma de la ficha). */
+/** Resumen de una línea + tablero de proceso desplegable. Las etapas salen de finance (única fuente, la misma de la ficha); la fecha de compra sale del proyecto, `acquiredOn` solo indica si ya hay compra. */
 export function HoldingProcess({ code, acquiredOn, orientation = "vertical" }: { code: string; acquiredOn: IsoDate | null; orientation?: "horizontal" | "vertical" }) {
-  const stages = acquiredOn ? processStagesFor({ code, acquiredOn }) : null;
-  if (!stages) return null;
+  const { data: stages } = useProcessStages(code);
+  if (!acquiredOn || !stages) return null;
   const current = stages.find((s) => s.status === "current");
   const next = stages.find((s) => s.status === "upcoming");
   const summary = current

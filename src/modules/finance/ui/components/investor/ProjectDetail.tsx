@@ -1,6 +1,5 @@
 "use client";
 
-import { toBudgetView, toSimulatorBase } from "../../hooks/project-figures";
 import { useProjectDetail } from "../../hooks/use-project-detail";
 import { BudgetSection } from "./BudgetSection";
 import { GallerySection } from "./GallerySection";
@@ -21,24 +20,22 @@ export function ProjectDetail({ slug }: { slug: string }) {
   if (query.isError) return <ProjectDetailError onRetry={() => void query.refetch()} />;
   const data = query.data;
   if (data === null) return <ProjectDetailMissing />;
-  const { phase } = data.listing;
-  const finished = phase === "finished" && data.settlement !== null;
   return (
     <div data-testid="pagina-p4" data-route-id="p4" data-project-code={data.listing.code} data-phase={data.listing.phase} className="flex flex-col">
       <ProjectHeader data={data} />
       <GallerySection data={data} />
       <PropertySection data={data} />
-      <BudgetSection budget={toBudgetView(data)} />
-      {finished && data.settlement ? (
-        <RealizedResult settlement={data.settlement} />
+      <BudgetSection budget={data.budget} />
+      {data.mode === "realized" && data.realized && data.settlement ? (
+        <RealizedResult realized={data.realized} settlement={data.settlement} />
       ) : (
         <>
-          <ScenariosSection base={toSimulatorBase(data)} />
-          {phase === "open" ? <SimulatorSection data={data} /> : null}
+          <ScenariosSection rows={data.scenarios} />
+          {data.mode === "open" ? <SimulatorSection data={data} /> : null}
         </>
       )}
       <TimelineSection data={data} />
-      <RisksSection risks={data.example.risks} />
+      <RisksSection risks={data.risks} />
       <ParticipateCta listing={data.listing} />
     </div>
   );

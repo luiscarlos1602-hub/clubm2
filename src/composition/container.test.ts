@@ -15,7 +15,7 @@ describe("Container", () => {
     expect(await c.finance.economicsRepository.list()).toHaveLength(7);
     expect(await c.finance.settlementRepository.list()).toHaveLength(2);
     expect(c.demo.seededOn()).toBe("2026-11-22");
-    expect(c.demo.storageKey).toBe("club-demo:v1");
+    expect(c.demo.storageKey).toBe("club-demo:v2");
   });
 
   it("listMarketplace está conectado y devuelve 6 proyectos publicados", async () => {
@@ -27,16 +27,16 @@ describe("Container", () => {
     const storage = memoryStorage();
     const c = createContainer({ clock, storage });
     await c.projects.projectRepository.list(); // la primera lectura siembra y persiste
-    const stored = JSON.parse(storage.getItem("club-demo:v1") ?? "null") as { projects: { projects: unknown[] } } | null;
+    const stored = JSON.parse(storage.getItem("club-demo:v2") ?? "null") as { projects: { projects: unknown[] } } | null;
     expect(stored).not.toBeNull();
     // simula un cambio persistido por otra sesión: se borra un proyecto
     const changed = { ...stored, projects: { ...stored?.projects, projects: stored?.projects.projects.slice(1) } };
-    storage.setItem("club-demo:v1", JSON.stringify(changed));
+    storage.setItem("club-demo:v2", JSON.stringify(changed));
     const c2 = createContainer({ clock, storage });
     expect(await c2.projects.projectRepository.list()).toHaveLength(6);
     c2.demo.reset();
     expect(await c2.projects.projectRepository.list()).toHaveLength(7);
-    const after = JSON.parse(storage.getItem("club-demo:v1") ?? "null") as { projects: { projects: unknown[] } } | null;
+    const after = JSON.parse(storage.getItem("club-demo:v2") ?? "null") as { projects: { projects: unknown[] } } | null;
     expect(after?.projects.projects).toHaveLength(7);
   });
 
@@ -47,6 +47,20 @@ describe("Container", () => {
   it("funciona sin storage (memoria)", async () => {
     const c = createContainer({ clock, storage: null });
     expect(await c.projects.projectRepository.list()).toHaveLength(7);
+  });
+
+  it("expone los casos de uso de la ficha", () => {
+    const c = createContainer({ clock, storage: null });
+    expect(typeof c.finance.getProjectDetail).toBe("function");
+    expect(typeof c.finance.getHoldingProjections).toBe("function");
+    expect(typeof c.projects.getProjectProcess).toBe("function");
+  });
+
+  it("al crearse borra la clave v1 (reinicio sin migración)", () => {
+    const storage = memoryStorage();
+    storage.setItem("club-demo:v1", JSON.stringify({ version: 1 }));
+    createContainer({ clock, storage });
+    expect(storage.getItem("club-demo:v1")).toBeNull();
   });
 
   it("no expone backoffice", () => {

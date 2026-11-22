@@ -5,7 +5,7 @@ import { MoneyDisplay, ProjectSeal, ProjectionLabel, StatusBadge, type StatusTon
 import { PageHeader } from "@/shared/ui/layout";
 import { Button } from "@/shared/ui/primitives/button";
 import type { ListingPhase } from "@/modules/participations";
-import type { ProjectDetailData } from "../../hooks/use-project-detail";
+import type { ProjectDetail } from "../../../domain/project-detail";
 import { PROJECT_DETAIL_COPY } from "./copy";
 
 const C = PROJECT_DETAIL_COPY.header;
@@ -19,7 +19,7 @@ const TONE: Record<ListingPhase, StatusTone> = {
 };
 
 /** Resumen: sello, etapa pública, zona, disponibles y precio por participación. */
-export function ProjectHeader({ data }: { data: ProjectDetailData }) {
+export function ProjectHeader({ data }: { data: ProjectDetail }) {
   const { listing } = data;
   const isOpen = listing.phase === "open";
   return (

@@ -33,7 +33,8 @@ describe("el tablero de proceso es el mismo en ficha, panel y backoffice (M2-005
     const panel = readBoard("proceso-m2-005-tablero");
     cleanup();
 
-    render(<ProjectProcessBoard code="M2-005" acquiredOn={listing!.acquiredOn} data-testid="obra-proceso" />);
+    render(<Providers container={container}><ProjectProcessBoard code="M2-005" acquiredOn={listing!.acquiredOn} data-testid="obra-proceso" /></Providers>);
+    await screen.findByTestId("obra-proceso");
     const admin = readBoard("obra-proceso");
 
     expect(ficha).toHaveLength(6);

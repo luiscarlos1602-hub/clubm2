@@ -5,11 +5,14 @@ import { usd, usdUnits } from "@/shared/domain/money";
 import { idSchema, isoDateSchema, moneySchema } from "@/shared/infrastructure/zod-schemas";
 import type { Distribution, ParticipationTerms } from "../domain/distribution";
 import type { ProjectEconomics } from "../domain/project-economics";
+import { BUDGET_ITEMS, checkProjectBudget, type ProjectBudget } from "../domain/budget";
 import { createSettlement, type Settlement } from "../domain/settlement";
+import { buildBudgetSeed } from "./seed-budget";
 
 export type FinanceSlice = {
   readonly economics: readonly ProjectEconomics[];
   readonly settlements: readonly Settlement[];
+  readonly budgets: readonly ProjectBudget[];
 };
 
 const termsSchema = z.object({
@@ -45,6 +48,11 @@ const distributionSchema: z.ZodType<Distribution> = z.object({
   capital: z.object({ external: moneySchema, company: moneySchema }),
 });
 
+const budgetSchema = z.object({
+  projectId: idSchema<"Project">(),
+  lines: z.array(z.object({ item: z.enum(BUDGET_ITEMS), amount: moneySchema })),
+});
+
 export const financeSliceSchema: z.ZodType<FinanceSlice> = z.object({
   economics: z.array(
     z.object({
@@ -64,6 +72,7 @@ export const financeSliceSchema: z.ZodType<FinanceSlice> = z.object({
       distribution: distributionSchema,
     }),
   ),
+  budgets: z.array(budgetSchema),
 });
 
 export type FinanceSeedContext = {
@@ -129,5 +138,13 @@ export function buildFinanceSeed(ctx: FinanceSeedContext): FinanceSlice {
     return result.value;
   });
 
-  return financeSliceSchema.parse({ economics, settlements });
+  const budgets = buildBudgetSeed();
+  for (const budget of budgets) {
+    const econ = economics.find((e) => e.projectId === budget.projectId);
+    if (econ === undefined) throw new Error(`semilla de finanzas: presupuesto sin economía ${budget.projectId}`);
+    const checked = checkProjectBudget(budget, econ);
+    if (!checked.ok) throw new Error(`semilla de finanzas: presupuesto ${checked.error.code} en ${budget.projectId}`);
+  }
+
+  return financeSliceSchema.parse({ economics, settlements, budgets });
 }

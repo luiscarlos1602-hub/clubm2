@@ -3,7 +3,11 @@ import { asId } from "@/shared/domain/id";
 import { isoDate } from "@/shared/domain/calendar-date";
 import { fixedClock } from "@/shared/domain/clock";
 import type { ProjectId, PropertyId } from "../domain/project";
-import { createProjectMockRepository, createPropertyMockRepository } from "./projects.mock-repository";
+import {
+  createProjectContentMockRepository,
+  createProjectMockRepository,
+  createPropertyMockRepository,
+} from "./projects.mock-repository";
 import { buildProjectsSeed } from "./seed";
 
 const slice = buildProjectsSeed(fixedClock(isoDate("2026-11-22")));
@@ -31,5 +35,19 @@ describe("Repos mock de projects", () => {
     expect(await repo.list()).toHaveLength(7);
     expect((await repo.findById(slice.properties[0].id))?.id).toBe(slice.properties[0].id);
     expect(await repo.findById(asId<"Property">("prop_nada_01") as PropertyId)).toBeNull();
+  });
+
+  it("contenido: filtra por id y devuelve null o [] cuando no hay datos", async () => {
+    const repo = createProjectContentMockRepository(source);
+    const m6 = slice.projects[5];
+    const m7 = slice.projects[6];
+    expect((await repo.profileOf(m6.propertyId))?.highlights.length).toBeGreaterThan(0);
+    expect(await repo.profileOf(m7.propertyId)).toBeNull();
+    expect((await repo.processOf(m6.id))?.projectId).toBe(m6.id);
+    expect(await repo.processOf(m7.id)).toBeNull();
+    expect(await repo.updatesOf(m6.id)).toHaveLength(2);
+    expect(await repo.updatesOf(m7.id)).toEqual([]);
+    expect((await repo.risksOf(m6.id))?.kinds).toContain("incomplete_placement");
+    expect(await repo.risksOf(m7.id)).toBeNull();
   });
 });

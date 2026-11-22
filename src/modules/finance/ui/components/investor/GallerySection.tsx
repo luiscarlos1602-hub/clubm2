@@ -1,7 +1,7 @@
 import { ProjectGallery, type ProjectImageVariant } from "@/shared/ui/brand";
 import { Section } from "@/shared/ui/layout";
 import type { ListingPhase } from "@/modules/participations";
-import type { ProjectDetailData } from "../../hooks/use-project-detail";
+import type { ProjectDetail } from "../../../domain/project-detail";
 import { PROJECT_DETAIL_COPY } from "./copy";
 
 const C = PROJECT_DETAIL_COPY.gallery;
@@ -16,7 +16,7 @@ const DEFAULT_VARIANT: Record<ListingPhase, ProjectImageVariant> = {
 };
 
 /** Galería antes · después · proyección (imágenes de referencia). */
-export function GallerySection({ data }: { data: ProjectDetailData }) {
+export function GallerySection({ data }: { data: ProjectDetail }) {
   const { listing } = data;
   return (
     <Section tone="paper" spacing="md" label={C.title} innerClassName="flex flex-col gap-5" data-testid="seccion-galeria">

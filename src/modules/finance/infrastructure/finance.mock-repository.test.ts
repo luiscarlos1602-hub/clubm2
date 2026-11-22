@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 import { asId } from "@/shared/domain/id";
 import { isoDate } from "@/shared/domain/calendar-date";
 import { usdUnits } from "@/shared/domain/money";
-import { createProjectEconomicsMockRepository, createSettlementMockRepository } from "./finance.mock-repository";
+import {
+  createProjectBudgetMockRepository,
+  createProjectEconomicsMockRepository,
+  createSettlementMockRepository,
+} from "./finance.mock-repository";
 import { buildFinanceSeed } from "./seed";
 
 const terms = (placed: number) => ({ total: 100, placed, unitPrice: usdUnits(100) });
@@ -27,5 +31,11 @@ describe("Repos mock de finance", () => {
     expect(await repo.list()).toHaveLength(2);
     expect((await repo.findByProject(asId<"Project">("prj_chacao_01")))?.distribution.kind).toBe("distributed");
     expect(await repo.findByProject(asId<"Project">("prj_hatillo_01"))).toBeNull();
+  });
+
+  it("presupuestos: findByProject y desconocido da null", async () => {
+    const repo = createProjectBudgetMockRepository(source);
+    expect((await repo.findByProject(asId<"Project">("prj_chacao_02")))?.lines).toHaveLength(7);
+    expect(await repo.findByProject(asId<"Project">("prj_nada_01"))).toBeNull();
   });
 });

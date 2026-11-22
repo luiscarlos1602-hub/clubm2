@@ -1,6 +1,7 @@
 import { formatIsoDate } from "@/shared/lib/format-date";
 import { MoneyDisplay } from "@/shared/ui/brand";
 import { Section, Surface } from "@/shared/ui/layout";
+import type { HolderPayout } from "../../../domain/holder-payout";
 import type { Settlement } from "../../../domain/settlement";
 import { PROJECT_DETAIL_COPY } from "./copy";
 import { GainFigure } from "./GainFigure";
@@ -8,7 +9,7 @@ import { GainFigure } from "./GainFigure";
 const C = PROJECT_DETAIL_COPY.realized;
 
 /** Proyecto finalizado: resultado realizado (liquidación sembrada), sin simulador. Capital y ganancia separados. */
-export function RealizedResult({ settlement }: { settlement: Settlement }) {
+export function RealizedResult({ realized, settlement }: { realized: HolderPayout; settlement: Settlement }) {
   const { distribution: d, input } = settlement;
   return (
     <Section tone="sand" spacing="md" ruled labelledBy="titulo-realizado" innerClassName="flex flex-col gap-8" data-testid="seccion-resultado-realizado">
@@ -21,11 +22,11 @@ export function RealizedResult({ settlement }: { settlement: Settlement }) {
       </div>
       <div className="grid gap-6 lg:grid-cols-2">
         <Surface>
-          <MoneyDisplay value={input.participations.unitPrice} kind="capital" label={C.capitalPerPart} size="lg" data-testid="realizado-capital" />
+          <MoneyDisplay value={realized.capital} kind="capital" label={C.capitalPerPart} size="lg" data-testid="realizado-capital" />
           <p className="text-sm text-muted-foreground">{C.note}</p>
         </Surface>
         <Surface>
-          <GainFigure gain={d.perParticipation} capital={input.participations.unitPrice} kind="realized" label={C.gainPerPart} size="md" data-testid="realizado-ganancia" />
+          <GainFigure gain={realized.gain} capital={realized.capital} kind="realized" label={C.gainPerPart} size="md" data-testid="realizado-ganancia" />
           <dl className="grid gap-3 border-t border-border pt-5 text-sm sm:grid-cols-3">
             <div>
               <dt className="text-muted-foreground">{C.salePrice}</dt>

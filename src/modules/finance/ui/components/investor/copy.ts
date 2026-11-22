@@ -41,6 +41,18 @@ export const PROJECT_DETAIL_COPY = {
     saleCosts: "Costos de venta estimados",
     total: "Costo total estimado",
     note: "Los participantes aportan para la reforma; la compra la financia la empresa.",
+    /** Etiqueta de cada línea del presupuesto (clave = BudgetItem). Cifras de ejemplo. */
+    items: {
+      kitchen: "Cocina",
+      bathrooms: "Baños",
+      floors_paint: "Pisos y pintura",
+      electrical_plumbing: "Electricidad y plomería",
+      garden_exterior: "Jardín y exteriores",
+      carpentry: "Carpintería",
+      management_fee: "Honorarios de gestión de la empresa",
+      contingency: "Contingencia de obra",
+      reserve: "Reserva",
+    },
   },
   scenarios: {
     title: "Escenarios",
@@ -77,6 +89,16 @@ export const PROJECT_DETAIL_COPY = {
     description: "Léelos antes de decidir. Ningún resultado de esta página es seguro ni está prometido.",
     capitalNote: "La política sobre el capital aportado cuando no hay excedente está por definir.",
     termsLink: "Leer los términos y condiciones",
+    /** Texto de cada riesgo (clave = ProjectRiskKind). */
+    kinds: {
+      sale_below_target: "El precio de venta puede quedar por debajo del objetivo.",
+      works_overrun: "La obra puede costar más de lo presupuestado.",
+      slow_sale: "La venta puede tardar más que el plazo objetivo.",
+      narrow_buyer_pool: "Una casa puede tener un público comprador más reducido que un apartamento.",
+      local_market: "El mercado de la ciudad puede moverse distinto al de Caracas.",
+      hidden_works_issues: "En obra pueden aparecer problemas ocultos que encarezcan o retrasen la reforma.",
+      incomplete_placement: "Si la colocación no se completa, la empresa financia el resto de la reforma.",
+    },
   },
   realized: {
     title: "Resultado realizado",

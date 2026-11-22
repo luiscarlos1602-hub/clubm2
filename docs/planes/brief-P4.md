@@ -29,3 +29,12 @@ Como visitante o inversionista quiero abrir la ficha de un proyecto y ver qué e
 - `docs/02` §4–§6 (motor, casos C1–C6, estrés), `docs/referencia/modelo-negocio-club-inmobiliario.md` §6–§7 y §10 (solo lectura), `docs/06` (reglas 3–4 y vocabulario), ADR-004/010/011
 - `docs/planes/005-P3-marketplace.md` (patrones de vista y composition), `src/modules/finance/index.ts` y CLAUDE.md de módulos, `src/composition/*`, `src/shared/ui/README.md`
 - `src/shared/ui/app-shell/route-map.ts` (p4/p5, `EXAMPLE_PROJECT_SLUG`) y `src/app/(inversionista)/proyectos/[slug]/page.tsx`
+
+---
+## Addendum (22-nov, tras ADR-012 y ADR-013): P4 pasa de maqueta a interconectada
+La ficha y la reserva ya existen visualmente (`src/modules/finance/ui/components/investor/**`, `ui/hooks/**`) y el simulador ya llama al motor, pero:
+- El simulador, presets de estrés y escenarios viven en `finance/ui/hooks/simulate.ts` (lógica de negocio en UI) → deben pasar a `finance/domain` (puros, con tests C1/C6/estrés) y exportarse por `index.ts`.
+- Presupuesto desglosado, honorarios, escenarios, proceso (días tras la compra), actualizaciones, riesgos e inmueble vienen de `examples.ts` (literales) → deben pasar a **semillas tipadas** del dominio (snapshot `club-demo:v2`), leídas por puertos/casos de uso desde el container, con `seed-consistency.test.ts` ampliado.
+- El panel/portafolio y el backoffice ya consumen `processStagesFor` y `projectHolding`/`profitRateLabel` de `finance/ui`; deben seguir funcionando leyendo la misma fuente nueva.
+- ADR-013 manda: % de ganancia por `calculateProfitRate`, simulador solo en fase `open`, reserva abierta a todos con estimación, términos, tablero de proceso con 6 etapas.
+- Criterios CA1–CA9 del brief siguen vigentes, adaptados: la UI no cambia de aspecto; cambia de dónde salen los datos.

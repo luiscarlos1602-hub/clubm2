@@ -2,7 +2,8 @@
 
 import { formatMoney } from "@/shared/lib/format-money";
 import { Button } from "@/shared/ui/primitives/button";
-import { DELAY_RANGE, OVERRUN_RANGE, SALE_RANGE, STRESS_PRESETS, type SimulatorResult } from "../../hooks/simulate";
+import { SIMULATION_RANGES, type SimulationResult } from "../../../domain/simulator";
+import { STRESS_PRESET_IDS } from "../../../domain/stress-presets";
 import type { UseSimulator } from "../../hooks/use-simulator";
 import { PROJECT_DETAIL_COPY } from "./copy";
 import { RangeField } from "./RangeField";
@@ -11,7 +12,7 @@ const C = PROJECT_DETAIL_COPY.simulator;
 
 export type SimulatorControlsProps = {
   simulator: UseSimulator;
-  salePrice: SimulatorResult["salePrice"];
+  salePrice: SimulationResult["salePrice"];
   total: number;
   maxHeld: number;
 };
@@ -23,12 +24,12 @@ export function SimulatorControls({ simulator, salePrice, total, maxHeld }: Simu
     <div className="flex flex-col gap-6" data-testid="simulador-controles">
       <RangeField
         label={C.controls.sale}
-        value={controls.salePct}
-        min={SALE_RANGE.min}
-        max={SALE_RANGE.max}
-        step={SALE_RANGE.step}
-        valueText={`${formatMoney(salePrice)} · ${C.controls.saleVariation(controls.salePct)}`}
-        onChange={(v) => setControl("salePct", v)}
+        value={controls.saleAdjustmentBps}
+        min={SIMULATION_RANGES.saleAdjustmentBps.min}
+        max={SIMULATION_RANGES.saleAdjustmentBps.max}
+        step={SIMULATION_RANGES.saleAdjustmentBps.step}
+        valueText={`${formatMoney(salePrice)} · ${C.controls.saleVariation(controls.saleAdjustmentBps)}`}
+        onChange={(v) => setControl("saleAdjustmentBps", v)}
         testId="simulador-precio-venta"
       />
       <RangeField
@@ -51,20 +52,20 @@ export function SimulatorControls({ simulator, salePrice, total, maxHeld }: Simu
       />
       <RangeField
         label={C.controls.overrun}
-        value={controls.overrunPct}
-        min={OVERRUN_RANGE.min}
-        max={OVERRUN_RANGE.max}
-        step={OVERRUN_RANGE.step}
-        valueText={C.controls.overrunValue(controls.overrunPct)}
-        onChange={(v) => setControl("overrunPct", v)}
+        value={controls.worksOverrunBps}
+        min={SIMULATION_RANGES.worksOverrunBps.min}
+        max={SIMULATION_RANGES.worksOverrunBps.max}
+        step={SIMULATION_RANGES.worksOverrunBps.step}
+        valueText={C.controls.overrunValue(controls.worksOverrunBps)}
+        onChange={(v) => setControl("worksOverrunBps", v)}
         testId="simulador-sobrecosto"
       />
       <RangeField
         label={C.controls.delay}
         value={controls.delayMonths}
-        min={DELAY_RANGE.min}
-        max={DELAY_RANGE.max}
-        step={DELAY_RANGE.step}
+        min={SIMULATION_RANGES.delayMonths.min}
+        max={SIMULATION_RANGES.delayMonths.max}
+        step={SIMULATION_RANGES.delayMonths.step}
         valueText={C.controls.delayValue(controls.delayMonths)}
         onChange={(v) => setControl("delayMonths", v)}
         testId="simulador-retraso"
@@ -74,17 +75,17 @@ export function SimulatorControls({ simulator, salePrice, total, maxHeld }: Simu
           {C.presetsLabel}
         </p>
         <div className="flex flex-wrap gap-2">
-          {STRESS_PRESETS.map((preset) => (
+          {STRESS_PRESET_IDS.map((id) => (
             <Button
-              key={preset.id}
+              key={id}
               type="button"
               size="sm"
-              variant={activePreset === preset.id ? "default" : "outline"}
-              aria-pressed={activePreset === preset.id}
-              data-testid={`simulador-preset-${preset.id}`}
-              onClick={() => applyPreset(preset.id)}
+              variant={activePreset === id ? "default" : "outline"}
+              aria-pressed={activePreset === id}
+              data-testid={`simulador-preset-${id}`}
+              onClick={() => applyPreset(id)}
             >
-              {C.presets[preset.id]}
+              {C.presets[id]}
             </Button>
           ))}
         </div>

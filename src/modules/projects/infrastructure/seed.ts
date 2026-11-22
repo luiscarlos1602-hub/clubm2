@@ -14,10 +14,20 @@ import {
   type PropertyId,
 } from "../domain/project";
 import { PROJECT_STATUSES, type ProjectStatus } from "../domain/project-status";
+import { PROCESS_STEP_STATUSES, checkProjectProcess, type ProjectProcess } from "../domain/process";
+import { PROJECT_RISK_KINDS, type ProjectRisks } from "../domain/project-risk";
+import { PROJECT_SLUG_PATTERN } from "../domain/project-slug";
+import type { ProjectUpdate } from "../domain/project-update";
+import type { PropertyProfile } from "../domain/property-profile";
+import { buildProjectContent } from "./seed-content";
 
 export type ProjectsSlice = {
   readonly properties: readonly Property[];
   readonly projects: readonly Project[];
+  readonly profiles: readonly PropertyProfile[];
+  readonly processes: readonly ProjectProcess[];
+  readonly updates: readonly ProjectUpdate[];
+  readonly risks: readonly ProjectRisks[];
 };
 
 const codeSchema = z.unknown().transform((raw, ctx): ProjectCode => {
@@ -42,7 +52,7 @@ const propertySchema = z.object({
 const projectSchema = z.object({
   id: idSchema<"Project">(),
   code: codeSchema,
-  slug: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/),
+  slug: z.string().regex(PROJECT_SLUG_PATTERN),
   name: z.string().min(1),
   propertyId: idSchema<"Property">(),
   status: z.enum(PROJECT_STATUSES),
@@ -53,9 +63,50 @@ const projectSchema = z.object({
   }),
 });
 
+const profileSchema = z.object({
+  propertyId: idSchema<"Property">(),
+  description: z.string().min(1),
+  highlights: z.array(z.string().min(1)).min(1).max(5),
+});
+
+const stepSchema = z.object({
+  status: z.enum(PROCESS_STEP_STATUSES),
+  offsetDays: z.number().int().min(0),
+  started: z.boolean(),
+});
+
+const processSchema = z.object({
+  projectId: idSchema<"Project">(),
+  steps: z.object({
+    works_start: stepSchema,
+    works_50: stepSchema,
+    works_80: stepSchema,
+    sale_start: stepSchema,
+    on_sale: stepSchema,
+    sold: stepSchema,
+  }),
+});
+
+const updateSchema = z.object({
+  id: idSchema<"ProjectUpdate">(),
+  projectId: idSchema<"Project">(),
+  publishedOn: isoDateSchema,
+  title: z.string().min(1),
+  body: z.string().min(1),
+});
+
+const risksSchema = z.object({
+  projectId: idSchema<"Project">(),
+  kinds: z.array(z.enum(PROJECT_RISK_KINDS)),
+});
+
 export const projectsSliceSchema: z.ZodType<ProjectsSlice> = z.object({
   properties: z.array(propertySchema),
   projects: z.array(projectSchema),
+  profiles: z.array(profileSchema),
+  processes: z.array(processSchema),
+  updates: z.array(updateSchema),
+  risks: z.array(risksSchema),
 });
 
 type Scenario = {
@@ -78,13 +129,104 @@ type Scenario = {
 
 // Datos primarios de plan 003 §3.7. Todo lo derivado (ruedas, cifras) lo calcula el motor.
 const SCENARIOS: readonly Scenario[] = [
-  { n: 1, key: "palos_grandes_01", slugZone: "palos-grandes", name: "Apartamento Los Palos Grandes", city: "Caracas", zone: "Los Palos Grandes", kind: "apartment", areaM2: 92, status: "settled", acquiredDaysAgo: 300, saleAfterDays: 140, settledDaysAgo: 140 },
-  { n: 2, key: "hatillo_01", slugZone: "el-hatillo", name: "Casa El Hatillo", city: "Caracas", zone: "El Hatillo", kind: "house", areaM2: 180, status: "on_sale", acquiredDaysAgo: 250, saleAfterDays: null, settledDaysAgo: null },
-  { n: 3, key: "chacao_01", slugZone: "chacao", name: "Apartamento Bello Campo", city: "Caracas", zone: "Chacao", kind: "apartment", areaM2: 78, status: "settled", acquiredDaysAgo: 210, saleAfterDays: 75, settledDaysAgo: 120 },
-  { n: 4, key: "valencia_01", slugZone: "el-vinedo", name: "Apartamento El Viñedo", city: "Valencia", zone: "El Viñedo", kind: "apartment", areaM2: 85, status: "on_sale", acquiredDaysAgo: 110, saleAfterDays: null, settledDaysAgo: null },
-  { n: 5, key: "paraiso_01", slugZone: "el-paraiso", name: "Apartamento El Paraíso", city: "Caracas", zone: "El Paraíso", kind: "apartment", areaM2: 70, status: "renovation", acquiredDaysAgo: 45, saleAfterDays: null, settledDaysAgo: null },
-  { n: 6, key: "chacao_02", slugZone: "chacao", name: "Apartamento El Rosal", city: "Caracas", zone: "Chacao", kind: "apartment", areaM2: 88, status: "funding", acquiredDaysAgo: 12, saleAfterDays: null, settledDaysAgo: null },
-  { n: 7, key: "palos_grandes_02", slugZone: "palos-grandes", name: "Dúplex Los Palos Grandes", city: "Caracas", zone: "Los Palos Grandes", kind: "apartment", areaM2: 120, status: "due_diligence", acquiredDaysAgo: null, saleAfterDays: null, settledDaysAgo: null },
+  {
+    n: 1,
+    key: "palos_grandes_01",
+    slugZone: "palos-grandes",
+    name: "Apartamento Los Palos Grandes",
+    city: "Caracas",
+    zone: "Los Palos Grandes",
+    kind: "apartment",
+    areaM2: 92,
+    status: "settled",
+    acquiredDaysAgo: 300,
+    saleAfterDays: 140,
+    settledDaysAgo: 140,
+  },
+  {
+    n: 2,
+    key: "hatillo_01",
+    slugZone: "el-hatillo",
+    name: "Casa El Hatillo",
+    city: "Caracas",
+    zone: "El Hatillo",
+    kind: "house",
+    areaM2: 180,
+    status: "on_sale",
+    acquiredDaysAgo: 250,
+    saleAfterDays: null,
+    settledDaysAgo: null,
+  },
+  {
+    n: 3,
+    key: "chacao_01",
+    slugZone: "chacao",
+    name: "Apartamento Bello Campo",
+    city: "Caracas",
+    zone: "Chacao",
+    kind: "apartment",
+    areaM2: 78,
+    status: "settled",
+    acquiredDaysAgo: 210,
+    saleAfterDays: 75,
+    settledDaysAgo: 120,
+  },
+  {
+    n: 4,
+    key: "valencia_01",
+    slugZone: "el-vinedo",
+    name: "Apartamento El Viñedo",
+    city: "Valencia",
+    zone: "El Viñedo",
+    kind: "apartment",
+    areaM2: 85,
+    status: "on_sale",
+    acquiredDaysAgo: 110,
+    saleAfterDays: null,
+    settledDaysAgo: null,
+  },
+  {
+    n: 5,
+    key: "paraiso_01",
+    slugZone: "el-paraiso",
+    name: "Apartamento El Paraíso",
+    city: "Caracas",
+    zone: "El Paraíso",
+    kind: "apartment",
+    areaM2: 70,
+    status: "renovation",
+    acquiredDaysAgo: 45,
+    saleAfterDays: null,
+    settledDaysAgo: null,
+  },
+  {
+    n: 6,
+    key: "chacao_02",
+    slugZone: "chacao",
+    name: "Apartamento El Rosal",
+    city: "Caracas",
+    zone: "Chacao",
+    kind: "apartment",
+    areaM2: 88,
+    status: "funding",
+    acquiredDaysAgo: 12,
+    saleAfterDays: null,
+    settledDaysAgo: null,
+  },
+  {
+    n: 7,
+    key: "palos_grandes_02",
+    slugZone: "palos-grandes",
+    name: "Dúplex Los Palos Grandes",
+    city: "Caracas",
+    zone: "Los Palos Grandes",
+    kind: "apartment",
+    areaM2: 120,
+    status: "due_diligence",
+    acquiredDaysAgo: null,
+    saleAfterDays: null,
+    settledDaysAgo: null,
+  },
 ];
 
 /** Única semilla que lee el Clock. El código se arma con brand.shortName y se valida con parseProjectCode. */
@@ -116,5 +258,13 @@ export function buildProjectsSeed(clock: Clock): ProjectsSlice {
       timeline: { acquiredOn, saleSignedOn, settledOn },
     });
   }
-  return projectsSliceSchema.parse({ properties, projects });
+  const content = buildProjectContent(projects, dates);
+  for (const process of content.processes) {
+    const checked = checkProjectProcess(process);
+    if (!checked.ok)
+      throw new Error(
+        `semilla de proyectos: proceso de ${process.projectId}: ${checked.error.code}`,
+      );
+  }
+  return projectsSliceSchema.parse({ properties, projects, ...content });
 }

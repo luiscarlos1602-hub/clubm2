@@ -16,9 +16,20 @@ const listing = (code: string, name: string, phase: string) =>
 
 const LISTINGS = [listing("M2-006", "Proyecto Seis", "open"), listing("M2-005", "Proyecto Cinco", "renovation"), listing("M2-003", "Proyecto Tres", "finished")];
 
+/** Proceso de M2-005 (obra al 50 %): lo que entrega container.projects.getProjectProcess. */
+const PROCESS_M2_005 = [
+  { stage: "works_start", status: "done", date: "2026-06-01", estimated: false },
+  { stage: "works_50", status: "current", date: "2026-11-10", estimated: false },
+  { stage: "works_80", status: "upcoming", date: "2026-12-20", estimated: true },
+  { stage: "sale_start", status: "upcoming", date: "2027-01-10", estimated: true },
+  { stage: "on_sale", status: "upcoming", date: "2027-01-20", estimated: true },
+  { stage: "sold", status: "upcoming", date: "2027-03-01", estimated: true },
+];
+
 function wrap(ui: React.ReactNode, fail = false) {
   const container = {
     clock: { today: () => "2026-11-22" },
+    projects: { getProjectProcess: (code: string) => Promise.resolve(code === "M2-005" ? PROCESS_M2_005 : null) },
     participations: { listMarketplace: () => (fail ? Promise.reject(new Error("x")) : Promise.resolve(LISTINGS)) },
   } as unknown as Container;
   return render(<Providers container={container}>{ui}</Providers>);
