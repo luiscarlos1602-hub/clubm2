@@ -27,3 +27,10 @@ Premium, cercano y honesto. Frases cortas. Tuteo (decidido; "usted" solo en cont
 
 ## Textos legales de la demo
 Placeholder genérico revisable; nunca se presentan como contrato real.
+
+
+## Reglas añadidas por revisión (F1-5)
+- Ningún botón o enlace nombra una acción que la demo todavía no ejecuta (p. ej. «Regístrate»): mientras sea vista previa, el rótulo dice «Vista previa de…» o «Ver cómo será…».
+- No usar «Pronto» ni otros marcadores de tiempo en estados vacíos: «Esta sección mostrará…».
+- Los selectores de rol o escenario de la demo se rotulan como simulación y aclaran que no son una sesión real.
+- Una cifra de proyección nunca va en tamaño mayor que el capital en la misma vista; `destructive` solo para acciones irreversibles; toda tarjeta con cupos lleva el aviso de riesgo cercano.

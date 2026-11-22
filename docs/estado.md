@@ -17,10 +17,10 @@
 | ID | Descripción | Depende de | Tam. | Paralelo con | Estado | Plan | Revisión |
 |---|---|---|---|---|---|---|---|
 | F1-1 | Andamiaje Next + TS strict + Tailwind v4 + shadcn + pnpm; Vitest, Playwright, ESLint de capas, Prettier, lefthook, `verify:fast`/`verify`; primer commit | F0 | M | — | hecho (rama `feat/app-andamiaje`, pendiente merge) | [ADR-008](decisiones/ADR-008-next-16.md) | verify ✅ |
-| F1-2 | Design system Club M² + `brand.ts` + `shared/ui/brand` + `legal-copy.ts` + página `/sistema` · **checkpoint visual del usuario** | F1-1 | M | F1-3 | revisión (esperando aprobación visual) | [plan 001](planes/001-F1-2-design-system.md) · capturas `docs/qa/F1/` | ronda 1 corregida |
+| F1-2 | Design system Club M² + `brand.ts` + `shared/ui/brand` + `legal-copy.ts` + página `/sistema` · **checkpoint visual del usuario** | F1-1 | M | F1-3 | hecho (aprobado por el usuario) | [plan 001](planes/001-F1-2-design-system.md) · capturas `docs/qa/F1/` | ronda 1 corregida |
 | F1-3 | `shared/domain` + motor de reparto C1–C6 + propiedades + ruedas K2–K4 (`projects/backoffice.ts`) | F1-1 | L | F1-2 | hecho | [plan 002](planes/002-F1-3-motor.md) | código: 🟠 corregido (lint `module-api`) |
-| F1-4 | Composition root + demo-store + reiniciar + 7 semillas `M2-001…007` + `seed-consistency.test.ts` | F1-3 | M | F1-5 | pendiente | | |
-| F1-5 | Layouts de 3 zonas + navegación + selector de rol + banner + las 14 rutas navegables | F1-2 | M | F1-4 | pendiente | | |
+| F1-4 | Composition root + demo-store + reiniciar + 7 semillas `M2-001…007` + `seed-consistency.test.ts` | F1-3 | M | F1-5 | hecho | [plan 003](planes/003-F1-4-datos-simulados.md) | cumplimiento ✅ · código: 🟠 corregido |
+| F1-5 | Layouts de 3 zonas + navegación + selector de rol + banner + las 14 rutas navegables | F1-2 | M | F1-4 | hecho | [plan 004](planes/004-F1-5-app-navegable.md) · capturas `docs/qa/F1/app-*` | ronda 1 corregida (3 🟠 copy, 1 🟠 E2E) |
 | F1-6 | Repo GitHub privado `clubm2` + Vercel con preview por rama | F1-1 | S | todas | pendiente | | |
 
 ## F2 · Flujo del inversionista

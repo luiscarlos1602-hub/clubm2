@@ -69,6 +69,33 @@ Importa los componentes de marca desde `@/shared/ui/brand`. Las primitivas de sh
 - Props clave: `notice`, `variant?` (`block` · `inline`).
 - No usar para: textos que no estén en `legal-copy.ts`.
 
+## App shell (`src/shared/ui/app-shell/`)
+
+Importa desde `@/shared/ui/app-shell`. La navegación sale de `route-map.ts`; no se escriben enlaces de menú a mano. El rol de la demo vive en `role-store.ts` (Zustand, clave `club-ui:v1`) y no es dato de negocio.
+
+### ZoneShell
+- Archivo: `ZoneShell.tsx` (Server Component)
+- Cuándo usarlo: único contenido de cada layout de zona (`public` · `investor` · `admin`). Incluye enlace de salto, `DemoBanner`, barra de simulación con `RoleSwitcher`, cabecera, navegación, `main#contenido` y pie.
+- Props clave: `zone`, `children`, `demoTools?` (hueco en la barra de simulación).
+- No usar para: páginas sueltas ni layouts anidados.
+
+### RoleSwitcher
+- Archivo: `RoleSwitcher.tsx` (cliente)
+- Cuándo usarlo: ya va dentro de `ZoneShell`. Guarda el rol y navega al inicio de ese rol.
+- Props clave: `zone`.
+- No usar para: autenticación ni permisos (no hay protección de rutas en F1).
+
+### NavLinks · ActiveNavLinks · MobileNav
+- Archivos: `NavLinks.tsx` (presentacional), `ActiveNavLinks.tsx` (cliente, `usePathname`), `MobileNav.tsx` (Sheet).
+- Cuándo usarlos: solo desde `ZoneShell`. `ActiveNavLinks` siempre dentro de `Suspense` (cacheComponents).
+- No usar para: menús de otra naturaleza.
+
+### RoutePlaceholder
+- Archivo: `RoutePlaceholder.tsx`
+- Cuándo usarlo: pantalla provisional de las 14 rutas hasta que su módulo la reemplace.
+- Props clave: `routeId`.
+- No usar para: pantallas con datos.
+
 ## Textos fijos
 - `legal-copy.ts` (`LEGAL_COPY`): avisos de `docs/06`. Un test fija el texto exacto.
 - `brand-copy.ts` (`BRAND_COPY`): rótulos de cifras, carga y error.

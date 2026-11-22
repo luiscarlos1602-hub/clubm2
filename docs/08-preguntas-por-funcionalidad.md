@@ -135,3 +135,24 @@
 | L9 | ¿El "hoy" de la demo es la fecha de Caracas? | Sí, America/Caracas |
 ```
 
+
+## Bloque M · App navegable (F1-5, 22-nov) 🟠
+
+| # | Pregunta | Propuesta por defecto |
+|---|---|---|
+| M1 | ¿El visitante puede ver el marketplace y las fichas sin registrarse? | Sí |
+| M2 | ¿El rol activo se recuerda al recargar y sobrevive a "Reiniciar datos simulados"? | Sí y sí |
+| M3 | ¿`/como-funciona` es una ruta propia o una sección de P1? | Sección de P1 |
+
+## Bloque N · Datos simulados (F1-4, 22-nov) 🟠
+
+| # | Pregunta | Propuesta por defecto |
+|---|---|---|
+| N1 | El proyecto con más de 6 meses sin venta, ¿se siembra como "en venta" o como "estancado"? | "En venta"; "estancado" lo marca el admin en B4 y solo se ve en el backoffice |
+| N2 | ¿Todos los proyectos simulados usan 100 participaciones de USD 100 (USD 10.000)? | Sí, la referencia del maestro, hasta que definas otra |
+| N3 | Precios de compra/venta simulados entre USD 34.000 y 88.000 según zona y m², ¿te sirven o tienes datos de mercado? | Usar los del plan 003, rotulados como simulados |
+| N4 | Si alguien vuelve a la demo semanas después, ¿las fechas se congelan o se recalculan? | Se congelan hasta "Reiniciar datos simulados", que vuelve a sembrar con fechas relativas a hoy |
+| N5 | ¿Nombre y perfil del inversionista demo? | Se definen en F2 (P8) con el módulo investors; F1-4 solo fija el id |
+| N6 | ¿"Reiniciar datos simulados" también reinicia el rol elegido? | No, solo los datos |
+| N7 | La oportunidad en due diligence (M2-007), ¿aparece en el marketplace? | No; solo en el backoffice (B2). Se confirma en P3 |
+```

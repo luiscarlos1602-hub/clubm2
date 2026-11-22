@@ -1,0 +1,35 @@
+import {
+  Building2,
+  Contact,
+  Gauge,
+  HandCoins,
+  HardHat,
+  Home,
+  Landmark,
+  LayoutGrid,
+  Megaphone,
+  Search,
+  UserCircle,
+  UserPlus,
+  Users,
+  Wallet,
+  type LucideIcon,
+} from "lucide-react";
+import type { RouteId } from "./route-map";
+
+export const ROUTE_ICONS: Readonly<Record<RouteId, LucideIcon>> = {
+  p1: Home,
+  p2: UserPlus,
+  p3: LayoutGrid,
+  p4: Building2,
+  p5: HandCoins,
+  p6: Wallet,
+  p7: Users,
+  p8: UserCircle,
+  b1: Gauge,
+  b2: Search,
+  b3: HardHat,
+  b4: Megaphone,
+  b5: Landmark,
+  b6: Contact,
+};

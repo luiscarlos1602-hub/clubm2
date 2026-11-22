@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, IBM_Plex_Mono, Inter } from "next/font/google";
+import { Providers } from "@/composition/providers";
 import { brand } from "@/shared/config/brand";
 import "./globals.css";
 
@@ -35,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${fraunces.variable} ${inter.variable} ${plexMono.variable} h-full`}
     >
       <body className="flex min-h-full flex-col bg-background font-sans text-foreground antialiased">
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

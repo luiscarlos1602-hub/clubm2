@@ -20,3 +20,10 @@
 - [F1-3] `module-api` usa `mode: "file"` (obsoleto, solo imprime aviso). Migrar a `boundaries/files` cuando se verifique la API; dejar prueba de regresión del lint.
 - [F1-2] `MoneyLike` → `Money` de `shared/domain` ahora que F1-3 existe. Ampliar la regla de dinero a identificadores `cents` sueltos. Modo oscuro (P3).
 - [F1-2] Cumplimiento: regla para `docs/06` — `destructive` solo para acciones irreversibles; tarjeta con cupos lleva aviso de riesgo cercano.
+- [F1-5] Índice para `/admin/proyectos`; mover el copy de pantallas a `modules/<m>/ui/copy.ts` en F2/F3; quitar el destello de `Suspense` en la navegación cuando haya `generateStaticParams` con semillas.
+- [F1-4] Lint: prohibir en `src/modules/*/infrastructure/**` importar `@/modules/<otro>` (alinear con `01 §4`).
+- [F1-4] Skill `datos-semilla`: subir la clave `club-demo:vN` cuando cambie la forma del snapshot o una cifra sembrada.
+- [F2] Mapeo público estado → etapa visible (`stalled` → "en venta", L5) en `projects/index.ts`, con test.
+- [F1-5] Hallazgos E2E: con `cacheComponents` la página anterior queda un instante oculta en el DOM tras navegar; usar `:visible` en testids globales. Cabecera de admin a 1440 px: wordmark centrado en contenedor de 1280 px, no alineado al aside. NavLinks: el CTA no tiene estado activo visual.
+- [F1-4 · cumplimiento] Semillas: M2-002 `city: "Caracas"` con zona El Hatillo (mostrar "Caracas · El Hatillo" o ajustar); M2-003 y M2-006 tienen nombre ("Bello Campo", "El Rosal") distinto de la zona `Chacao` y comparten `slugZone` — alinear nombre y zona en la ficha; M2-003 liquida un excedente alto (34,5 por participación en ~4 meses): valorar bajar `salePrice`; la UI pública no debe mostrar "días sin vender" de M2-002; `demo-copy.warning` debe decir que los cambios viven solo en este navegador; excepción documentada: reinicio de la demo puede usar `destructive`.
+- [F1-4 · código] Deep-freeze del snapshot en `createDemoStore`; `parseDemoSnapshot` podría recalcular liquidaciones con `createSettlement`; `seed-consistency.test.ts` lee archivos con ruta relativa al cwd (usar `import.meta.url`); `docs/02 §3` pendiente de ProjectEconomics.

@@ -94,7 +94,7 @@ Proyecto Inmobiliario/
 │   │   ├── (publico)/             # Sin sesión
 │   │   │   ├── page.tsx           # P1 Landing
 │   │   │   ├── registro/          # P2
-│   │   │   └── como-funciona/
+│   │   │   └── como-funciona/      # (no creada: por ahora sección de P1; ver docs/08 M3)
 │   │   ├── (inversionista)/       # Layout con navegación del miembro
 │   │   │   ├── proyectos/                 # P3 Marketplace
 │   │   │   ├── proyectos/[slug]/          # P4 Ficha + simulador
@@ -146,6 +146,7 @@ Proyecto Inmobiliario/
 │   │   │   ├── primitives/        # button, card, dialog… (generadas por shadcn)
 │   │   │   ├── README.md          # catálogo de componentes (lo leen los agentes antes de crear uno)
 │   │   │   ├── brand/             # MoneyDisplay, StatusBadge, ProjectionLabel, DemoBanner, legal-copy.ts
+│   │   │   ├── app-shell/         # Navegación por zona, selector de rol, mapa de rutas (F1-5)
 │   │   │   └── showcase/          # Secciones de la página interna /sistema
 │   │   ├── infrastructure/        # demo-store (localStorage), clock, reset
 │   │   ├── lib/                   # formateadores es-VE, cn(), utilidades

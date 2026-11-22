@@ -20,6 +20,9 @@
 | Escenario | `Scenario` | Conservador / base / optimista. Siempre proyección |
 | Liquidación | `Settlement` | Cierre: devolución de capitales + reparto del excedente realizado |
 
+- **ProjectEconomics** — supuestos base del proyecto (C, F, P objetivo, O estimado); todo es proyección salvo lo que diga `Settlement`. No es la entrada de `createSettlement` (esa es `RealizedDistributionInput`).
+- **HolderId** — `Id<"Investor">`: identifica al titular de participaciones (el perfil llega en F2).
+
 ## 2. Ciclo de vida del proyecto
 
 ```
