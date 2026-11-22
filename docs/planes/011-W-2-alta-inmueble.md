@@ -12,7 +12,7 @@ Como miembro del equipo quiero dar de alta un inmueble y editar uno existente de
 - CA8 · `/admin/proyectos/[id]/editar` carga (`getProjectSheet`) y guarda; la etapa no cambia (`STATUS_CHANGE_NOT_ALLOWED`).
 - CA9 · Sobrevive a recargar; publicable → visible en `/proyectos` y su ficha; el hook invalida TanStack Query.
 - CA10 · Suites de contrato de los puertos nuevos, reutilizables en DB-4 · CA11 · E2E crear → recargar → ver en `/proyectos` → editar → persiste (390 y 1440).
-- CA12 · Copy en `ui/copy.ts`, `check-copy` limpio, sin ruedas, `PageHeader` + `Section`.
+- CA12 · Copy en `components/admin/**/copy.ts` (patrón vigente), `check-copy` limpio, sin ruedas, `PageHeader` + `Section`.
 - CA13 [PROPUESTO] · Un inmueble nuevo muestra **sus** imágenes elegidas en la tarjeta de `/proyectos` y en la galería de la ficha (hoy se resuelven por código y `m2-008/` no existe).
 - CA14 [PROPUESTO] · Guardar la ficha es atómico en local: si cualquier parte se rechaza, el almacén queda como estaba.
 
